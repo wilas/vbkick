@@ -31,9 +31,7 @@ import sys
 import re
 
 def get_one_char_codes():
-
     scancodes = {}
-
     key_map = {'1234567890-=' : 0x02,
         'qwertyuiop[]' : 0x10,
         'asdfghjkl;\'`' : 0x1e,
@@ -42,9 +40,9 @@ def get_one_char_codes():
     for keys, offset in key_map.iteritems():
         idx = 0
         for k in list(keys):
-            scancodes[k]='%02x %02x' % (idx + offset, idx + offset + 0x80)
+            scancodes[k] = '%02x %02x' % (idx + offset, idx + offset + 0x80)
             idx += 1
-
+    # Shift keys
     key_map =  { '!@#$%^&*()_+' : 0x02,
         'QWERTYUIOP{}' : 0x10,
         'ASDFGHJKL:"~' : 0x1e,
@@ -53,14 +51,12 @@ def get_one_char_codes():
     for keys, offset in key_map.iteritems():
         idx = 0
         for k in list(keys):
-            scancodes[k]='2a %02x %02x aa' % (idx + offset, idx + offset + 0x80)
+            scancodes[k] = '2a %02x %02x aa' % (idx + offset, idx + offset + 0x80)
             idx += 1
     return scancodes
 
 def get_multi_char_codes():
-
     scancodes = {}
-
     scancodes['<Enter>'] = '1c 9c'
     scancodes['<Backspace>'] = '0e 8e'
     scancodes['<Spacebar>'] = '39 b9'
@@ -79,11 +75,9 @@ def get_multi_char_codes():
     scancodes['<Left>'] = '4b cb'
     scancodes['<Right>'] = '4d cd'
     scancodes['<Home>'] = '47 c7'
-
     # F1..F10
     for idx in range(1,10):
         scancodes['<F%s>' % idx] = '%02x' % (idx + 0x3a)
-
     # VT1..VT12 (Switch to Virtual Terminal)
     for idx in range(1,12):
         scancodes['<VT%s>' % idx] = '38 %02x b8 %02x' % (idx + 0x3a, idx +0xba)
