@@ -1,0 +1,16 @@
+# this is comment
+# Note: scripts are exec in order defined here
+base.sh
+sudo.sh
+veewee.sh
+vagrant.sh
+virtualbox.sh
+#kvm.sh
+#aws.sh
+ruby.sh
+ansible.sh
+puppet.sh
+chef.sh
+tuning.sh
+cleanup.sh
+zerodisk.sh
