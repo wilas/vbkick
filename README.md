@@ -1,14 +1,14 @@
 # Description
 
-https://github.com/wilas/veewee-boxarium/tree/master/definitions/SL6_ks
-
-https://github.com/wilas/veewee-boxarium/
+ - https://github.com/wilas/veewee-boxarium/tree/master/definitions/SL6_ks
+ - https://github.com/wilas/veewee-boxarium/
 
 ## TODO
 
  - wget/curl installer
  - docs and manuals
  - manifest
+ - bash like options (also --definition/--config def_file.cfg option)
 
 ## Hand installation
 
