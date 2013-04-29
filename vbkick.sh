@@ -102,7 +102,7 @@ function download_install_media {
     # chec whether iso dir exist
     if [ ! -d "${iso_path}" ]; then
         echo "Creates iso directory"
-        mkdir iso
+        mkdir "${iso_path}"
     fi
     # check whether iso_file exist
     if [ ! -f "${iso_path}/${iso_file}" ]; then
