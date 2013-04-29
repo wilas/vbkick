@@ -22,8 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-# src page: github.com/wilas/vmkick
-#
 
 # Example usage:
 # echo 'Hello World!' | python convert_2_scancode.py
