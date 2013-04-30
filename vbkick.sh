@@ -35,13 +35,16 @@ memory_size=512
 disk_size=10140
 disk_format="vdi"
 video_memory_size=10
-vm_options=("ioapic:on") #list
+# list of VM options: ("option1:value" "option2:value")
+vm_options=("ioapic:on")
 
 iso_sha256=""
 
 boot_wait=10 #seconds
-boot_cmd_sequence=() #list
-boot_seq_wait=1 #seconds
+# list of boot_cmd
+boot_cmd_sequence=()
+# number of second wait between each boot_cmd
+boot_seq_wait=1
 
 kickstart_port=7122
 kickstart_timeout=3600 #seconds
@@ -243,8 +246,9 @@ function destroy_vm {
 
 function export_vm {
     #
-    # basic replacement for that vagrant command (just as secondary solution):
+    # basic replacement for that vagrant command:
     # vagrant package --base "${VM}" --output "${VM}.box"
+    # if more customisation required use: vagrant package (--help)
     #
     local VM=$1
     # check whether VM_NAME.box exist in current dir
