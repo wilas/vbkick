@@ -49,21 +49,24 @@ boot_seq_wait=1
 kickstart_port=7122
 kickstart_timeout=3600 #seconds
 
-# Other global variables
+# by default gui enabled
+gui_enabled=1
 iso_path="iso"
+
+# Other global variables
 webserver_status=0
 tmp_dir=""
 
 # Display help
 function usage {
     echo ""
-    echo "Usage: $0 [build|destroy|export|test|postinstall|help] VM_NAME"
+    echo "Usage: $0 [build|destroy|export|validate|postinstall|help] VM_NAME"
     echo "Help create Virtualbox Guest and Vagrant boxes"
     echo ""
     echo "build                 build VM"
     echo "destroy               destroy VM"
     echo "export                export VM"
-    echo "test                  test VM, ssh needed"
+    echo "validate              validate VM, ssh needed"
     echo "postinstall           run postinstall scripts via ssh"
     echo "help                  display this help and exit"
     echo ""
@@ -76,8 +79,8 @@ function process_args {
         build) build_vm "${VM}" ;;
         destroy) destroy_vm "${VM}" ;;
         export) export_vm "${VM}" ;;
-        test) test_vm "${VM}" ;;
-        postinstall) postinstall_tuning "${VM}" ;;
+        validate) validate_vm "${VM}" ;;
+        postinstall) lazy_postinstall "${VM}" ;;
         *) usage; exit ;;
     esac
 }
@@ -115,6 +118,10 @@ function download_install_media {
     local get_sha256=$(sha256sum ${iso_path}/${iso_file} | cut -d" " -f 1)
     if [[ "${iso_sha256}" != "${get_sha256}" ]]; then
         echo "WARNING: SHA256SUM is different then expected !"
+        read -r -p "Do you want continue? [y/N]" ans
+        if [[ ! $ans =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
     else
         echo "INFO: SHA256SUM:${iso_sha256} is valid."
     fi
@@ -145,19 +152,20 @@ function build_vm {
     # host ip to connect from guest
     local host_ip=10.0.2.2
     # start VM
-    # todo: gui or not ?
-    VBoxManage startvm --type gui "${VM}"  && sleep $boot_wait
-    #VBoxManage startvm --type headless "${VM}" && sleep $boot_wait
+    if [ $gui_enabled -eq 1 ]; then
+        VBoxManage startvm --type gui "${VM}"  && sleep $boot_wait
+    else
+        VBoxManage startvm --type headless "${VM}" && sleep $boot_wait
+    fi
     # boot VM machine
     for boot_cmd in "${boot_cmd_sequence[@]}"; do
-        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%IP%/$host_ip/g")
-        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%PORT%/$kickstart_port/g")
+        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%IP%/$host_ip/g" | sed -r "s/%PORT%/$kickstart_port/g")
         echo "${boot_cmd}"
         # converts string to scancode via external python script
         local boot_cmd_code=$(echo -en "${boot_cmd}" | convert_2_scancode.py)
         # sends code to VM
         for code in $boot_cmd_code; do
-            echo "${code}"
+            #echo "${code}"
             if [ "${code}" == "wait" ]; then
                 echo "waiting..."
                 sleep 1
@@ -271,7 +279,7 @@ function export_vm {
         # todo: consider shutdown using ssh and halt/poweroff cmd - nicer for OS...
         sleep 1
     fi
-    # todo: Clearing any previously set forwarded ports
+    # todo: clearing any previously set forwarded ports
     # create tmp_dir for export data
     tmp_dir=$(mktemp -d --tmpdir=.)
     # export VM to tmp_dir
@@ -299,15 +307,16 @@ function export_vm {
     exit 0
 }
 
-function test_vm {
-    echo "Not implemented yet"
+function validate_vm {
+    # test already build VM
     # todo: test should be smart enought to check what I really want to test
     # e.g. If I don't need chef, don't test whether I have chef
+    echo "Not implemented yet"
     exit 1
 }
 
-function postinstall_tuning {
-    # tunning via ssh
+function lazy_postinstall {
+    # todo: run defined postinstall scripts via ssh
     echo "Not implemented yet"
     exit 1
 }
@@ -356,7 +365,6 @@ if [ $# -ne 2 ]; then
 fi
 
 vb_version=$(get_vb_version)
-# todo: update postinstall/adm_envrc with new VBOX_VERSION
 # signals handler
 trap clean_up SIGHUP SIGINT SIGTERM
 process_args "${1}" "${2}"

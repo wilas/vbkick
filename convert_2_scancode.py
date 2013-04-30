@@ -94,6 +94,7 @@ if __name__ == "__main__":
     input = sys.stdin.readlines()
     # convert list to string
     input = ''.join(input).rstrip('\n')
+    # todo: process multiplication - '<Wait>'*2<Down>'*2'<Wait>'*200
     # replace white-spaces with <Spacebar>
     input = input.replace(' ', '<Spacebar>')
 

@@ -8,7 +8,6 @@
  - wget/curl installer
  - docs and manuals
  - manifest
- - bash like options (also --definition/--config def_file.cfg option)
 
 ## Hand installation
 
