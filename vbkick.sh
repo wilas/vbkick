@@ -162,7 +162,7 @@ function build_vm {
         boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%IP%/$host_ip/g" | sed -r "s/%PORT%/$kickstart_port/g")
         echo "${boot_cmd}"
         # converts string to scancode via external python script
-        local boot_cmd_code=$(echo -en "${boot_cmd}" | convert_2_scancode.py)
+        local boot_cmd_code=$(printf $boot_cmd | convert_2_scancode.py)
         # sends code to VM
         for code in $boot_cmd_code; do
             #echo "${code}"

@@ -92,12 +92,21 @@ def get_multi_char_codes():
 if __name__ == "__main__":
     # read from stdin
     input = sys.stdin.readlines()
-    # convert list to string
+    # convert input list to string
     input = ''.join(input).rstrip('\n')
-    # todo: process multiplication - '<Wait>'*2<Down>'*2'<Wait>'*200
+    # process <Multiply(what,times)> 
+    # example usage: <Multiply(<Wait>,4)> --> <Wait><Wait><Wait><Wait>
+    # key thing about multiply_regexpr: match in non-greedy
+    multiply_regexpr = '<Multiply\((.+?),[ ]*([\d]+)[ ]*\)>'
+    for match in re.finditer(r'%s' % multiply_regexpr, input):
+        what = match.group(1)
+        times = int(match.group(2))
+        # repeating a string given number of times
+        replacement = what * times
+        # replace Multiply(what,times)> with already created replacement
+        input = input.replace(match.group(0), replacement)
     # replace white-spaces with <Spacebar>
     input = input.replace(' ', '<Spacebar>')
-
     # create list to collect information about input string structure
     keys_array = [-1] * len(input) #-1 mean no key yet assign to cell in array
 
