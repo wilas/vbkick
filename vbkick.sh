@@ -52,6 +52,11 @@ kickstart_timeout=3600 #seconds
 # by default gui enabled
 gui_enabled=1
 iso_path="iso"
+# by default ssh keys enabled
+#keys_enabled=1
+#keys_path="keys"
+#priv_key="vbkick_key"
+#priv_key_src=""
 
 # Other global variables
 webserver_status=0
@@ -76,11 +81,11 @@ function usage {
 function process_args {
     local VM="${2}"
     case "$1" in
-        build) build_vm "${VM}" ;;
-        destroy) destroy_vm "${VM}" ;;
-        export) export_vm "${VM}" ;;
-        validate) validate_vm "${VM}" ;;
-        postinstall) lazy_postinstall "${VM}" ;;
+        "build") build_vm "${VM}" ;;
+        "destroy") destroy_vm "${VM}" ;;
+        "export") export_vm "${VM}" ;;
+        "validate") validate_vm "${VM}" ;;
+        "postinstall") lazy_postinstall "${VM}" ;;
         *) usage; exit ;;
     esac
 }
@@ -132,6 +137,19 @@ function download_install_media {
     fi
 }
 
+# Prepare ssh keys
+#function get_ssh_keys {
+#    # chec whether keys dir exist
+#    if [ ! -d "${keys_path}" ]; then
+#        echo "Creates vbkick ssh keys directory"
+#        mkdir "${keys_path}"
+#    fi
+#    if [ ! -f "${keys_path}/${priv_key}" ]; then
+#        wget "${priv_key_src}" -O "${keys_path}/${priv_key}"
+#    fi
+#
+#}
+
 function build_vm {
     local VM=$1
     # check whether VM already exist
@@ -145,6 +163,8 @@ function build_vm {
     load_definition
     # download iso files
     download_install_media
+    # get ssh priv keys
+    #get_ssh_keys
     # create VM box with given settings
     create_box "${VM}"
     # start simple webserver (in background)

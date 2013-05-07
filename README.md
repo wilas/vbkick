@@ -22,7 +22,7 @@
 
 Enter key-strokes into a VirtualBox guest programmatically from the host:
 ```
-    $ VBoxManage controlvm VM_NAME keyboardputscancode $(echo 'Hello VM' | convert_2_scancode.py)
+    $ VBoxManage controlvm VM_NAME keyboardputscancode $(printf 'Hello VM' | convert_2_scancode.py)
 ```
 
 Example output keyboard scancodes:

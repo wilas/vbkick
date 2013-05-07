@@ -1,0 +1,7 @@
+*.swp
+*.pyc
+*.box
+*.iso
+iso/*
+examples/*/keys/*
+templates/*/keys/*

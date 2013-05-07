@@ -11,6 +11,6 @@ ruby.sh
 ansible.sh
 puppet.sh
 chef.sh
-tuning.sh
+#tuning.sh
 cleanup.sh
 zerodisk.sh
