@@ -47,16 +47,21 @@ boot_cmd_sequence=()
 boot_seq_wait=1
 
 kickstart_port=7122
-kickstart_timeout=3600 #seconds
+kickstart_timeout=7200 #seconds
 
 # by default gui enabled
 gui_enabled=1
 iso_path="iso"
+
 # by default ssh keys enabled
-#keys_enabled=1
-#keys_path="keys"
-#priv_key="vbkick_key"
-#priv_key_src=""
+ssh_keys_enabled=1
+ssh_user="vbkick"
+ssh_keys_path="keys"
+ssh_priv_key="vbkick_key"
+ssh_priv_key_src="https://raw.github.com/wilas/vbkick/master/keys/vbkick_key"
+ssh_host_port="2222"
+ssh_guest_port="22"
+#ssh_login_timeout="7200"
 
 # Other global variables
 webserver_status=0
@@ -103,21 +108,21 @@ function load_definition {
 
 # Get virtualbox version
 function get_vb_version {
-    local vb_version=$(VBoxManage --version) # e.g. 4.2.12r84980
-    local vb_version=${vb_version%r*} #e.g. 4.2.12
-    echo "${vb_version}"
+    local version=$(VBoxManage --version) # e.g. 4.2.12r84980
+    local version=${version%r*} #e.g. 4.2.12
+    echo "${version}"
 }
 
 # Prepare installation media
 function download_install_media {
-    # chec whether iso dir exist
+    # check whether iso dir exist
     if [ ! -d "${iso_path}" ]; then
         echo "Creates iso directory"
         mkdir "${iso_path}"
     fi
     # check whether iso_file exist
     if [ ! -f "${iso_path}/${iso_file}" ]; then
-        wget "${iso_src}" -O "${iso_path}/${iso_file}"
+        wget --no-check-certificate "${iso_src}" -O "${iso_path}/${iso_file}"
     fi
     # verify iso_src sha256sum
     local get_sha256=$(sha256sum ${iso_path}/${iso_file} | cut -d" " -f 1)
@@ -133,27 +138,29 @@ function download_install_media {
     # check whether VBoxGuestAdditions exist
     if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
         local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
-        wget "${additions_url}" -P "${iso_path}"
+        wget --no-check-certificate "${additions_url}" -P "${iso_path}"
     fi
 }
 
 # Prepare ssh keys
-#function get_ssh_keys {
-#    # chec whether keys dir exist
-#    if [ ! -d "${keys_path}" ]; then
-#        echo "Creates vbkick ssh keys directory"
-#        mkdir "${keys_path}"
-#    fi
-#    if [ ! -f "${keys_path}/${priv_key}" ]; then
-#        wget "${priv_key_src}" -O "${keys_path}/${priv_key}"
-#    fi
-#
-#}
+function get_priv_ssh_key {
+    # check whether keys dir exist
+    if [ ! -d "${ssh_keys_path}" ]; then
+        echo "Creates vbkick ssh keys directory"
+        mkdir "${ssh_keys_path}"
+    fi
+    # check whether private key exist
+    if [ ! -f "${ssh_keys_path}/${ssh_priv_key}" ]; then
+        wget --no-check-certificate "${ssh_priv_key_src}" -O "${ssh_keys_path}/${ssh_priv_key}"
+    fi
+    # change ssh key permissions - too open private key will be ignored
+    chmod 600 "${ssh_keys_path}/${ssh_priv_key}"
+}
 
 function build_vm {
     local VM=$1
     # check whether VM already exist
-    VBoxManage list vms | grep "${VM}"
+    VBoxManage list vms | grep -w "${VM}"
     # if VM exist previous cmd return 0
     if [ $? -eq 0 ]; then
         echo "${VM} already exist"
@@ -163,8 +170,10 @@ function build_vm {
     load_definition
     # download iso files
     download_install_media
-    # get ssh priv keys
-    #get_ssh_keys
+    # get ssh private key
+    if [ $ssh_keys_enabled -eq 1 ]; then
+        get_priv_ssh_key
+    fi
     # create VM box with given settings
     create_box "${VM}"
     # start simple webserver (in background)
@@ -182,21 +191,22 @@ function build_vm {
         boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%IP%/$host_ip/g" | sed -r "s/%PORT%/$kickstart_port/g")
         echo "${boot_cmd}"
         # converts string to scancode via external python script
-        local boot_cmd_code=$(printf $boot_cmd | convert_2_scancode.py)
+        local boot_cmd_code=$(printf "${boot_cmd}" | convert_2_scancode.py)
         # sends code to VM
         for code in $boot_cmd_code; do
-            #echo "${code}"
+            echo "${code}"
             if [ "${code}" == "wait" ]; then
                 echo "waiting..."
                 sleep 1
             else
                 VBoxManage controlvm "${VM}" keyboardputscancode $code
-                sleep 0.05
+                sleep 0.01
             fi
         done
         sleep $boot_seq_wait
     done
-    # todo: wait until machine will be rebooted and ssh start working (before kickstart_timeout)
+    # todo: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
+    # ssh_keys_enabled must be turn on to use that feature
     sleep $kickstart_timeout
     # stop webserver
     stop_web_server
@@ -243,20 +253,20 @@ function create_box {
     done
 
     # ssh NAT mapping
-    #VBoxManage controlvm "${VM}" natpf1 "guestssh,tcp,,${ssh_host_port},,${ssh_guest_port}"
+    VBoxManage controlvm "${VM}" natpf1 "guestssh,tcp,,${ssh_host_port},,${ssh_guest_port}"
 }
 
 function destroy_vm {
     local VM=$1
     # check whether VM already exist
-    VBoxManage list vms | grep "${VM}"
+    VBoxManage list vms | grep -w "${VM}"
     # if VM exist previous cmd return 0
     if [ $? -ne 0 ]; then
         echo "${VM} doesn't exist"
         exit 1
     fi
     # check whether VM is running
-    VBoxManage list runningvms | grep "${VM}"
+    VBoxManage list runningvms | grep -w "${VM}"
     if [ $? -eq 0 ]; then
         echo "Poweroff ${VM}"
         VBoxManage controlvm "${VM}" poweroff
@@ -285,21 +295,22 @@ function export_vm {
         exit 1
     fi
     # check whether VM exist
-    VBoxManage list vms | grep "${VM}"
+    VBoxManage list vms | grep -w "${VM}"
     # if VM exist previous cmd return 0
     if [ $? -ne 0 ]; then
         echo "${VM} doesn't exist"
         exit 1
     fi
     # check whether VM is running
-    VBoxManage list runningvms | grep "${VM}"
+    VBoxManage list runningvms | grep -w "${VM}"
     if [ $? -eq 0 ]; then
         echo "Poweroff ${VM}"
         VBoxManage controlvm "${VM}" poweroff
         # todo: consider shutdown using ssh and halt/poweroff cmd - nicer for OS...
         sleep 1
     fi
-    # todo: clearing any previously set forwarded ports
+    # clearing previously set forwarded port
+    VBoxManage modifyvm "${VM}" --natpf1 delete "guestssh"
     # create tmp_dir for export data
     tmp_dir=$(mktemp -d --tmpdir=.)
     # export VM to tmp_dir
@@ -328,22 +339,30 @@ function export_vm {
 }
 
 function validate_vm {
-    # test already build VM
+    # test already build VM - ssh needed
     # todo: test should be smart enought to check what I really want to test
     # e.g. If I don't need chef, don't test whether I have chef
+    # todo: if no ssh then use root and password method - type pass ? or sshpass or expect
     echo "Not implemented yet"
     exit 1
 }
 
 function lazy_postinstall {
     # todo: run defined postinstall scripts via ssh
+    # Example cmd:
+    # ssh vbkick@localhost -t -i keys/vbkick_key -p 2222 -C 'sudo ifconfig'
+    # ssh vbkick@localhost -t -i keys/vbkick_key -p 2222 -C 'mkdir -p ~/postinstall'
+    # scp -P 2222 -i keys/vbkick_key postinstall/skrypt.sh vbkick@localhost:~vbkick
+    # ssh vbkick@localhost -t -i keys/vbkick_key -p 2222 -C path/skrypt.sh
     echo "Not implemented yet"
     exit 1
 }
 
 function start_web_server {
     # start simple webserver serving files in background
+    # todo: check whether port is not used by other proc.
     python -m SimpleHTTPServer $kickstart_port &
+    # todo: ($?) check whether web server was really started - Exception ?
     # get the pid already spawned process, to kill it later
     web_pid=$!
     # update webserver_status variable
