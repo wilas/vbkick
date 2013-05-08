@@ -23,10 +23,20 @@
 # THE SOFTWARE.
 #
 
-# Secure bash 
+# Secure bash
+# More about options: http://wiki.bash-hackers.org/commands/builtin/set
+# treat unset variables as an error
 # (it also complain if you forget about required options in definition.cfg)
 set -u;
+# todo [HIGH](issue number): exit and clean if some cmd fail: EXIT/ERR trap
+#set -e; set -E;
+# todo [HIGH]: fail the entire pipeline if any part of it fails
+#set -o pipefail;
+# debug mode
+#set -x;
+# http://mywiki.wooledge.org/glob
 shopt -s failglob;
+
 
 # VM default settings
 hostiocache="on"
@@ -61,7 +71,15 @@ ssh_priv_key="vbkick_key"
 ssh_priv_key_src="https://raw.github.com/wilas/vbkick/master/keys/vbkick_key"
 ssh_host_port="2222"
 ssh_guest_port="22"
+# UserKnownHostsFile - database file to use for storing the user host keys
+# StrictHostKeyChecking - if "no" then automatically add new host keys to the host key database file
+# you may consider editing ssh config: http://superuser.com/questions/141344/ssh-dont-add-hostkey-to-known-hosts
+ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 #ssh_login_timeout="7200"
+
+#
+postinstall_transport=()
+postinstall_launch=()
 
 # Other global variables
 webserver_status=0
@@ -205,7 +223,7 @@ function build_vm {
         done
         sleep $boot_seq_wait
     done
-    # todo: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
+    # todo [MEDIUM]: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
     # ssh_keys_enabled must be turn on to use that feature
     sleep $kickstart_timeout
     # stop webserver
@@ -254,6 +272,7 @@ function create_box {
 
     # ssh NAT mapping
     VBoxManage controlvm "${VM}" natpf1 "guestssh,tcp,,${ssh_host_port},,${ssh_guest_port}"
+    # todo [MEDIUM]: configure shared folders ?!
 }
 
 function destroy_vm {
@@ -306,7 +325,7 @@ function export_vm {
     if [ $? -eq 0 ]; then
         echo "Poweroff ${VM}"
         VBoxManage controlvm "${VM}" poweroff
-        # todo: consider shutdown using ssh and halt/poweroff cmd - nicer for OS...
+        # todo [MEDIUM]: consider shutdown using ssh and halt/poweroff cmd - nicer for OS...
         sleep 1
     fi
     # clearing previously set forwarded port
@@ -340,29 +359,61 @@ function export_vm {
 
 function validate_vm {
     # test already build VM - ssh needed
-    # todo: test should be smart enought to check what I really want to test
+    # todo [MEDIUM]: test should be smart enought to check what I really want to test
     # e.g. If I don't need chef, don't test whether I have chef
-    # todo: if no ssh then use root and password method - type pass ? or sshpass or expect
+    # ssh vbkick@localhost -t -i keys/vbkick_key -p 2222 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
+    # todo [LOW]: replace echo by printf
     echo "Not implemented yet"
     exit 1
 }
 
 function lazy_postinstall {
-    # todo: run defined postinstall scripts via ssh
-    # Example cmd:
-    # ssh vbkick@localhost -t -i keys/vbkick_key -p 2222 -C 'sudo ifconfig'
-    # ssh vbkick@localhost -t -i keys/vbkick_key -p 2222 -C 'mkdir -p ~/postinstall'
-    # scp -P 2222 -i keys/vbkick_key postinstall/skrypt.sh vbkick@localhost:~vbkick
-    # ssh vbkick@localhost -t -i keys/vbkick_key -p 2222 -C path/skrypt.sh
-    echo "Not implemented yet"
-    exit 1
+    local VM=$1
+    # check whether VM is running
+    VBoxManage list runningvms | grep -w "${VM}"
+    if [ $? -ne 0 ]; then
+        echo "${VM} is not running..."
+        exit 1
+    fi
+    # load vm description/definition
+    load_definition
+    # todo [HIGH]: check port forwarding, enable it
+    # todo [LOW]: if keys not enabled try login using password (root, user, sshpass, expect)
+    if [ $ssh_keys_enabled -eq 1 ]; then
+        # if key not exist then get it
+        get_priv_ssh_key
+        local key_path="${ssh_keys_path}/${ssh_priv_key}"
+        # transport postinstall scripts to guest
+        for pkt in "${postinstall_transport[@]}"; do
+            # todo [HIGH]: if pkt == "" then continue/break - nothing to do
+            # check whether pkt is file or dir
+            if [[ -d "${pkt}" ]]; then
+                # pkt is directory
+                scp -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
+            elif [[ -f "${pkt}" ]]; then
+                # pkt is file
+                scp -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
+            else
+                # pkt is neither file nor directory
+                printf "${pkt} is neither file nor directory"
+                exit 1
+            fi
+        done
+        for cmd in "${postinstall_launch[@]}"; do
+            # todo [HIGH]: if cmd == "" then continue/break - nothing to do
+            echo "Exec: ${cmd}"
+            ssh "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
+        done
+        # todo [LOW]: clean after postinstall by rm transported media
+    fi
+    exit 0
 }
 
 function start_web_server {
     # start simple webserver serving files in background
-    # todo: check whether port is not used by other proc.
+    # todo [HIGH]: check whether port is not used by other proc.
     python -m SimpleHTTPServer $kickstart_port &
-    # todo: ($?) check whether web server was really started - Exception ?
+    # todo [HIGH]: ($?) check whether web server was really started - Exception ?
     # get the pid already spawned process, to kill it later
     web_pid=$!
     # update webserver_status variable
@@ -405,6 +456,6 @@ fi
 
 vb_version=$(get_vb_version)
 # signals handler
-trap clean_up SIGHUP SIGINT SIGTERM
+trap clean_up SIGHUP SIGINT SIGTERM #EXIT ERR
 process_args "${1}" "${2}"
 

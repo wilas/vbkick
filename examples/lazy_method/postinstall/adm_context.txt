@@ -2,7 +2,6 @@
 # Note: scripts are exec in order defined here
 base.sh
 sudo.sh
-veewee.sh
 vagrant.sh
 virtualbox.sh
 #kvm.sh
@@ -11,6 +10,6 @@ ruby.sh
 ansible.sh
 puppet.sh
 chef.sh
-#tuning.sh
+tuning.sh
 cleanup.sh
 zerodisk.sh
