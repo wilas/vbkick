@@ -8,7 +8,7 @@ echo "vm_description: ${VM_DESC}" >> "${LOG_PATH}/adm_postinstall.log"
 
 context_file="adm_context.txt"
 while read -r script; do
-    # don't process commented line
+    # don't process comments
     [[ "${script}" =~ ^#.*$ ]] && continue
     echo "${script}"
     sh "${script}"

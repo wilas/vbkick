@@ -1,7 +1,6 @@
 Dirty notes:
- - ! kickstart_port is setup in 2 places for internal postinstall: kickstart_file, definition.cfg
+ - ! kickstart_port is setup in 2 places for injection postinstall: kickstart_file, definition.cfg
  - shell completion: https://github.com/mitchellh/vagrant/blob/master/contrib/bash/completion.sh
- - todo: convert_2_scancode.py -> write to sdterr if exception, returncode 1 (keep UNIX-like)
 
 Howto:
  - getopt: http://mywiki.wooledge.org/BashFAQ/035
@@ -22,3 +21,6 @@ General TODO
  - contribute
  - templates as submodules
  - Ideas
+ - describe options in definition.cfg (possibility and consequences)(OS influence)
+ - todo: convert_2_scancode.py -> write to sdterr if exception, returncode 1 (keep UNIX-like)
+

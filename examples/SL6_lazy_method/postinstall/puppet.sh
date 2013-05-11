@@ -55,4 +55,3 @@ yum -y --enablerepo=puppetlabs-products,puppetlabs-deps install hiera puppet fac
 #yum -y --enablerepo=puppetlabs-products install hiera-1.1.2-1.el6
 #yum -y --enablerepo=puppetlabs-products install puppet-3.1.0-1.el6
 #yum -y --enablerepo=puppetlabs-deps install facter-1.6.17-1.el6
-

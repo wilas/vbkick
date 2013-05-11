@@ -473,17 +473,22 @@ function lazy_postinstall {
 function start_web_server {
     # check whether port is not used by other proc
     if [[ `nc -z localhost $kickstart_port` ]]; then
-        echo "$kickstart_port port is already used"
+        echo "$kickstart_port port is already in use"
         exit 1
     fi
     # start simple webserver serving files in background
     python -m SimpleHTTPServer $kickstart_port &
-    # todo [HIGH]: check whether web server was really started
+    sleep 2
+    # check whether web server was really started
+    if [[ ! `nc -z localhost $kickstart_port` ]]; then
+        echo "webserver was not started"
+        exit 1
+    fi
     # get the pid already spawned process, to kill it later
     web_pid=$!
     # update webserver_status variable
     webserver_status=1
-    sleep 1
+
 }
 
 function stop_web_server {
@@ -491,7 +496,7 @@ function stop_web_server {
     if [ $webserver_status -ne 0 ]; then
         printf "Stopping webserver...\n"
         kill $web_pid
-        # todo: kill return code - work around
+        # todo [MEDIUM]: kill return code - work around
         # with set -e if error then there is no next step...
         if [ $? -eq 0 ]; then
             printf "INFO: webserver was stopped\n"
@@ -499,6 +504,7 @@ function stop_web_server {
             printf "WARNING: problem with stopping webserwer. Kill proces manually\n"
             ps aux | grep SimpleHTTPServer | grep -v grep
         fi
+        webserver_status=0
     fi
 }
 

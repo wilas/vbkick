@@ -11,10 +11,8 @@ gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6
 EOF
 
-## Keep it simple - do not too much - rest should be made by puppet/chef/ansible or other Cfg. Mgm. Sys.
-## Consider:
+## Consider (or move it to ks.cfg):
 # Basic: firewall.sh
 # Basic: sysctl.sh
 # Basic: service_mgm.sh (chkconfig)
 # Basic: box_hardening.sh (e.g. http://people.redhat.com/sgrubb/files/usgcb/rhel5/workstation-ks.cfg)
-#or move it to ks.cfg?

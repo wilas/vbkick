@@ -3,6 +3,7 @@
 base.sh
 sudo.sh
 vagrant.sh
+#vbkick_user.sh
 virtualbox.sh
 #kvm.sh
 #aws.sh
