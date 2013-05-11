@@ -18,11 +18,24 @@
     sudo chmod 755 /usr/local/bin/vbkick
 ```
 
-## convert_2_scancode.py
+## Usage
+
+### vbkick
+
+```
+    cd to_directory_with definition.cfg
+    vbkick build VM_NAME
+    vbkick export VM_NAME
+    vbkick destroy VM_NAME
+    vbkick postinstall VM_NAME
+```
+
+### convert_2_scancode.py
 
 Enter key-strokes into a VirtualBox guest programmatically from the host:
 ```
     $ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello VM" | convert_2_scancode.py)
+    $ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "<Multiply(Hello, 3)> VM" | convert_2_scancode.py)
 ```
 
 Example output keyboard scancodes:
@@ -37,12 +50,19 @@ Example output keyboard scancodes:
     wait wait wait 
 ```
 
+Extra keys:
+    `<Wait>` - can not be use directly with VBoxManage, but help control boot flow within vbkick
+    `<Multiply(what, times)>` - help repeat "what" key
+
+```
+    $ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello <Wait> VM" | convert_2_scancode.py)
+    VBoxManage: error: Error: 'wait' is not a hex byte!
+```
+
 ## Bibliography
 
  - !!! veewee: https://github.com/jedi4ever/veewee
  - !!! vagrant: https://github.com/mitchellh/vagrant
  - ! virtualbox manual: http://www.virtualbox.org/manual/ch08.html
  - controle vm with api: http://www.jedi.be/blog/2009/11/17/controlling-virtual-machines-with-an-API/
- - vagrant 1.0: http://docs-v1.vagrantup.com/v1/docs/base_boxes.html
- - vagrant 1.1+: http://docs.vagrantup.com/v2/boxes/format.html
 

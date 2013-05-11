@@ -28,10 +28,10 @@
 # treat unset variables as an error
 # (it also complain if you forget about required options in definition.cfg)
 set -u;
-# todo [HIGH](issue number): exit and clean if some cmd fail: EXIT/ERR trap
-#set -e; set -E;
-# todo [HIGH]: fail the entire pipeline if any part of it fails
-#set -o pipefail;
+# exit when cmd fail (use ERR trap for clean exit)
+set -e; set -E;
+# fail the entire pipeline if any part of it fails
+set -o pipefail;
 # debug mode
 #set -x;
 # http://mywiki.wooledge.org/glob
@@ -52,7 +52,7 @@ iso_sha256=""
 
 boot_wait=10 #seconds
 # list of boot_cmd
-boot_cmd_sequence=()
+boot_cmd_sequence=("")
 # number of second wait between each boot_cmd
 boot_seq_wait=1
 
@@ -62,6 +62,7 @@ kickstart_timeout=7200 #seconds
 # by default gui enabled
 gui_enabled=1
 iso_path="iso"
+shared_folder="vbkick" #maybe by default empty?
 
 # by default ssh keys enabled
 ssh_keys_enabled=1
@@ -78,8 +79,8 @@ ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 #ssh_login_timeout="7200"
 
 #
-postinstall_transport=()
-postinstall_launch=()
+postinstall_transport=("")
+postinstall_launch=("")
 
 # Other global variables
 webserver_status=0
@@ -138,10 +139,17 @@ function download_install_media {
         echo "Creates iso directory"
         mkdir "${iso_path}"
     fi
+
     # check whether iso_file exist
     if [ ! -f "${iso_path}/${iso_file}" ]; then
+        # iso_src is empty (not defined)
+        if [ -z "${iso_src}" ]; then 
+            print "${iso_path}/${iso_file} not exist and iso_src is empty\n"
+            exit 1
+        fi
         wget --no-check-certificate "${iso_src}" -O "${iso_path}/${iso_file}"
     fi
+
     # verify iso_src sha256sum
     local get_sha256=$(sha256sum ${iso_path}/${iso_file} | cut -d" " -f 1)
     if [[ "${iso_sha256}" != "${get_sha256}" ]]; then
@@ -153,6 +161,7 @@ function download_install_media {
     else
         echo "INFO: SHA256SUM:${iso_sha256} is valid."
     fi
+
     # check whether VBoxGuestAdditions exist
     if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
         local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
@@ -178,10 +187,8 @@ function get_priv_ssh_key {
 function build_vm {
     local VM=$1
     # check whether VM already exist
-    VBoxManage list vms | grep -w "${VM}"
-    # if VM exist previous cmd return 0
-    if [ $? -eq 0 ]; then
-        echo "${VM} already exist"
+    if [[ `VBoxManage list vms | grep -w "${VM}"` ]]; then
+        printf "${VM} already exist\n"
         exit 1
     fi
     # load vm description/definition
@@ -192,10 +199,10 @@ function build_vm {
     if [ $ssh_keys_enabled -eq 1 ]; then
         get_priv_ssh_key
     fi
-    # create VM box with given settings
-    create_box "${VM}"
     # start simple webserver (in background)
     start_web_server
+    # create VM box with given settings
+    create_box "${VM}"
     # host ip to connect from guest
     local host_ip=10.0.2.2
     # start VM
@@ -206,15 +213,20 @@ function build_vm {
     fi
     # boot VM machine
     for boot_cmd in "${boot_cmd_sequence[@]}"; do
-        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%IP%/$host_ip/g" | sed -r "s/%PORT%/$kickstart_port/g")
-        echo "${boot_cmd}"
+        if [ -z "${boot_cmd}" ]; then 
+            continue
+        fi
+        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%IP%/$host_ip/g")
+        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%PORT%/$kickstart_port/g")
+        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%NAME%/${VM}/g")
+        printf "${boot_cmd}\n"
         # converts string to scancode via external python script
         local boot_cmd_code=$(printf "${boot_cmd}" | convert_2_scancode.py)
         # sends code to VM
         for code in $boot_cmd_code; do
-            echo "${code}"
+            printf "${code}\n"
             if [ "${code}" == "wait" ]; then
-                echo "waiting..."
+                printf "waiting...\n"
                 sleep 1
             else
                 VBoxManage controlvm "${VM}" keyboardputscancode $code
@@ -271,22 +283,25 @@ function create_box {
     done
 
     # ssh NAT mapping
-    VBoxManage controlvm "${VM}" natpf1 "guestssh,tcp,,${ssh_host_port},,${ssh_guest_port}"
-    # todo [MEDIUM]: configure shared folders ?!
+    if [[ ! `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
+        VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
+    fi
+
+    # add shared folders - todo: test me
+    #if [ -z "${shared_folder}" ]; then 
+    #    VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
+    #fi
 }
 
 function destroy_vm {
     local VM=$1
     # check whether VM already exist
-    VBoxManage list vms | grep -w "${VM}"
-    # if VM exist previous cmd return 0
-    if [ $? -ne 0 ]; then
+    if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
         echo "${VM} doesn't exist"
         exit 1
     fi
     # check whether VM is running
-    VBoxManage list runningvms | grep -w "${VM}"
-    if [ $? -eq 0 ]; then
+    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
         echo "Poweroff ${VM}"
         VBoxManage controlvm "${VM}" poweroff
         sleep 1
@@ -314,22 +329,23 @@ function export_vm {
         exit 1
     fi
     # check whether VM exist
-    VBoxManage list vms | grep -w "${VM}"
-    # if VM exist previous cmd return 0
-    if [ $? -ne 0 ]; then
+    if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
         echo "${VM} doesn't exist"
         exit 1
     fi
-    # check whether VM is running
-    VBoxManage list runningvms | grep -w "${VM}"
-    if [ $? -eq 0 ]; then
+    # check whether VM is running 
+    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
         echo "Poweroff ${VM}"
         VBoxManage controlvm "${VM}" poweroff
-        # todo [MEDIUM]: consider shutdown using ssh and halt/poweroff cmd - nicer for OS...
+        # todo [MEDIUM]: shutdown VM using ssh and halt/poweroff cmd (nicer for OS)
         sleep 1
     fi
-    # clearing previously set forwarded port
-    VBoxManage modifyvm "${VM}" --natpf1 delete "guestssh"
+
+    # clearing previously set port forwarding rules (only if exist)
+    if [[ `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
+        VBoxManage modifyvm "${VM}" --natpf1 delete "vbkickSSH"
+    fi
+
     # create tmp_dir for export data
     tmp_dir=$(mktemp -d --tmpdir=.)
     # export VM to tmp_dir
@@ -369,23 +385,35 @@ function validate_vm {
 
 function lazy_postinstall {
     local VM=$1
-    # check whether VM is running
-    VBoxManage list runningvms | grep -w "${VM}"
-    if [ $? -ne 0 ]; then
-        echo "${VM} is not running..."
+    # check whether VM is running 
+    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+        printf "${VM} is not running...\n"
         exit 1
     fi
     # load vm description/definition
     load_definition
-    # todo [HIGH]: check port forwarding, enable it
-    # todo [LOW]: if keys not enabled try login using password (root, user, sshpass, expect)
-    if [ $ssh_keys_enabled -eq 1 ]; then
+
+    # checking port forwarding (if no proper rules, try add new one for NAT mapping)
+    if [[ ! `VBoxManage showvminfo "${VM}" | grep "NIC 1" | grep "host port = ${ssh_host_port}"\
+        | grep "guest port = ${ssh_guest_port}"` ]]; then
+        printf "NAT mapping - enable ssh port forwarding\n"
+        VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
+    fi
+
+    # todo [LOW]: if ssh keys authentication is not enabled try login using password
+    # (root, user, sshpass, expect, VBoxManage guestcontrol)
+
+    if [ $ssh_keys_enabled -eq 1 ]; then        
         # if key not exist then get it
         get_priv_ssh_key
+        # create path to ssh private key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
+
         # transport postinstall scripts to guest
         for pkt in "${postinstall_transport[@]}"; do
-            # todo [HIGH]: if pkt == "" then continue/break - nothing to do
+            if [ -z "${pkt}" ]; then 
+                continue #consider break
+            fi
             # check whether pkt is file or dir
             if [[ -d "${pkt}" ]]; then
                 # pkt is directory
@@ -395,49 +423,59 @@ function lazy_postinstall {
                 scp -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
             else
                 # pkt is neither file nor directory
-                printf "${pkt} is neither file nor directory"
+                printf "${pkt} is neither file nor directory\n"
                 exit 1
             fi
         done
+
+        # run postinstall commands via ssh
         for cmd in "${postinstall_launch[@]}"; do
-            # todo [HIGH]: if cmd == "" then continue/break - nothing to do
+            if [ -z "${cmd}" ]; then 
+                continue #consider break
+            fi
             echo "Exec: ${cmd}"
             ssh "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
         done
-        # todo [LOW]: clean after postinstall by rm transported media
+        # todo? [LOW]: clean after postinstall by rm transported media ?
     fi
     exit 0
 }
 
 function start_web_server {
+    # check whether port is not used by other proc
+    if [[ `nc -z localhost $kickstart_port` ]]; then
+        echo "$kickstart_port port is already used"
+        exit 1
+    fi
     # start simple webserver serving files in background
-    # todo [HIGH]: check whether port is not used by other proc.
     python -m SimpleHTTPServer $kickstart_port &
-    # todo [HIGH]: ($?) check whether web server was really started - Exception ?
+    # todo [HIGH]: check whether web server was really started
     # get the pid already spawned process, to kill it later
     web_pid=$!
     # update webserver_status variable
     webserver_status=1
+    sleep 1
 }
 
 function stop_web_server {
     # check whether webserver is running
     if [ $webserver_status -ne 0 ]; then
-        echo "Stopping webserver..."
+        printf "Stopping webserver...\n"
         kill $web_pid
-        # check whether webserver proc was really killed
+        # todo: kill return code - work around
+        # with set -e if error then there is no next step...
         if [ $? -eq 0 ]; then
-            echo "INFO: webserver was stopped"
+            printf "INFO: webserver was stopped\n"
         else
-            echo "WARNING: problem with stopping webserwer. Kill proces manually"
+            printf "WARNING: problem with stopping webserwer. Kill proces manually\n"
             ps aux | grep SimpleHTTPServer | grep -v grep
         fi
     fi
 }
 
-# (signals handler) - cleaning after ctr-c, etc. pressed
+# (signals and error handler) - cleaning after ctr-c, etc.
 function clean_up {
-    echo "INFO: Signal handler - cleanup before exiting..."
+    echo "INFO: Signal/Error handler - cleanup before exiting..."
     # stop webserver
     stop_web_server
     # clean tmp_dir if exist
@@ -454,8 +492,13 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
+# check whether Virtualbox is installed - VBoxManage command exist
+if [[ ! `which VBoxManage 2>/dev/null` ]]; then
+    printf "VBoxManage command not exist - install Virtualbox or check your PATH\n"
+    exit 1
+fi
 vb_version=$(get_vb_version)
-# signals handler
-trap clean_up SIGHUP SIGINT SIGTERM #EXIT ERR
+# signals and error handler
+trap clean_up SIGHUP SIGINT SIGTERM ERR
 process_args "${1}" "${2}"
 
