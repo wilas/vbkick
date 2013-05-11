@@ -14,4 +14,11 @@ Howto:
 Links: 
  - smartos: https://gist.github.com/benr/5505198
  - good to know about set -e: http://stackoverflow.com/questions/6930295/set-e-and-short-tests
- - 
+
+General TODO
+ - wget/curl installer
+ - docs and manuals
+ - getting started, philosophy/approach, supported VM providers, about
+ - contribute
+ - templates as submodules
+ - Ideas

@@ -38,7 +38,7 @@ set -o pipefail;
 shopt -s failglob;
 
 
-# VM default settings
+# VM default settings - basic
 hostiocache="on"
 cpu_count=1
 memory_size=512
@@ -47,44 +47,69 @@ disk_format="vdi"
 video_memory_size=10
 # list of VM options: ("option1:value" "option2:value")
 vm_options=("ioapic:on")
-
-iso_sha256=""
-
-boot_wait=10 #seconds
-# list of boot_cmd
-boot_cmd_sequence=("")
-# number of second wait between each boot_cmd
-boot_seq_wait=1
-
-kickstart_port=7122
-kickstart_timeout=7200 #seconds
-
 # by default gui enabled
 gui_enabled=1
-iso_path="iso"
-shared_folder="vbkick" #maybe by default empty?
+# by default add shared folder - to disable: shared_folder=""
+shared_folder="vbkick"
 
-# by default ssh keys enabled
+# ISO default settings
+# default path to directory with iso files
+iso_path="iso"
+# by default sha256sum is empty - 
+# WARNING is given during processing if sha256 sum is wrong (use: sha256sum --help)
+iso_sha256=""
+
+# Boot default settings
+# default time before boot_cmd_sequence start
+boot_wait=10
+# list of boot_cmd: ("cmd1" "cmd2" "cmd3")
+boot_cmd_sequence=("")
+# default number of second wait between each boot_cmd
+boot_seq_wait=1
+# default webserver port to serve kickstart files
+kickstart_port=7122
+# default max webserver live time
+kickstart_timeout=7200
+
+# SSH default settings (veeded to run vbkick validate and/or lazy_posinstall)
+# by default use ssh keys
 ssh_keys_enabled=1
+# default user
 ssh_user="vbkick"
+# default path to ssh keys
 ssh_keys_path="keys"
+# default private key name
 ssh_priv_key="vbkick_key"
+# default auto-download path 
 ssh_priv_key_src="https://raw.github.com/wilas/vbkick/master/keys/vbkick_key"
-ssh_host_port="2222"
-ssh_guest_port="22"
+# default ssh host port
+ssh_host_port=2222
+# default (22) ssh guest port to forwarding
+ssh_guest_port=22
+# default extra ssh and scp options
 # UserKnownHostsFile - database file to use for storing the user host keys
 # StrictHostKeyChecking - if "no" then automatically add new host keys to the host key database file
 # you may consider editing ssh config: http://superuser.com/questions/141344/ssh-dont-add-hostkey-to-known-hosts
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-#ssh_login_timeout="7200"
 
-#
+# Lazy Postinstall default settings
+# list of files and directories to transport to guest
 postinstall_transport=("")
+# list of postinstall commands
 postinstall_launch=("")
 
-# Other global variables
+# Other global variables - not use in definition.cfg (will be overwrite during program runtime)
 webserver_status=0
 tmp_dir=""
+
+# todo [MEDIUM]: future options:
+#ssh_password="vbkick"
+#ssh_login_timeout=7200
+#iso_download_timeout=1800
+#postinstall_timeout=1800
+#sudo_cmd="sudo -S sh %s"
+#shutdown_cmd="/sbin/halt -h -p"
+# todo [LOW]: replace echo by printf
 
 # Display help
 function usage {
@@ -224,7 +249,7 @@ function build_vm {
         local boot_cmd_code=$(printf "${boot_cmd}" | convert_2_scancode.py)
         # sends code to VM
         for code in $boot_cmd_code; do
-            printf "${code}\n"
+            #printf "${code}\n"
             if [ "${code}" == "wait" ]; then
                 printf "waiting...\n"
                 sleep 1
@@ -287,10 +312,10 @@ function create_box {
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
-    # add shared folders - todo: test me
-    #if [ -z "${shared_folder}" ]; then 
-    #    VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
-    #fi
+    # add shared folders
+    if [ -n "${shared_folder}" ]; then 
+        VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
+    fi
 }
 
 function destroy_vm {
@@ -345,6 +370,9 @@ function export_vm {
     if [[ `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
         VBoxManage modifyvm "${VM}" --natpf1 delete "vbkickSSH"
     fi
+    
+    # todo: rm shared folder (only if exist)
+    # VBoxManage sharedfolder remove  "${VM}" --name "vbkick"
 
     # create tmp_dir for export data
     tmp_dir=$(mktemp -d --tmpdir=.)
@@ -369,6 +397,8 @@ function export_vm {
     mv "${tmp_dir}/${VM}.box" .
     # remove tmp_dir
     rm -rf $tmp_dir
+    # todo: add shared folder after exporting - only if exist prev.
+    # todo: add NAT mapping after exporting - only if exist prev.
     echo "Done: `pwd`/${VM}.box"
     exit 0
 }
@@ -378,7 +408,6 @@ function validate_vm {
     # todo [MEDIUM]: test should be smart enought to check what I really want to test
     # e.g. If I don't need chef, don't test whether I have chef
     # ssh vbkick@localhost -t -i keys/vbkick_key -p 2222 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
-    # todo [LOW]: replace echo by printf
     echo "Not implemented yet"
     exit 1
 }

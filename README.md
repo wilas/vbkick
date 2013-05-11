@@ -1,15 +1,20 @@
 # Description
 
+vbkick - bash tool for building Vagrant base boxes and guest Virtualbox machines (replacement to veewee).
+Use Virtualbox API to do a job.
+
+About:
+    
+Ideas:
  - https://github.com/wilas/veewee-boxarium/tree/master/definitions/SL6_ks
  - https://github.com/wilas/veewee-boxarium/
 
-## TODO
+Why:
+vagrant 1.1+
 
- - wget/curl installer
- - docs and manuals
- - manifest
+## Getting started
 
-## Hand installation
+### Hand installation
 
 ```
     sudo cp convert_2_scancode.py /usr/local/bin/
@@ -24,10 +29,13 @@
 
 ```
     cd to_directory_with definition.cfg
+
+    vbkick help
+
     vbkick build VM_NAME
+    vbkick postinstall VM_NAME
     vbkick export VM_NAME
     vbkick destroy VM_NAME
-    vbkick postinstall VM_NAME
 ```
 
 ### convert_2_scancode.py
@@ -51,6 +59,7 @@ Example output keyboard scancodes:
 ```
 
 Extra keys:
+
     `<Wait>` - can not be use directly with VBoxManage, but help control boot flow within vbkick
     `<Multiply(what, times)>` - help repeat "what" key
 
@@ -61,8 +70,8 @@ Extra keys:
 
 ## Bibliography
 
- - !!! veewee: https://github.com/jedi4ever/veewee
- - !!! vagrant: https://github.com/mitchellh/vagrant
- - ! virtualbox manual: http://www.virtualbox.org/manual/ch08.html
+ - !! veewee: https://github.com/jedi4ever/veewee
+ - !! vagrant: https://github.com/mitchellh/vagrant
+ - virtualbox manual: http://www.virtualbox.org/manual/ch08.html
  - controle vm with api: http://www.jedi.be/blog/2009/11/17/controlling-virtual-machines-with-an-API/
 
