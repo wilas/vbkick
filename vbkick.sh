@@ -99,8 +99,10 @@ postinstall_transport=("")
 postinstall_launch=("")
 
 # Other global variables - not use in definition.cfg (will be overwrite during program runtime)
-# 0 - webserver is not running
+# 0 - webserver is not running or kill isn't able to stop it
 webserver_status=0
+# 0 - webserver was killed cleanly or we didn't try kill it yet
+webserver_kill_status=0
 # during exporting tmp directory is created
 tmp_dir=""
 
@@ -498,13 +500,15 @@ function stop_web_server {
         printf "Stopping webserver...\n"
         # with "set -e -E" if kill command fail then ERR trap is processing 
         # simply execution of function is not continued
+        webserver_kill_status=1
         kill $web_pid
+        webserver_kill_status=0
         # kill command is sucessfull when SIGTERM is sent to running process
         # not when child process was really killed
         if [ ! `ps -ef | grep "python -m SimpleHTTPServer $kickstart_port" | grep -v grep` ]; then
             printf "INFO: webserver was stopped\n"
         else
-            printf "WARNING: problem with stopping webserwer. Kill proces manually\n"
+            printf "WARNING: problem with stopping webserver. Kill proces manually\n"
             ps -ef | grep "python -m SimpleHTTPServer $kickstart_port" | grep -v grep
         fi
         webserver_status=0
@@ -514,8 +518,13 @@ function stop_web_server {
 # (signals and error handler) - cleaning after ctr-c, etc.
 function clean_up {
     echo "INFO: Signal/Error handler - cleanup before exiting..."
-    # stop webserver
-    stop_web_server
+    if [ $webserver_kill_status -eq 0 ]; then
+        # stop webserver (only if stop_web_server function didn't fail previuosly)
+        stop_web_server
+    else
+        # previuosly executed stop_web_server function fail in killing $web_pid
+        printf "WARNING: problem with killing webserver (proc ${web_pid}). Kill proces manually\n"
+    fi
     # clean tmp_dir if exist
     if [ -d $tmp_dir ]; then
         rm -rf $tmp_dir
