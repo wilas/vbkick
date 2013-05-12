@@ -1,4 +1,6 @@
-## injection postinstall method
+Open Source mean freedom – enjoy that freedom and choose best solution for you.
+
+## injection postinstall method (my fav.)
 ```
 vbkick build SL6_inject
 vbkick export SL6_inject

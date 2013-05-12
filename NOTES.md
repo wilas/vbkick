@@ -1,6 +1,8 @@
 Dirty notes:
  - ! kickstart_port is setup in 2 places for injection postinstall: kickstart_file, definition.cfg
  - shell completion: https://github.com/mitchellh/vagrant/blob/master/contrib/bash/completion.sh
+ - idea: I as vbkick want just kick Virtualbox and bring you OS to play (keep it simple - not too much features/options, do well one thing)
+ - Create bootable usb stick from definition.cfg (os_type is a key)
 
 Howto:
  - getopt: http://mywiki.wooledge.org/BashFAQ/035
@@ -13,14 +15,28 @@ Howto:
 Links: 
  - smartos: https://gist.github.com/benr/5505198
  - good to know about set -e: http://stackoverflow.com/questions/6930295/set-e-and-short-tests
+ - Debian + kde + usb stick: http://www.debian.org/releases/stable/i386/apbs02.html.en
+ - Centos + gnome + usb stick: http://wiki.centos.org/HowTos/InstallFromUSBkey
 
 General TODO
  - wget/curl installer
  - docs and manuals
  - getting started, philosophy/approach, supported VM providers, about
  - contribute
+    - Help yourself: todo, todo_r, autocompletion
+    - todo priority:
+        - LOW - (cosmetic problem, nothing important but nice to have) [COULD, WOULD]
+        - MEDIUM - ({default} minor loss of func. easy workaround is present , not as time-critical, can be held back until a future delivery) [SHOULD]
+        - HIGH - (major loss of function, critical/serious bugs affected the operation of the program) [MUST]
+        - Info: http://en.wikipedia.org/wiki/MoSCoW_Method
+        - Info: https://confluence.atlassian.com/display/JIRA/Defining+'Priority'+Field+Values
+    - howto contribute: (create issue) and/or (create branch, request pull) or (write email)
+    - .gitconfig
  - templates as submodules
- - Ideas
+    - organization (dir: postinstall, kickstart, definition.cfg as symlink)
+    - dir: keys, iso are not included
+    - each template take care about “big” OS release, eg. Debian7, Redhat6, Redhat5
+    - each template is independent submodule with person taking care about it (README.md [info about choosen postinstall method], LICENSE is required)
+ - Ideas.md (arena + garden + levels/priority) and/or (create issu)
  - describe options in definition.cfg (possibility and consequences)(OS influence)
  - todo: convert_2_scancode.py -> write to sdterr if exception, returncode 1 (keep UNIX-like)
-

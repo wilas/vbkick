@@ -98,13 +98,19 @@ postinstall_transport=("")
 # list of postinstall commands
 postinstall_launch=("")
 
-# Other global variables - not use in definition.cfg (will be overwrite during program runtime)
+# Other global variables - do not use it in definition.cfg (will be overwrite during program runtime)
+# virtual machine name
+VM=""
 # 0 - webserver is not running or kill isn't able to stop it
 webserver_status=0
 # 0 - webserver was killed cleanly or we didn't try kill it yet
 webserver_kill_status=0
 # during exporting tmp directory is created
 tmp_dir=""
+# during exporting NAT mapping is removed (temporary) - help recover state before exporting
+natmapping_was_removed=0
+# during exporting Shared folder is removed (temporary) - help recover state before exporting
+sharedfolder_was_removed=0
 
 # todo [MEDIUM]: future options:
 #ssh_password="vbkick"
@@ -132,7 +138,7 @@ function usage {
 
 # Cmd line parser, take 2 args
 function process_args {
-    local VM="${2}"
+    VM="${2}"
     case "$1" in
         "build") build_vm "${VM}" ;;
         "destroy") destroy_vm "${VM}" ;;
@@ -371,12 +377,16 @@ function export_vm {
     fi
 
     # clearing previously set port forwarding rules (only if exist)
-    if [[ `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
+    if [[ `VBoxManage showvminfo "${VM}" | grep -w "vbkickSSH"` ]]; then
         VBoxManage modifyvm "${VM}" --natpf1 delete "vbkickSSH"
+        natmapping_was_removed=1
     fi
     
-    # todo: rm shared folder (only if exist)
-    # VBoxManage sharedfolder remove  "${VM}" --name "vbkick"
+    # rm shared folder (only if exist)
+    if [[ `VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -w "Name: '${shared_folder}'"` ]]; then
+        VBoxManage sharedfolder remove  "${VM}" --name "${shared_folder}"
+        sharedfolder_was_removed=1
+    fi
 
     # create tmp_dir for export data
     tmp_dir=$(mktemp -d --tmpdir=.)
@@ -401,10 +411,23 @@ function export_vm {
     mv "${tmp_dir}/${VM}.box" .
     # remove tmp_dir
     rm -rf $tmp_dir
-    # todo: add shared folder after exporting - only if exist prev.
-    # todo: add NAT mapping after exporting - only if exist prev.
+    # help recover some changes made on VM during exporting
+    recover_vm_state
     echo "Done: `pwd`/${VM}.box"
     exit 0
+}
+
+function recover_vm_state {
+    # add NAT mapping after exporting - only if exist prev.
+    if [ $natmapping_was_removed -eq 1 ]; then
+        VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
+        natmapping_was_removed=0
+    fi
+    # add shared folder after exporting - only if exist prev.
+    if [ $sharedfolder_was_removed -eq 1 ]; then
+        VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
+        sharedfolder_was_removed=0
+    fi
 }
 
 function validate_vm {
@@ -511,6 +534,7 @@ function stop_web_server {
             printf "WARNING: problem with stopping webserver. Kill proces manually\n"
             ps -ef | grep "python -m SimpleHTTPServer $kickstart_port" | grep -v grep
         fi
+        # update webserver_status variable
         webserver_status=0
     fi
 }
@@ -525,6 +549,8 @@ function clean_up {
         # previuosly executed stop_web_server function fail in killing $web_pid
         printf "WARNING: problem with killing webserver (proc ${web_pid}). Kill proces manually\n"
     fi
+    # help recover some changes made on VM during exporting
+    recover_vm_state
     # clean tmp_dir if exist
     if [ -d $tmp_dir ]; then
         rm -rf $tmp_dir
