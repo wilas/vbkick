@@ -1,4 +1,4 @@
-## injection method
+## injection postinstall method
 ```
 vbkick build SL6_inject
 vbkick export SL6_inject

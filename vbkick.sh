@@ -99,7 +99,9 @@ postinstall_transport=("")
 postinstall_launch=("")
 
 # Other global variables - not use in definition.cfg (will be overwrite during program runtime)
+# 0 - webserver is not running
 webserver_status=0
+# during exporting tmp directory is created
 tmp_dir=""
 
 # todo [MEDIUM]: future options:
@@ -478,31 +480,32 @@ function start_web_server {
     fi
     # start simple webserver serving files in background
     python -m SimpleHTTPServer $kickstart_port &
+    # get the pid already spawned process, to kill it later
+    web_pid=$!
     sleep 2
     # check whether web server was really started
     if [[ ! `nc -z localhost $kickstart_port` ]]; then
         echo "webserver was not started"
         exit 1
     fi
-    # get the pid already spawned process, to kill it later
-    web_pid=$!
     # update webserver_status variable
     webserver_status=1
-
 }
 
 function stop_web_server {
     # check whether webserver is running
     if [ $webserver_status -ne 0 ]; then
         printf "Stopping webserver...\n"
+        # with "set -e -E" if kill command fail then ERR trap is processing 
+        # simply execution of function is not continued
         kill $web_pid
-        # todo [MEDIUM]: kill return code - work around
-        # with set -e if error then there is no next step...
-        if [ $? -eq 0 ]; then
+        # kill command is sucessfull when SIGTERM is sends to running process
+        # not when child process was really killed
+        if [[ ! `ps -ef | grep $web_pid | grep -v grep` ]]; then
             printf "INFO: webserver was stopped\n"
         else
             printf "WARNING: problem with stopping webserwer. Kill proces manually\n"
-            ps aux | grep SimpleHTTPServer | grep -v grep
+            ps -ef | grep $web_pid | grep -v grep
         fi
         webserver_status=0
     fi
