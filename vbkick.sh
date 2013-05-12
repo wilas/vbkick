@@ -499,13 +499,13 @@ function stop_web_server {
         # with "set -e -E" if kill command fail then ERR trap is processing 
         # simply execution of function is not continued
         kill $web_pid
-        # kill command is sucessfull when SIGTERM is sends to running process
+        # kill command is sucessfull when SIGTERM is sent to running process
         # not when child process was really killed
-        if [[ ! `ps -ef | grep $web_pid | grep -v grep` ]]; then
+        if [ ! `ps -ef | grep "python -m SimpleHTTPServer $kickstart_port" | grep -v grep` ]; then
             printf "INFO: webserver was stopped\n"
         else
             printf "WARNING: problem with stopping webserwer. Kill proces manually\n"
-            ps -ef | grep $web_pid | grep -v grep
+            ps -ef | grep "python -m SimpleHTTPServer $kickstart_port" | grep -v grep
         fi
         webserver_status=0
     fi
