@@ -27,7 +27,9 @@
 # echo 'Hello World!' | python convert_2_scancode.py
 
 # Note:
-# When scancode not exist for given char then exception throw
+# Script work with python 2.6+ and python 3
+# When scancode not exist for given char 
+# then script exit with code 1 and error to stderr is write
 
 # Helpful links:
 # - http://humbledown.org/files/scancodes.l
@@ -43,8 +45,9 @@ def get_one_char_codes():
         'asdfghjkl;\'`' : 0x1e,
         '\\zxcvbnm,./' : 0x2b
     }
-    for keys, offset in key_map.iteritems():
+    for keys in key_map:
         idx = 0
+        offset = key_map[keys]
         for k in list(keys):
             scancodes[k] = '%02x %02x' % (idx + offset, idx + offset + 0x80)
             idx += 1
@@ -54,8 +57,9 @@ def get_one_char_codes():
         'ASDFGHJKL:"~' : 0x1e,
         '|ZXCVBNM<>?' : 0x2b
     }
-    for keys, offset in key_map.iteritems():
+    for keys in key_map:
         idx = 0
+        offset = key_map[keys]
         for k in list(keys):
             scancodes[k] = '2a %02x %02x aa' % (idx + offset, idx + offset + 0x80)
             idx += 1
@@ -89,14 +93,10 @@ def get_multi_char_codes():
         scancodes['<VT%s>' % idx] = '38 %02x b8 %02x' % (idx + 0x3a, idx +0xba)
     return scancodes
 
-if __name__ == "__main__":
-    # read from stdin
-    input = sys.stdin.readlines()
-    # convert input list to string
-    input = ''.join(input).rstrip('\n')
+def process_multiply(input):
     # process <Multiply(what,times)> 
     # example usage: <Multiply(<Wait>,4)> --> <Wait><Wait><Wait><Wait>
-    # key thing about multiply_regexpr: match in non-greedy
+    # key thing about multiply_regexpr: match is non-greedy
     multiply_regexpr = '<Multiply\((.+?),[ ]*([\d]+)[ ]*\)>'
     for match in re.finditer(r'%s' % multiply_regexpr, input):
         what = match.group(1)
@@ -105,10 +105,21 @@ if __name__ == "__main__":
         replacement = what * times
         # replace Multiply(what,times)> with already created replacement
         input = input.replace(match.group(0), replacement)
+    return input
+
+if __name__ == "__main__":
+    # read from stdin
+    input = sys.stdin.readlines()
+    # convert input list to string
+    input = ''.join(input).rstrip('\n')
+    # process multiply
+    input = process_multiply(input)
     # replace white-spaces with <Spacebar>
     input = input.replace(' ', '<Spacebar>')
+
     # create list to collect information about input string structure
-    keys_array = [-1] * len(input) #-1 mean no key yet assign to cell in array
+    # -1 mean no key yet assign to cell in array
+    keys_array = [-1] * len(input) 
 
     # proces multi-char codes/marks (special)
     spc_scancodes = get_multi_char_codes()
@@ -123,14 +134,19 @@ if __name__ == "__main__":
             for i in range(s+1, e):
                 keys_array[i] = ''
 
-    # process rest codes (single-char)
+    # process single-char codes 
     scancodes = get_one_char_codes()
     # convert input string to list
     input = list(input)
-    # check only not assign yet (with value -1) cells in keys_array
+    # check only not assign yet (with value equal -1) cells in keys_array
     for index in range(0, len(keys_array)):
-        if keys_array[index] == -1:
+        if keys_array[index] != -1:
+            continue
+        try:
             keys_array[index] = scancodes[input[index]]
+        except KeyError:
+            sys.stderr.write('Error: Unknown symbol found - %s\n' % repr(input[index]))
+            sys.exit(1)
 
     # remove empty string from keys_array
     keys_array = [x for x in keys_array if x != '']

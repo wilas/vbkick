@@ -23,6 +23,8 @@
 # THE SOFTWARE.
 #
 
+# Help build Virtualbox guest VMs and Vagrant base boxes
+
 # Secure bash
 # More about options: http://wiki.bash-hackers.org/commands/builtin/set
 # treat unset variables as an error
