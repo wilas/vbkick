@@ -1,6 +1,6 @@
 # Description
 
-vbkick - bash tool for building Vagrant base boxes and guest Virtualbox machines (replacement to veewee).
+vbkick - simple bash tool for building Vagrant Base Boxes and Virtualbox Guests (replacement to veewee).
 
 About:
     
@@ -11,33 +11,32 @@ Ideas:
 Why:
  - vagrant 1.1+
 
-## Getting started
+# Getting started
 
-### Easy installation
-
-```
-    coming soon
-```
-
-### Manual installation
+## Easy install/uninstall
 
 ```
-    sudo cp convert_2_scancode.py /usr/local/bin/
-    sudo chmod 755 /usr/local/bin/convert_2_scancode.py
-    sudo cp vbkick.sh /usr/local/bin/vbkick
-    sudo chmod 755 /usr/local/bin/vbkick
+    sudo make install
+    sudo make uninstall
 ```
 
-### Create own box definition
+## Manual install/uninstall
+
+```
+    sudo install -m 0755 -p vbkick convert_2_scancode.py /usr/local/bin/
+    sudo cd /usr/local/bin/ && rm -f vbkick convert_2_scancode.py
+```
+
+## Create own box definition
 
  - look into [examples](https://github.com/wilas/vbkick/tree/master/examples) and choose method
  - look into [templates](https://github.com/wilas/vbkick/tree/master/templates) and choose OS
  - read about definition.cfg options
 
 
-## Usage - child steps
+# Commands - child steps
 
-### vbkick
+## vbkick
 
 ```
     cd to_directory_with definition.cfg
@@ -50,15 +49,17 @@ Why:
     vbkick destroy VM_NAME
 ```
 
-### convert_2_scancode.py
+## convert_2_scancode.py
 
-Enter key-strokes into a VirtualBox guest programmatically from the host:
+Help enter key-strokes into a VirtualBox guest programmatically from the host.
+
+Example:
 ```
     $ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello VM" | convert_2_scancode.py)
     $ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "<Multiply(Hello, 3)> VM" | convert_2_scancode.py)
 ```
 
-Example output keyboard scancodes:
+Example keyboard scancodes:
 ```
     $ printf "Hello VM" | convert_2_scancode.py
     2a 23 a3 aa 12 92 26 a6 26 a6 18 98 39 b9 2a 2f af aa 2a 32 b2 aa
@@ -72,9 +73,9 @@ Example output keyboard scancodes:
 
 Extra keys:
 
-`<Wait>` - can not be use directly with VBoxManage, but help control boot flow within vbkick
+`<Wait>` -  help control boot flow within vbkick (FYI: can not be use directly with VBoxManage)
 
-`<Multiply(what, times)>` - help repeat given "what" key
+`<Multiply(what, N)>` - repeat "what" N times
 
 ```
     $ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello <Wait> VM" | convert_2_scancode.py)
