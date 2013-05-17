@@ -74,7 +74,7 @@ Extra keys:
 
 `<Wait>` - can not be use directly with VBoxManage, but help control boot flow within vbkick
 
-`<Multiply(what, times)>` - help repeat "what" key
+`<Multiply(what, times)>` - help repeat given "what" key
 
 ```
     $ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello <Wait> VM" | convert_2_scancode.py)

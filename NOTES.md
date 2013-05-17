@@ -39,4 +39,3 @@ General TODO
     - each template is independent submodule with person taking care about it (README.md [info about choosen postinstall method], LICENSE is required)
  - Ideas.md (arena + garden + levels/priority) and/or (create issu)
  - describe options in definition.cfg (possibility and consequences)(OS influence)
- - todo: convert_2_scancode.py -> write to sdterr if exception, returncode 1 (keep UNIX-like)
