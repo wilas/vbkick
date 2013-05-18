@@ -2,7 +2,7 @@
 
 Open Source mean freedom – enjoy that freedom and choose best solution for you.
 
-## adm_postinstall.sh
+## adm_postinstall.sh - used in both method
 
 Easy way to administer postinstall scripts.
 ```

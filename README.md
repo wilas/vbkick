@@ -10,7 +10,7 @@ vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
     git clone --recursive git@github.com:wilas/vbkick.git
 
     # default (master) branch is for development, if you prefere use more stable version - choose stable branch
-    # todo: git checkout stable
+    git checkout stable
 ```
 
 ## Easy install/uninstall
@@ -29,17 +29,16 @@ vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
 
 ## Create own box definition
 
- - look into [examples](https://github.com/wilas/vbkick/tree/master/examples) and choose method
- - look into [templates](https://github.com/wilas/vbkick/tree/master/templates) and choose OS (learn also howto organize own definitions)
+ - look into [examples](examples) and choose method
  - look into [templates](templates) and choose OS (learn also howto organize own definitions)
  - read about [available options](docs/DEFINITION_CFG.md) in definition.cfg
-
 
 # Commands
 
 ## vbkick
 
 Tested currently only in bash 4.
+
 If you have trouble using script in bash 3, let me know - create issue or send mail to help.vbkick[at]gmail.com.
 
 ```
@@ -58,6 +57,7 @@ If you have trouble using script in bash 3, let me know - create issue or send m
 ## convert_2_scancode.py
 
 Help enter key-strokes into a VirtualBox guest programmatically from the host.
+
 Works in both python 2.6+ and python 3.
 
 Example:

@@ -59,6 +59,8 @@ howto update symlink:
     ln -fs definition63_injection.cfg definition.cfg
 ```
 
+Description:
+
  - postinstall dir contain all scripts run during postinstall process
  - kickstart dir contain all files used during boot/kickstart process
  - each file in kickstart (e.g. ks.cfg/preseed.cfg) has descriptive names (OS_NAMEVERSION-ARCH-SPEC_DESC.cfg) e.g.: redhat63-x86_64-noX.cfg, redhat64-x86_64-JDK.cfg, debian700-x86_64-KDE.cfg
