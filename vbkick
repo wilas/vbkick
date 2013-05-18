@@ -75,7 +75,7 @@ kickstart_timeout=7200
 
 # SSH default settings (veeded to run vbkick validate and/or lazy_posinstall)
 # by default use ssh keys
-ssh_keys_enabled=1
+ssh_keys_enabled=0
 # default user
 ssh_user="vbkick"
 # default path to ssh keys
@@ -127,13 +127,13 @@ sharedfolder_was_removed=0
 function usage {
     echo ""
     echo "Usage: $0 [build|destroy|export|validate|postinstall|help] VM_NAME"
-    echo "Help create Virtualbox Guest and Vagrant boxes"
+    echo "Help creates Virtualbox Guests and Vagrant Base Boxes"
     echo ""
     echo "build                 build VM"
-    echo "destroy               destroy VM"
-    echo "export                export VM"
-    echo "validate              validate VM, ssh needed"
     echo "postinstall           run postinstall scripts via ssh"
+    echo "validate              validate VM, ssh needed"
+    echo "export                export VM and create Vagrant VM_NAME.box"
+    echo "destroy               destroy VM"
     echo "help                  display this help and exit"
     echo ""
 }
@@ -573,7 +573,7 @@ if [[ ! `which VBoxManage 2>/dev/null` ]]; then
     exit 1
 fi
 vb_version=$(get_vb_version)
+# todo [LOW]: update postinstall/adm_envrc (only if exist) with current VBOX_VERSION (vboxmanage -v and sed should do a job)
 # signals and error handler
 trap clean_up SIGHUP SIGINT SIGTERM ERR
 process_args "${1}" "${2}"
-

@@ -5,10 +5,10 @@
 prefix = /usr/local
 bindir = $(prefix)/bin
 
-# choosen install command
+# install command
 INSTALL = install
 
-# what scripts do we want install/uninstall
+# what scripts install/uninstall
 EXEC = vbkick convert_2_scancode.py
 
 all:

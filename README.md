@@ -1,17 +1,17 @@
 # Description
 
-vbkick - simple bash tool for building Vagrant Base Boxes and Virtualbox Guests (replacement to veewee).
+vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes (replacement to Veewee).
 
-About:
-    
-Ideas:
- - https://github.com/wilas/veewee-boxarium/tree/master/definitions/SL6_ks
- - https://github.com/wilas/veewee-boxarium/
+# Getting Started
 
-Why:
- - vagrant 1.1+
+## Get sources
+```
+    # clone repo including submodules e.g. templates
+    git clone --recursive git@github.com:wilas/vbkick.git
 
-# Getting started
+    # default (master) branch is for development, if you prefere use more stable version - choose stable branch
+    # todo: git checkout stable
+```
 
 ## Easy install/uninstall
 
@@ -30,28 +30,35 @@ Why:
 ## Create own box definition
 
  - look into [examples](https://github.com/wilas/vbkick/tree/master/examples) and choose method
- - look into [templates](https://github.com/wilas/vbkick/tree/master/templates) and choose OS
- - read about definition.cfg options
+ - look into [templates](https://github.com/wilas/vbkick/tree/master/templates) and choose OS (learn also howto organize own definitions)
+ - look into [templates](templates) and choose OS (learn also howto organize own definitions)
+ - read about [available options](docs/DEFINITION_CFG.md) in definition.cfg
 
 
-# Commands - child steps
+# Commands
 
 ## vbkick
+
+Tested currently only in bash 4.
+If you have trouble using script in bash 3, let me know - create issue or send mail to help.vbkick[at]gmail.com.
 
 ```
     cd to_directory_with definition.cfg
 
     vbkick help
 
-    vbkick build VM_NAME
-    vbkick postinstall VM_NAME
-    vbkick export VM_NAME
-    vbkick destroy VM_NAME
+    vbkick  <action>     <vm_name>
+    vbkick  build        VM_NAME        # build VM
+    vbkick  postinstall  VM_NAME        # run postinstall scripts via ssh
+    vbkick  validate     VM_NAME        # Not Implemented yet !!!
+    vbkick  export       VM_NAME        # export VM and create Vagrant VM_NAME.box
+    vbkick  destroy      VM_NAME        # destroy VM
 ```
 
 ## convert_2_scancode.py
 
 Help enter key-strokes into a VirtualBox guest programmatically from the host.
+Works in both python 2.6+ and python 3.
 
 Example:
 ```
@@ -71,7 +78,7 @@ Example keyboard scancodes:
     wait wait wait 
 ```
 
-Extra keys:
+Special keys:
 
 `<Wait>` -  help control boot flow within vbkick (FYI: can not be use directly with VBoxManage)
 
@@ -82,10 +89,17 @@ Extra keys:
     VBoxManage: error: Error: 'wait' is not a hex byte!
 ```
 
-## Bibliography
+# TODO:
+
+```
+vbkick:275:    # todo [MEDIUM]: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
+vbkick:377:        # todo [MEDIUM]: shutdown VM using ssh and halt/poweroff cmd (nicer for OS)
+vbkick:437:    # todo [MEDIUM]: test should be smart enought to check what I really want to test
+```
+
+# Bibliography
 
  - !! veewee: https://github.com/jedi4ever/veewee
  - !! vagrant: https://github.com/mitchellh/vagrant
  - virtualbox manual: http://www.virtualbox.org/manual/ch08.html
  - controle vm with api: http://www.jedi.be/blog/2009/11/17/controlling-virtual-machines-with-an-API/
-

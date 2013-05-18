@@ -10,7 +10,9 @@ context_file="adm_context.txt"
 while read -r script; do
     # don't process comments
     [[ "${script}" =~ ^#.*$ ]] && continue
-    echo "${script}"
-    sh "${script}"
-    #bash "$script"
+    if [[ -s "${script}" ]]; then
+        echo "${script}"
+        sh "${script}"
+        #bash "$script"
+    fi
 done < "${context_file}"
