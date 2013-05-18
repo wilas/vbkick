@@ -65,9 +65,9 @@ Description:
  - each file in kickstart (e.g. ks.cfg/preseed.cfg) has descriptive names (OS_NAMEVERSION-ARCH-SPEC_DESC.cfg) e.g.: redhat63-x86_64-noX.cfg, redhat64-x86_64-JDK.cfg, debian700-x86_64-KDE.cfg
  - definition.cfg is symlink to default vbkick definition
  - each definition has descriptive name e.g. definition63.cfg, definition64.cfg, definition65_beta.cfg, definition64_injection.cfg
- - each template is a separate big OS version, e.g. RedHat6_box, Redhat5_box, Debian7_box, Debian6_box
- - template not store OS ISOs and SSH keys
- - template has README.md and LICENSE files
+ - each template take care about "big" OS release, e.g. RedHat6, Redhat5, Debian7, Debian6
+ - OS ISOs and SSH keys are not included
+ - README.md and LICENSE files are required
 
 ## vbkick templates hall of fame
 

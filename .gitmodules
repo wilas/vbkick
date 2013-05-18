@@ -1,0 +1,3 @@
+[submodule "templates/ScientificLinux6"]
+	path = templates/ScientificLinux6
+	url = git@github.com:wilas/scientificlinux6-vbkick-template.git

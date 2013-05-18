@@ -30,7 +30,7 @@ vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
 ## Create own box definition
 
  - look into [examples](examples) and choose method
- - look into [templates](templates) and choose OS (learn also howto organize own definitions)
+ - look into [templates](templates) and choose OS (learn also how to organize own definitions)
  - read about [available options](docs/DEFINITION_CFG.md) in definition.cfg
 
 # Commands
