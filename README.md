@@ -33,6 +33,16 @@ vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
  - look into [templates](templates) and choose OS (learn also how to organize own definitions)
  - read about [available options](docs/DEFINITION_CFG.md) in definition.cfg
 
+## Usage
+
+```
+    vbkick build newVM
+    # vbkick postinstall newVM
+    vbkick export newVM
+    vagrant box add newVM newVM.box
+    vagrant box list
+```
+
 # Commands
 
 ## vbkick
