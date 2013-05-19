@@ -6,7 +6,7 @@ Each template is stored in a separate git submodule with person taking care abou
 
 By default template defines Vagrant Base Box, so in each template vagrant user is created.
 
-## templates sctructure (good practice)
+## templates structure (good practice)
 
 ```
     .
