@@ -71,5 +71,11 @@ Description:
 
 ## vbkick templates hall of fame
 
- - scientificlinux6 <@wilas>
-
+ - ScientificLinux6 <@wilas>
+ - RedHat ?
+ - Debian ?
+ - Ubuntu ?
+ - FreeBSD ?
+ - Gentoo ?
+ - SmartOS ?
+ - OpenIndiana ?

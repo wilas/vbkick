@@ -21,7 +21,6 @@ Links:
 General TODO
  - wget/curl installer
  - docs and manuals
- - getting started, philosophy/approach, supported VM providers, about
  - contribute
     - Help yourself: to_do, to_do_r, autocompletion
     - to_do priority:
@@ -31,11 +30,7 @@ General TODO
         - Info: http://en.wikipedia.org/wiki/MoSCoW_Method
         - Info: https://confluence.atlassian.com/display/JIRA/Defining+'Priority'+Field+Values
     - howto contribute: (create issue) and/or (create branch, request pull) or (write email)
-    - .gitconfig
- - templates as submodules
-    - organization (dir: postinstall, kickstart, definition.cfg as symlink)
-    - dir: keys, iso are not included
-    - each template take care about “big” OS release, eg. Debian7, Redhat6, Redhat5
-    - each template is independent submodule with person taking care about it (README.md [info about choosen postinstall method], LICENSE is required)
- - Ideas.md (arena + garden + levels/priority) and/or (create issu)
+ - Ideas.md (arena + garden + levels/priority) and/or (create issue)
  - describe options in definition.cfg (possibility and consequences)(OS influence)
+ - tests:
+    - features dir: When I …{exec}… then I expect …{OK/result}…: http://chrismdp.com/2013/03/bdd-with-shell-script/

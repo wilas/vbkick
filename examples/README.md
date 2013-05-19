@@ -20,7 +20,7 @@ Run postinstall scripts during kickstarting process in chroot environment.
 
 ### Why?
 
- - no extra users and SSH keys needed to run postinstall scripts (more secure for kickstarting hardware machine)
+ - no extra users and SSH keys needed to run postinstall scripts (more secure for kickstarting hardware machine, useful for production env. e.g. with PXE)
  - to create easy/automated and tested way to switch/upgrade desktop/OS and check if all needed (for us) apps still works (This is answer for that question: What if the next release breaks something in my applications?)
  - to create easy way for tuning box/PC during installation (tuning.sh as an example) - running puppet manifest, ansible playbooks is just one line :-) (puppet modules, ansible playbooks may be downloaded during kickstarting [if usb_stick then earlier upload to flash disc], git clone is also possible - do what you need)
  - create bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and sh scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier)

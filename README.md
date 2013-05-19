@@ -2,9 +2,36 @@
 
 vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes (replacement to Veewee).
 
+## Model and Philosophy
+
+Model (base on Unix model):
+ - lots of small tools that can be combined in lots of useful ways
+
+Philosophy (also base on Unix Philosophy)
+ - do one thing well,
+ - small is beautiful, easy to write and easy to maintain,
+ - gracefully handle errors and signals,
+ - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
+
+If you think vbkick is great then use it. If you think it is a piece of shit then forget it.
+
+## Why ?
+
+After vagrant 1.1 release veewee stop working in nice way (veewee conflicts with vagrant 1.1+, dependency issues and other blablabla) - there are of course someworkaround available, but mixing installed vagrant package, gem, rvm, bundle in not pleasant in use (read: it is f*** madness).
+ - https://github.com/jedi4ever/veewee/issues/607
+ - https://github.com/jedi4ever/veewee/issues/611
+ - https://github.com/mitchellh/vagrant/blob/v1.2.0/CHANGELOG.md#110-march-14-2013
+
+I decide write something light, what do one thing well, a tool that I can rely on.
+
+There is one job to do: talk to Virtualbox and build a new Guest and/or Vagrant base box for me - nothing more.
+
+Task is mostly about run VBoxManage command in proper order with proper options - bash is perfect for that kind of job - no wrappers (python subprocess.Popen, ruby IO.popen/Kernel.exec, etc.) are needed.
+
+
 # Getting Started
 
-## Get sources
+## Prelude
 ```
     # clone repo including submodules e.g. templates
     git clone --recursive git@github.com:wilas/vbkick.git
@@ -51,6 +78,8 @@ Tested currently only in bash 4.
 
 If you have trouble using script in bash 3, let me know - create issue or send mail to help.vbkick[at]gmail.com.
 
+Note: Probably will be ported to shell instead of bash.
+
 ```
     cd to_directory_with definition.cfg
 
@@ -65,6 +94,8 @@ If you have trouble using script in bash 3, let me know - create issue or send m
 ```
 
 ## convert_2_scancode.py
+
+convert_2_scancode.py is a [filter](http://en.wikipedia.org/wiki/Filter_%28Unix%29) - handle input from pipe or file.
 
 Help enter key-strokes into a VirtualBox guest programmatically from the host.
 
@@ -105,6 +136,8 @@ Special keys:
 vbkick:275:    # todo [MEDIUM]: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
 vbkick:377:        # todo [MEDIUM]: shutdown VM using ssh and halt/poweroff cmd (nicer for OS)
 vbkick:437:    # todo [MEDIUM]: test should be smart enought to check what I really want to test
+
+consider change bash to sh -> to increase portability
 ```
 
 # Bibliography
@@ -113,3 +146,7 @@ vbkick:437:    # todo [MEDIUM]: test should be smart enought to check what I rea
  - !! vagrant: https://github.com/mitchellh/vagrant
  - virtualbox manual: http://www.virtualbox.org/manual/ch08.html
  - controle vm with api: http://www.jedi.be/blog/2009/11/17/controlling-virtual-machines-with-an-API/
+ - !! Unix Philosophy: http://en.wikipedia.org/wiki/Unix_philosophy
+ - Filter (Unix): http://en.wikipedia.org/wiki/Filter_%28Unix%29
+ - well-behave Python cmd line app: http://www.slideshare.net/gjcross/tutorial1-14045370
+
