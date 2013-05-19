@@ -10,6 +10,7 @@ Model (base on Unix model):
 Philosophy (also base on Unix Philosophy)
  - do one thing well,
  - small is beautiful, easy to write and easy to maintain,
+ - working is better than perfect,
  - gracefully handle errors and signals,
  - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
 
@@ -17,10 +18,11 @@ If you think vbkick is great then use it. If you think it is a piece of shit the
 
 ## Why ?
 
-After vagrant 1.1 release veewee stop working in nice way (veewee conflicts with vagrant 1.1+, dependency issues and other blablabla) - there are of course someworkaround available, but mixing installed vagrant package, gem, rvm, bundle in not pleasant in use (read: it is f*** madness).
+After vagrant 1.1 release, veewee stop working in nice way (veewee conflicts with vagrant 1.1+, dependency issues and other blablabla) - there are of course some workaround available, but mixing installed vagrant package, gem, rvm, bundle in not pleasant in use (read: it is f*** madness):
  - https://github.com/jedi4ever/veewee/issues/607
  - https://github.com/jedi4ever/veewee/issues/611
  - https://github.com/mitchellh/vagrant/blob/v1.2.0/CHANGELOG.md#110-march-14-2013
+
 
 I decide write something light, what do one thing well, a tool that I can rely on.
 
@@ -96,7 +98,6 @@ Note: Probably will be ported to shell instead of bash.
 ## convert_2_scancode.py
 
 convert_2_scancode.py is a [filter](http://en.wikipedia.org/wiki/Filter_%28Unix%29) - handle input from pipe or file.
-
 Help enter key-strokes into a VirtualBox guest programmatically from the host.
 
 Works in both python 2.6+ and python 3.
