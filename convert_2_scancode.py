@@ -29,7 +29,7 @@
 # Note:
 # Script work with python 2.6+ and python 3
 # When scancode not exist for given char 
-# then script exit with code 1 and error to stderr is write
+# then script exit with code 1 and an error is write to stderr.
 
 # Helpful links:
 # - http://humbledown.org/files/scancodes.l

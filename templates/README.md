@@ -10,7 +10,7 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
 
 ```
     .
-    ├── RedHat6_box
+    ├── RedHat6
     │   ├── definition.cfg
     │   ├── definition62.cfg
     │   ├── definition63.cfg
@@ -19,7 +19,7 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
     │   │   └── <redhat63-x86_64-JDK.cfg, redhat64-x86_64-noX.cfg, ...>
     │   └── postinstall
     │       └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
-    ├── RedHat5_box
+    ├── RedHat5
     │   ├── definition.cfg
     │   ├── definition55.cfg
     │   ├── definition56.cfg
@@ -28,7 +28,7 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
     │   │   └── <redhat56-x86_64-puppet.cfg, redhat59-i386-noX.cfg, ...>
     │   └── postinstall
     │       └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
-    └── Debian6_box
+    └── Debian6
         ├── definition.cfg
         ├── definition600.cfg
         ├── definition607.cfg

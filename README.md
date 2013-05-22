@@ -2,19 +2,16 @@
 
 vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes (replacement to Veewee).
 
-## Model and Philosophy
+## Model and Philosophy (base on Unix)
 
-Model (base on Unix model):
+Model:
  - lots of small tools that can be combined in lots of useful ways
 
-Philosophy (also base on Unix Philosophy)
+Philosophy:
  - do one thing well,
  - small is beautiful, easy to write and easy to maintain,
- - working is better than perfect,
  - gracefully handle errors and signals,
  - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
-
-If you think vbkick is great then use it. If you think it is a piece of shit then forget it.
 
 ## Why ?
 
@@ -42,18 +39,11 @@ Task is mostly about run VBoxManage command in proper order with proper options 
     git checkout stable
 ```
 
-## Easy install/uninstall
+## Install/Uninstall
 
 ```
     sudo make install
     sudo make uninstall
-```
-
-## Manual install/uninstall
-
-```
-    sudo install -m 0755 -p vbkick convert_2_scancode.py /usr/local/bin/
-    sudo cd /usr/local/bin/ && rm -f vbkick convert_2_scancode.py
 ```
 
 ## Create own box definition
@@ -66,8 +56,9 @@ Task is mostly about run VBoxManage command in proper order with proper options 
 
 ```
     vbkick build newVM
-    # vbkick postinstall newVM
+    #vbkick postinstall newVM  #lazy postinstall method
     vbkick export newVM
+
     vagrant box add newVM newVM.box
     vagrant box list
 ```
@@ -76,11 +67,8 @@ Task is mostly about run VBoxManage command in proper order with proper options 
 
 ## vbkick
 
-Tested currently only in bash 4.
+Tested currently only in bash 4 (use POSIX mode). If you have trouble using script in bash 3, let me know - create issue or send mail to help.vbkick[at]gmail.com.
 
-If you have trouble using script in bash 3, let me know - create issue or send mail to help.vbkick[at]gmail.com.
-
-Note: Probably will be ported to shell instead of bash.
 
 ```
     cd to_directory_with definition.cfg
@@ -97,8 +85,8 @@ Note: Probably will be ported to shell instead of bash.
 
 ## convert_2_scancode.py
 
-convert_2_scancode.py is a [filter](http://en.wikipedia.org/wiki/Filter_%28Unix%29) - handle input from pipe or file.
 Help enter key-strokes into a VirtualBox guest programmatically from the host.
+It is a [filter](http://en.wikipedia.org/wiki/Filter_%28Unix%29) - handle input from pipe or file.
 
 Works in both python 2.6+ and python 3.
 
@@ -124,12 +112,13 @@ Special keys:
 
 `<Wait>` -  help control boot flow within vbkick (FYI: can not be use directly with VBoxManage)
 
-`<Multiply(what, N)>` - repeat "what" N times
-
 ```
     $ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello <Wait> VM" | convert_2_scancode.py)
     VBoxManage: error: Error: 'wait' is not a hex byte!
 ```
+
+`<Multiply(what, N)>` - repeat "what" N times
+
 
 # TODO:
 
@@ -137,8 +126,6 @@ Special keys:
 vbkick:275:    # todo [MEDIUM]: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
 vbkick:377:        # todo [MEDIUM]: shutdown VM using ssh and halt/poweroff cmd (nicer for OS)
 vbkick:437:    # todo [MEDIUM]: test should be smart enought to check what I really want to test
-
-consider change bash to sh -> to increase portability
 ```
 
 # Bibliography

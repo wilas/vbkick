@@ -38,7 +38,9 @@ set -o pipefail;
 #set -x;
 # http://mywiki.wooledge.org/glob
 shopt -s failglob;
-
+# enable POSIX mode
+# http://www.gnu.org/software/bash/manual/html_node/Bash-POSIX-Mode.html
+set -o posix    
 
 # VM default settings - basic
 hostiocache="on"
@@ -153,8 +155,10 @@ function process_args {
 
 # Load definition.cfg config file; it overwrite default settings
 function load_definition {
-    if [ -s "definition.cfg" ]; then 
-        . "definition.cfg"
+    if [ -s "definition.cfg" ]; then
+        # In POSIX mode the '.' and 'source' builtins do not search the current directory
+        # for the filename argument if it is not found by searching PATH.
+        . "./definition.cfg"
     else 
         echo "Not existing or empty definition.cfg file in `pwd`"
         echo "Terminating..." >&2
