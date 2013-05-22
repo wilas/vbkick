@@ -107,16 +107,7 @@ def process_multiply(input):
         input = input.replace(match.group(0), replacement)
     return input
 
-if __name__ == "__main__":
-    # read from stdin
-    input = sys.stdin.readlines()
-    # convert input list to string
-    input = ''.join(input).rstrip('\n')
-    # process multiply
-    input = process_multiply(input)
-    # replace white-spaces with <Spacebar>
-    input = input.replace(' ', '<Spacebar>')
-
+def translate_chars(input):
     # create list to collect information about input string structure
     # -1 mean no key yet assign to cell in array
     keys_array = [-1] * len(input) 
@@ -150,6 +141,20 @@ if __name__ == "__main__":
 
     # remove empty string from keys_array
     keys_array = [x for x in keys_array if x != '']
+    return keys_array
+
+
+if __name__ == "__main__":
+    # read from stdin
+    input = sys.stdin.readlines()
+    # convert input list to string
+    input = ''.join(input).rstrip('\n')
+    # process multiply
+    input = process_multiply(input)
+    # replace white-spaces with <Spacebar>
+    input = input.replace(' ', '<Spacebar>')
+    # process keys
+    keys_array = translate_chars(input)
     # write result to stdout
     print(' '.join(keys_array))
 
