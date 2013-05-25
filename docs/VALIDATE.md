@@ -1,6 +1,8 @@
 # Validate
 
-Check already created virtual machine with defined features (Has new VM Guest expected behaviour?).
+Check already created virtual machine with defined features (Has a new VM Guest expected behaviour?).
+
+Test should be smart enough to check what I really want to test, e.g. If I do not need chef, do not test whether I have chef.
 
 Validate process is very similar to lazy postinstall method. Transport scripts via SCP and exec them using SSH command.
 

@@ -448,7 +448,7 @@ function recover_vm_state {
 
 function validate_vm {
     #
-    # test should be smart enought to check what I really want to test
+    # test should be smart enough to check what I really want to test
     # e.g. If I don't need chef, don't test whether I have chef
     #
     local VM=$1
