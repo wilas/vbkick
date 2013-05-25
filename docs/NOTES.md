@@ -20,7 +20,6 @@ Links:
 
 General TODO
  - wget/curl installer
- - docs and manuals
  - contribute
     - Help yourself: to_do, to_do_r, autocompletion
     - to_do priority:
@@ -32,5 +31,3 @@ General TODO
     - howto contribute: (create issue) and/or (create branch, request pull) or (write email)
  - Ideas.md (arena + garden + levels/priority) and/or (create issue)
  - describe options in definition.cfg (possibility and consequences)(OS influence)
- - tests:
-    - features dir: When I …{exec}… then I expect …{OK/result}…: http://chrismdp.com/2013/03/bdd-with-shell-script/
