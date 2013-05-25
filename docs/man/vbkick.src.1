@@ -1,4 +1,4 @@
-.TH man 1 "23 May 2013" "0.2" "vbkick man page"
+.TH man 1 "25 May 2013" "0.2.3" "vbkick man page"
 .SH NAME
 vbkick - the automatic Virtualbox Guests and/or Vagrant base boxes builder.
 .SH SYNOPSIS
@@ -18,6 +18,9 @@ Builds a new Virtualbox Guest from given \fIdefinition.cfg\fP. definition.cfg fi
 .TP
 .B postinstall 
 Run defined postinstall scripts via SSH on Virtualbox Guest. \fIdefinition.cfg\fP file is required in directory where command is run.
+.TP
+.B validate 
+Run defined features scripts via SSH on Virtualbox Guest. Check whether new VM Guest has expected behaviour. \fIdefinition.cfg\fP file is required in directory where command is run.
 .TP
 .B export
 Exports Virtualbox Guest as a Vagrant base box (base image for a future VMs) - \fIVM_NAME.box\fP gzipped file is created.

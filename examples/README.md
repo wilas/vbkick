@@ -35,6 +35,7 @@ postinstall_transport and postinstall_launch options are not required in this me
 Use Case flow:
 ```
 vbkick build SL6_inject
+vbkick validate SL6_inject
 vbkick export SL6_inject
 
 vagrant box add 'SL64_inject' SL6_inject.box
@@ -61,9 +62,9 @@ Use Case flow:
 ```
 vbkick build SL6_lazy
 vbkick postinstall SL6_lazy
+vbkick validate SL6_lazy
 vbkick export SL6_lazy
 
 vagrant box add 'SL64_lazy' SL6_lazy.box
 vagrant box list
 ```
-

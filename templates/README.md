@@ -17,6 +17,8 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
     │   ├── definition64.cfg
     │   ├── kickstart
     │   │   └── <redhat63-x86_64-JDK.cfg, redhat64-x86_64-noX.cfg, ...>
+    │   ├── validate
+    │   │   └── <adm_features.sh, adm_context.txt, adm_envrc, test_puppet.sh, test_ruby.sh, test_virtualbox.sh, test_vagrant, ....sh >
     │   └── postinstall
     │       └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
     ├── RedHat5
@@ -26,6 +28,8 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
     │   ├── definition59.cfg
     │   ├── kickstart
     │   │   └── <redhat56-x86_64-puppet.cfg, redhat59-i386-noX.cfg, ...>
+    │   ├── validate
+    │   │   └── <adm_features.sh, adm_context.txt, adm_envrc, test_puppet.sh, test_ruby.sh, test_virtualbox.sh, test_vagrant, ....sh >
     │   └── postinstall
     │       └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
     └── Debian6
@@ -34,6 +38,8 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
         ├── definition607.cfg
         ├── kickstart
         │   └── <Debian6-x86_64-KDE.cfg, Debian6-i386-noX.cfg, ...>
+        ├── validate
+        │   └── <adm_features.sh, adm_context.txt, adm_envrc, test_puppet.sh, test_ruby.sh, test_virtualbox.sh, test_vagrant, ....sh >
         └── postinstall
             └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
 ```
@@ -50,6 +56,7 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
     drwxr-xr-x  keys
     drwxr-xr-x  kickstart
     drwxr-xr-x  postinstall
+    drwxr-xr-x  validate
     -rw-r--r--  LICENSE
     -rw-r--r--  README.md
 ```
@@ -61,6 +68,7 @@ howto update symlink:
 
 Description:
  - postinstall dir contain all scripts run during postinstall process
+ - validate dir contain all scripts run during validate process
  - kickstart dir contain all files used during boot/kickstart process
  - each file in kickstart (e.g. ks.cfg/preseed.cfg) has descriptive names (OS_NAMEVERSION-ARCH-SPEC_DESC.cfg) e.g.: redhat63-x86_64-noX.cfg, redhat64-x86_64-JDK.cfg, debian700-x86_64-KDE.cfg
  - definition.cfg is symlink to default vbkick definition

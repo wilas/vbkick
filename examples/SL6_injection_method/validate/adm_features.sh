@@ -1,17 +1,15 @@
 # set environment variables if available
 [[ -s "adm_envrc" ]] && . "./adm_envrc"
 
-LOG_PATH=.
-#LOG_PATH=/var/log
-echo "vm_type: ${VM_TYPE}" >> "${LOG_PATH}/adm_postinstall.log"
-echo "vm_description: ${VM_DESC}" >> "${LOG_PATH}/adm_postinstall.log"
-
+# Given a new Virtualbox Guest
 context_file="adm_context.txt"
+
+# Each script is separate feature
 while read -r script; do
     # don't process comments
     [[ "${script}" =~ ^#.*$ ]] && continue
     if [[ -s "${script}" ]]; then
-        echo "${script}"
+        #cat "${script}" | grep -E "^# (Feature|Scenario|And|Given|When|Then)"
         sh "${script}"
     fi
 done < "${context_file}"

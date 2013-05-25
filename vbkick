@@ -102,6 +102,16 @@ postinstall_transport=("")
 # list of postinstall commands
 postinstall_launch=("")
 
+# Validate default settings
+# list of files and directories to transport to guest
+validate_transport=("")
+# list of validate commands
+validate_launch=("")
+
+# Clean
+clean_transported=0
+
+
 # Other global variables - do not use it in definition.cfg (will be overwrite during program runtime)
 # virtual machine name
 VM=""
@@ -120,10 +130,9 @@ sharedfolder_was_removed=0
 #ssh_password="vbkick"
 #ssh_login_timeout=7200
 #iso_download_timeout=1800
-#postinstall_timeout=1800
-#sudo_cmd="sudo -S sh %s"
 #shutdown_cmd="/sbin/halt -h -p"
-# todo [LOW]: replace echo by printf
+# todo [LOW]: replace echo by printf + red/green colors
+# todo [LOW]: $VM varaibel should be global everywhere
 
 # Display help
 function usage {
@@ -133,7 +142,7 @@ function usage {
     echo ""
     echo "build                 build VM"
     echo "postinstall           run postinstall scripts via ssh"
-    echo "validate              validate VM, ssh needed"
+    echo "validate              run validate/feature scripts via ssh"
     echo "export                export VM and create Vagrant VM_NAME.box"
     echo "destroy               destroy VM"
     echo "help                  display this help and exit"
@@ -438,23 +447,42 @@ function recover_vm_state {
 }
 
 function validate_vm {
-    # test already build VM - ssh needed
-    # todo [MEDIUM]: test should be smart enought to check what I really want to test
+    #
+    # test should be smart enought to check what I really want to test
     # e.g. If I don't need chef, don't test whether I have chef
-    # ssh vbkick@localhost -t -i keys/vbkick_key -p 2222 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
-    echo "Not implemented yet"
-    exit 1
+    #
+    local VM=$1
+    # load vm description/definition
+    load_definition
+    # exec scripts on VM Guest via ssh
+    ssh_exec $VM "${validate_transport[@]}" "${validate_launch[@]}" 1
+    exit 0
 }
 
 function lazy_postinstall {
     local VM=$1
+    # load vm description/definition
+    load_definition
+    # exec scripts on VM Guest via ssh
+    ssh_exec $VM "${postinstall_transport[@]}" "${postinstall_launch[@]}" 0
+    exit 0
+}
+
+function ssh_exec {
+    #
+    # transport scripts to VM Guest via SCP and exec them via SSH
+    #
+    local VM=$1
+    local transport=$2
+    local launch=$3
+    # useful for running tests on destination machine, tests don't stop after first ERROR
+    local accept_ssh_command_fail=$4
+
     # check whether VM is running 
     if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
         printf "${VM} is not running...\n"
         exit 1
     fi
-    # load vm description/definition
-    load_definition
 
     # checking port forwarding (if no proper rules, try add new one for NAT mapping)
     if [[ ! `VBoxManage showvminfo "${VM}" | grep "NIC 1" | grep "host port = ${ssh_host_port}"\
@@ -463,17 +491,15 @@ function lazy_postinstall {
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
-    # todo [LOW]: if ssh keys authentication is not enabled try login using password
-    # (root, user, sshpass, expect, VBoxManage guestcontrol)
-
+    # ssh key authentication enabled
     if [ $ssh_keys_enabled -eq 1 ]; then        
         # if key not exist then get it
         get_priv_ssh_key
         # create path to ssh private key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
 
-        # transport postinstall scripts to guest
-        for pkt in "${postinstall_transport[@]}"; do
+        # transport scripts to guest
+        for pkt in "${transport[@]}"; do
             if [ -z "${pkt}" ]; then 
                 continue #consider break
             fi
@@ -491,17 +517,33 @@ function lazy_postinstall {
             fi
         done
 
-        # run postinstall commands via ssh
-        for cmd in "${postinstall_launch[@]}"; do
+        # run commands via ssh
+        for cmd in "${launch[@]}"; do
             if [ -z "${cmd}" ]; then 
                 continue #consider break
             fi
             echo "Exec: ${cmd}"
-            ssh "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
+            if [ $accept_ssh_command_fail -eq 0 ]; then
+                # fail is not accepted
+                ssh "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
+            else
+                # fail is accepted
+                ssh "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}" || true
+            fi
         done
-        # todo? [LOW]: clean after postinstall by rm transported media ?
+        
+        # clean after scp by rm transported media/scripts
+        if [ $clean_transported -eq 1 ]; then
+            for pkt in "${transport[@]}"; do
+                if [ -z "${pkt}" ]; then 
+                    continue
+                fi
+                ssh "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}"
+            done
+        fi
     fi
-    exit 0
+    # todo [LOW]: if ssh keys authentication is not enabled try login using password
+    # (root, user, sshpass, expect, VBoxManage guestcontrol)
 }
 
 function start_web_server {
@@ -579,6 +621,7 @@ if [[ ! `which VBoxManage 2>/dev/null` ]]; then
 fi
 vb_version=$(get_vb_version)
 # todo [LOW]: update postinstall/adm_envrc (only if exist) with current VBOX_VERSION (vboxmanage -v and sed should do a job)
+# todo [LOW]: update validate/adm_envrc (only if exist) with current VBOX_VERSION (vboxmanage -v and sed should do a job)
 # signals and error handler
 trap clean_up SIGHUP SIGINT SIGTERM ERR
 process_args "${1}" "${2}"

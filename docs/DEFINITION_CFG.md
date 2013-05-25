@@ -130,14 +130,31 @@ More details soon.
 
  default: ("")
 
+
+## VALIDATE
+
+ - validate_launch
+
+ default: ("")
+
+ - validate_transport
+
+ default: ("")
+
+
+## CLEAN
+
+ - clean_transported
+
+ default: 0
+
+
 ## TODO
 
 ```
 ssh_password="vbkick"
 ssh_login_timeout=7200
 iso_download_timeout=1800
-postinstall_timeout=1800
-sudo_cmd="sudo -S sh %s"
 shutdown_cmd="/sbin/halt -h -p"
 ```
 

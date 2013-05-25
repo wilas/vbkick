@@ -51,12 +51,14 @@ Task is mostly about run VBoxManage command in proper order with proper options 
  - look into [examples](examples) and choose method
  - look into [templates](templates) and choose OS (learn also how to organize own definitions)
  - read about [available options](docs/DEFINITION_CFG.md) in definition.cfg
+ - read about [VM Guest validation](docs/VALIDATE.md)
 
 ## Usage
 
 ```
     vbkick build newVM
     #vbkick postinstall newVM  #lazy postinstall method
+    vbkick validate newVM
     vbkick export newVM
 
     vagrant box add newVM newVM.box
@@ -73,12 +75,12 @@ Tested currently only in bash 4 (use POSIX mode). If you have trouble using scri
 ```
     cd to_directory_with definition.cfg
 
-    vbkick help
+    vbkick help and/or man vbkick
 
     vbkick  <action>     <vm_name>
     vbkick  build        VM_NAME        # build VM
     vbkick  postinstall  VM_NAME        # run postinstall scripts via ssh
-    vbkick  validate     VM_NAME        # Not Implemented yet !!!
+    vbkick  validate     VM_NAME        # run validate/feature scripts via ssh
     vbkick  export       VM_NAME        # export VM and create Vagrant VM_NAME.box
     vbkick  destroy      VM_NAME        # destroy VM
 ```
@@ -123,9 +125,8 @@ Special keys:
 # TODO:
 
 ```
-vbkick:275:    # todo [MEDIUM]: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
-vbkick:377:        # todo [MEDIUM]: shutdown VM using ssh and halt/poweroff cmd (nicer for OS)
-vbkick:437:    # todo [MEDIUM]: test should be smart enought to check what I really want to test
+vbkick:275:     # todo [MEDIUM]: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
+vbkick:377:     # todo [MEDIUM]: shutdown VM using ssh and halt/poweroff cmd (nicer for OS)
 ```
 
 # Bibliography
@@ -137,4 +138,5 @@ vbkick:437:    # todo [MEDIUM]: test should be smart enought to check what I rea
  - !! Unix Philosophy: http://en.wikipedia.org/wiki/Unix_philosophy
  - Filter (Unix): http://en.wikipedia.org/wiki/Filter_%28Unix%29
  - well-behave Python cmd line app: http://www.slideshare.net/gjcross/tutorial1-14045370
-
+ - manpage creation: http://www.linuxhowtos.org/System/creatingman.htm (http://www.cyberciti.biz/faq/linux-unix-creating-a-manpage/)
+ - BDD with shell scripts: http://chrismdp.com/2013/03/bdd-with-shell-script/
