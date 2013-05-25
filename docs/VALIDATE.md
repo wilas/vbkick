@@ -21,7 +21,7 @@ Use adm_features.sh is a convenient manner, but not mandatory.
 
 We don’t need to use BDD tools to use BDD principles: http://chrismdp.com/2013/03/bdd-with-shell-script/
 
-Howto print steps - readable documentation
+Howto print steps - readable documentation, [examples](examples/SL6_injection_method/)
 ```
 $ cat validate/*.sh | grep -E "^# (Feature|Scenario|And|Given|When|Then)"
 
