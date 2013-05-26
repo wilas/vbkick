@@ -421,7 +421,8 @@ function export_vm {
     \r# so it can override any of the settings
     \rinclude_vagrantfile = File.expand_path(\"../include/_Vagrantfile\", __FILE__)
     \rload include_vagrantfile if File.exist?(include_vagrantfile)\n" > "${tmp_dir}/Vagrantfile"
-    # todo: add metadata.json -> {"provider":"virtualbox"}
+    # add metadata.json
+    printf "{\"provider\":\"virtualbox\"}\n" > "${tmp_dir}/metadata.json"
     # create VM_NAME.box (gzip) file
     cd $tmp_dir && tar -cvzf "${VM}.box" * && cd ..
     mv "${tmp_dir}/${VM}.box" .
