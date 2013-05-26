@@ -148,6 +148,14 @@ More details soon.
 
  default: 0
 
+ - shutdown_cmd
+
+ default: "sudo /sbin/halt -h -p"
+
+ - shutdown_timeout
+
+ default: 20
+
 
 ## TODO
 
@@ -155,6 +163,4 @@ More details soon.
 ssh_password="vbkick"
 ssh_login_timeout=7200
 iso_download_timeout=1800
-shutdown_cmd="/sbin/halt -h -p"
 ```
-

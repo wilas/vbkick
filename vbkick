@@ -109,8 +109,12 @@ validate_transport=("")
 validate_launch=("")
 
 # Clean
+# rm or not already transported via SCP files/directories (from postinstall, validate)
 clean_transported=0
-
+# nice for OS shutdown command
+shutdown_cmd="sudo /sbin/halt -h -p"
+# when timeout is reached and VM is still running, hard poweroff is used
+shutdown_timeout=20
 
 # Other global variables - do not use it in definition.cfg (will be overwrite during program runtime)
 # virtual machine name
@@ -130,7 +134,6 @@ sharedfolder_was_removed=0
 #ssh_password="vbkick"
 #ssh_login_timeout=7200
 #iso_download_timeout=1800
-#shutdown_cmd="/sbin/halt -h -p"
 # todo [LOW]: replace echo by printf + red/green colors
 # todo [LOW]: $VM varaibel should be global everywhere
 
@@ -373,6 +376,8 @@ function export_vm {
     # if more customisation required use: vagrant package (--help)
     #
     local VM=$1
+    # load vm description/definition
+    load_definition
     # check whether VM_NAME.box exist in current dir
     if [ -f "${VM}.box" ]; then
         echo "${VM}.box already exist in `pwd`"
@@ -383,13 +388,8 @@ function export_vm {
         echo "${VM} doesn't exist"
         exit 1
     fi
-    # check whether VM is running 
-    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
-        echo "Poweroff ${VM}"
-        VBoxManage controlvm "${VM}" poweroff
-        # todo [MEDIUM]: shutdown VM using ssh and halt/poweroff cmd (nicer for OS)
-        sleep 1
-    fi
+    # check whether VM is running and shutdown it 
+    shutdown "${VM}"
 
     # clearing previously set port forwarding rules (only if exist)
     if [[ `VBoxManage showvminfo "${VM}" | grep -w "vbkickSSH"` ]]; then
@@ -443,6 +443,41 @@ function recover_vm_state {
     if [ $sharedfolder_was_removed -eq 1 ]; then
         VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
         sharedfolder_was_removed=0
+    fi
+}
+
+function shutdown {
+    local VM=$1
+
+    # ssh key authentication enabled
+    if [ $ssh_keys_enabled -eq 1 ]; then        
+        # if key not exist then get it
+        get_priv_ssh_key
+        # create path to ssh private key
+        local key_path="${ssh_keys_path}/${ssh_priv_key}"
+
+        # check whether VM is running and exec shutdown_cmd via SSH
+        if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+            printf "Shutting down ${VM} "
+            ssh "${ssh_user}@localhost" -q -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${shutdown_cmd}"
+        fi
+
+        # wait until VM is down or shutdown_timeout was reached
+        local shutdown_counter=0
+        while [[ `VBoxManage list runningvms | grep -w "${VM}"` && $shutdown_counter -le $shutdown_timeout ]]; do
+            shutdown_counter=$((shutdown_counter+1))
+            printf "."
+            sleep 1
+        done
+    fi
+    
+    # check whether VM is still running, if so poweroff it using hard way.
+    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+        VBoxManage controlvm "${VM}" poweroff
+        printf "\n${VM} was powered off.\n"
+        sleep 1
+    else
+        printf "\n${VM} was shutdown cleanly.\n"
     fi
 }
 
@@ -543,7 +578,7 @@ function ssh_exec {
         fi
     fi
     # todo [LOW]: if ssh keys authentication is not enabled try login using password
-    # (root, user, sshpass, expect, VBoxManage guestcontrol)
+    # (root, user, sshpass, expect, VBoxManage guestcontrol)(same for shutdown)
 }
 
 function start_web_server {

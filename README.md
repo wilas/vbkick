@@ -126,7 +126,6 @@ Special keys:
 
 ```
 vbkick:275:     # todo [MEDIUM]: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
-vbkick:377:     # todo [MEDIUM]: shutdown VM using ssh and halt/poweroff cmd (nicer for OS)
 ```
 
 # Bibliography
