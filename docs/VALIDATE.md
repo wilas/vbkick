@@ -59,3 +59,12 @@ $ cat validate/*.sh | grep -E "^# (Feature|Scenario|And|Given|When|Then)"
 # Then I expect version is up-to-date
 ```
 
+## Example output - green is green
+
+### OK
+
+![vbkick-validate-green](screens/vbkick-validate-green.png)
+
+### FAIL
+
+![vbkick-validate-red](screens/vbkick-validate-red.png)

@@ -122,12 +122,6 @@ Special keys:
 `<Multiply(what, N)>` - repeat "what" N times
 
 
-# TODO:
-
-```
-vbkick:275:     # todo [MEDIUM]: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
-```
-
 # Bibliography
 
  - !! veewee: https://github.com/jedi4ever/veewee

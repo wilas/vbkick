@@ -542,10 +542,10 @@ function ssh_exec {
             # check whether pkt is file or dir
             if [[ -d "${pkt}" ]]; then
                 # pkt is directory
-                scp -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
+                scp -q -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
             elif [[ -f "${pkt}" ]]; then
                 # pkt is file
-                scp -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
+                scp -q -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
             else
                 # pkt is neither file nor directory
                 printf "${pkt} is neither file nor directory\n"
@@ -561,10 +561,10 @@ function ssh_exec {
             echo "Exec: ${cmd}"
             if [ $accept_ssh_command_fail -eq 0 ]; then
                 # fail is not accepted
-                ssh "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
+                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
             else
                 # fail is accepted
-                ssh "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}" || true
+                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}" || true
             fi
         done
         
@@ -574,7 +574,7 @@ function ssh_exec {
                 if [ -z "${pkt}" ]; then 
                     continue
                 fi
-                ssh "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}"
+                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}"
             done
         fi
     fi
@@ -586,6 +586,8 @@ function start_web_server {
     # check whether port is not used by other proc
     if [[ `nc -z localhost $kickstart_port` ]]; then
         echo "$kickstart_port port is already in use"
+        # TODO [LOW]: choose other webserver port if present is in use, 
+        # and update kickstart_port - this not working with injection method
         exit 1
     fi
     # start simple webserver serving files in background

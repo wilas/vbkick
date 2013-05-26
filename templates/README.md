@@ -76,6 +76,7 @@ Description:
  - each template take care about "big" OS release, e.g. RedHat6, Redhat5, Debian7, Debian6
  - OS ISOs and SSH keys are not included
  - README.md and LICENSE files are required
+ - Note (good practice): If you create Vagrant base box then use vagrant user and vagrant ssh keys, not create thousands other accounts (like vbkick, veewee...)
 
 ## vbkick templates hall of fame
 
