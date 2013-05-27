@@ -131,22 +131,21 @@ natmapping_was_removed=0
 sharedfolder_was_removed=0
 
 # todo [LOW]: future option: ssh_password="vbkick"
-# todo [LOW]: replace echo by printf + red/green colors
 # todo [LOW]: $VM variable should be global everywhere
 
 # Display help
 function usage {
-    echo ""
-    echo "Usage: $0 [build|destroy|export|validate|postinstall|help] VM_NAME"
-    echo "Help creates Virtualbox Guests and Vagrant Base Boxes"
-    echo ""
-    echo "build                 build VM"
-    echo "postinstall           run postinstall scripts via ssh"
-    echo "validate              run validate/feature scripts via ssh"
-    echo "export                export VM and create Vagrant VM_NAME.box"
-    echo "destroy               destroy VM"
-    echo "help                  display this help and exit"
-    echo ""
+    printf "\n"
+    printf "Usage: $0 [build|destroy|export|validate|postinstall|help] VM_NAME\n"
+    printf "Help creates Virtualbox Guests and Vagrant Base Boxes\n"
+    printf "\n"
+    printf "build                 build VM\n"
+    printf "postinstall           run postinstall scripts via ssh\n"
+    printf "validate              run validate/feature scripts via ssh\n"
+    printf "export                export VM and create Vagrant VM_NAME.box\n"
+    printf "destroy               destroy VM\n"
+    printf "help                  display this help and exit\n"
+    printf "\n"
 }
 
 # Cmd line parser, take 2 args
@@ -169,8 +168,8 @@ function load_definition {
         # for the filename argument if it is not found by searching PATH.
         . "./definition.cfg"
     else 
-        echo "Not existing or empty definition.cfg file in `pwd`"
-        echo "Terminating..." >&2
+        printf "Not existing or empty definition.cfg file in `pwd`\n"
+        printf "Terminating...\n" >&2
         exit 1
     fi
 }
@@ -179,14 +178,14 @@ function load_definition {
 function get_vb_version {
     local version=$(VBoxManage --version) # e.g. 4.2.12r84980
     local version=${version%r*} #e.g. 4.2.12
-    echo "${version}"
+    printf "${version}\n"
 }
 
 # Prepare installation media
 function download_install_media {
     # check whether iso dir exist
     if [ ! -d "${iso_path}" ]; then
-        echo "Creates iso directory"
+        printf "Creates iso directory\n"
         mkdir "${iso_path}"
     fi
 
@@ -194,7 +193,7 @@ function download_install_media {
     if [ ! -f "${iso_path}/${iso_file}" ]; then
         # iso_src is empty (not defined)
         if [ -z "${iso_src}" ]; then 
-            print "${iso_path}/${iso_file} not exist and iso_src is empty\n"
+            printf "${iso_path}/${iso_file} not exist and iso_src is empty\n"
             exit 1
         fi
         wget --no-check-certificate "${iso_src}" -O "${iso_path}/${iso_file}"
@@ -203,13 +202,13 @@ function download_install_media {
     # verify iso_src sha256sum
     local get_sha256=$(sha256sum ${iso_path}/${iso_file} | cut -d" " -f 1)
     if [[ "${iso_sha256}" != "${get_sha256}" ]]; then
-        echo "WARNING: SHA256SUM is different then expected !"
+        printf "\e[1;33mWARNING: SHA256SUM is different then expected !\n\e[0m"
         read -r -p "Do you want continue? [y/N]" ans
         if [[ ! $ans =~ ^[Yy]$ ]]; then
             exit 1
         fi
     else
-        echo "INFO: SHA256SUM:${iso_sha256} is valid."
+        printf "INFO: SHA256SUM:${iso_sha256} is valid.\n"
     fi
 
     # check whether VBoxGuestAdditions exist
@@ -223,7 +222,7 @@ function download_install_media {
 function get_priv_ssh_key {
     # check whether keys dir exist
     if [ ! -d "${ssh_keys_path}" ]; then
-        echo "Creates vbkick ssh keys directory"
+        printf "Creates vbkick ssh keys directory\n"
         mkdir "${ssh_keys_path}"
     fi
     # check whether private key exist
@@ -238,7 +237,7 @@ function build_vm {
     local VM=$1
     # check whether VM already exist
     if [[ `VBoxManage list vms | grep -w "${VM}"` ]]; then
-        printf "${VM} already exist\n"
+        printf "\e[1;31m${VM} already exist\n\e[0m"
         exit 1
     fi
     # load vm description/definition
@@ -374,20 +373,20 @@ function destroy_vm {
     local VM=$1
     # check whether VM already exist
     if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
-        echo "${VM} doesn't exist"
+        printf "\e[1;31m${VM} doesn't exist\n\e[0m"
         exit 1
     fi
     # check whether VM is running
     if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
-        echo "Poweroff ${VM}"
+        printf "Poweroff ${VM}\n"
         VBoxManage controlvm "${VM}" poweroff
         sleep 1
     fi
     # destroy VM
-    echo "Destroy ${VM}"
+    printf "Destroy ${VM}\n"
     read -r -p "Are you sure? [y/N]" ans
     if [[ $ans =~ ^[Yy]$ ]]; then
-        echo "Destroying..."
+        printf "Destroying...\n"
         VBoxManage unregistervm "${VM}" --delete
     fi
     exit 0
@@ -404,12 +403,12 @@ function export_vm {
     load_definition
     # check whether VM_NAME.box exist in current dir
     if [ -f "${VM}.box" ]; then
-        echo "${VM}.box already exist in `pwd`"
+        printf "\e[1;31m${VM}.box already exist in `pwd`\n\e[0m"
         exit 1
     fi
     # check whether VM exist
     if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
-        echo "${VM} doesn't exist"
+        printf "\e[1;31m${VM} doesn't exist\n\e[0m"
         exit 1
     fi
     # check whether VM is running and shutdown it 
@@ -454,7 +453,7 @@ function export_vm {
     rm -rf $tmp_dir
     # help recover some changes made on VM during exporting
     recover_vm_state
-    echo "Done: `pwd`/${VM}.box"
+    printf "Done: `pwd`/${VM}.box\n"
     exit 0
 }
 
@@ -541,7 +540,7 @@ function ssh_exec {
 
     # check whether VM is running 
     if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
-        printf "${VM} is not running...\n"
+        printf "\e[1;31m${VM} is not running...\n\e[0m"
         exit 1
     fi
 
@@ -583,7 +582,7 @@ function ssh_exec {
             if [ -z "${cmd}" ]; then 
                 continue #consider break
             fi
-            echo "Exec: ${cmd}"
+            printf "Exec: ${cmd}\n"
             if [ $accept_ssh_command_fail -eq 0 ]; then
                 # fail is not accepted
                 ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
@@ -610,7 +609,7 @@ function ssh_exec {
 function start_web_server {
     # check whether port is not used by other proc
     if [[ `nc -z localhost $kickstart_port` ]]; then
-        echo "$kickstart_port port is already in use"
+        printf "\e[1;31m$kickstart_port port is already in use\n\e[0m"
         # TODO [LOW]: choose next webserver port if present is in use from kickstart_port list, 
         # and update current_kickstart_port - this not working with injection method (list of files to update ?)
         exit 1
@@ -622,7 +621,7 @@ function start_web_server {
     sleep 2
     # check whether web server was really started
     if [[ ! `nc -z localhost $kickstart_port` ]]; then
-        echo "webserver was not started"
+        printf "webserver was not started\n"
         exit 1
     fi
     # update webserver_status variable
@@ -653,7 +652,7 @@ function stop_web_server {
 
 # (signals and error handler) - cleaning after ctr-c, etc.
 function clean_up {
-    echo "INFO: Signal/Error handler - cleanup before exiting..."
+    printf "INFO: Signal/Error handler - cleanup before exiting...\n"
     if [ $webserver_kill_status -eq 0 ]; then
         # stop webserver (only if stop_web_server function didn't fail previuosly)
         stop_web_server
