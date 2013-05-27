@@ -52,6 +52,7 @@ Task is mostly about run VBoxManage command in proper order with proper options 
  - look into [templates](templates) and choose OS (learn also how to organize own definitions)
  - read about [available options](docs/DEFINITION_CFG.md) in definition.cfg
  - read about [VM Guest validation](docs/VALIDATE.md)
+ - [help yourself](docs/HELP_YOURSELF.md)
 
 ## Usage
 
