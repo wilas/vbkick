@@ -130,12 +130,9 @@ natmapping_was_removed=0
 # during exporting Shared folder is removed (temporary) - help recover state before exporting
 sharedfolder_was_removed=0
 
-# todo [MEDIUM]: future options:
-#ssh_password="vbkick"
-#ssh_login_timeout=7200
-#iso_download_timeout=1800
+# todo [LOW]: future option: ssh_password="vbkick"
 # todo [LOW]: replace echo by printf + red/green colors
-# todo [LOW]: $VM varaibel should be global everywhere
+# todo [LOW]: $VM variable should be global everywhere
 
 # Display help
 function usage {
@@ -279,7 +276,7 @@ function build_vm {
         for code in $boot_cmd_code; do
             #printf "${code}\n"
             if [ "${code}" == "wait" ]; then
-                printf "waiting...\n"
+                #printf "waiting...\n"
                 sleep 1
             else
                 VBoxManage controlvm "${VM}" keyboardputscancode $code
@@ -288,9 +285,10 @@ function build_vm {
         done
         sleep $boot_seq_wait
     done
-    # todo [MEDIUM]: wait until machine will be rebooted and ssh start working (before kickstart_timeout),
-    # ssh_keys_enabled must be turn on to use that feature
-    sleep $kickstart_timeout
+
+    # wait until machine will be ready (ssh connection start working) or timeout was reached
+    kickstart_monitoring
+
     # stop webserver
     stop_web_server
     exit 0
@@ -343,6 +341,32 @@ function create_box {
     # add shared folders
     if [ -n "${shared_folder}" ]; then 
         VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
+    fi
+}
+
+function kickstart_monitoring {
+    #
+    # check whether machine was kickstarted before timeout
+    #
+    local kickstart_counter=0
+    local extra_ssh_options="-o ConnectionAttempts=1 -o ConnectTimeout=1"
+
+    # ssh key authentication enabled
+    if [ $ssh_keys_enabled -eq 1 ]; then        
+        # create path to ssh private key
+        local key_path="${ssh_keys_path}/${ssh_priv_key}"
+        printf "\nWaiting for ssh login with user ${ssh_user} to localhost:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec\n"
+        # wait until ssh start working (communication chanel with VM) or kickstart_timeout was reached
+        while [[ ! `ssh "${ssh_user}@localhost" -q -t -i ${key_path} -p $ssh_host_port $ssh_options $extra_ssh_options -C "echo"`\
+            && $kickstart_counter -le $kickstart_timeout ]]; do
+            kickstart_counter=$((kickstart_counter+1))
+            printf "."
+            sleep 1
+        done
+        printf "\n"
+    else
+        # if no ssh key authentication enabled then wait until timeout was reached
+        sleep $kickstart_timeout
     fi
 }
 
@@ -476,9 +500,10 @@ function shutdown {
     if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
         VBoxManage controlvm "${VM}" poweroff
         printf "\n${VM} was powered off.\n"
-        sleep 1
+        sleep 5
     else
         printf "\n${VM} was shutdown cleanly.\n"
+        sleep 5
     fi
 }
 
@@ -579,15 +604,15 @@ function ssh_exec {
         fi
     fi
     # todo [LOW]: if ssh keys authentication is not enabled try login using password
-    # (root, user, sshpass, expect, VBoxManage guestcontrol)(same for shutdown)
+    # (root, user, sshpass, expect, VBoxManage guestcontrol)(same for shutdown, kickstart_monitoring)
 }
 
 function start_web_server {
     # check whether port is not used by other proc
     if [[ `nc -z localhost $kickstart_port` ]]; then
         echo "$kickstart_port port is already in use"
-        # TODO [LOW]: choose other webserver port if present is in use, 
-        # and update kickstart_port - this not working with injection method
+        # TODO [LOW]: choose next webserver port if present is in use from kickstart_port list, 
+        # and update current_kickstart_port - this not working with injection method (list of files to update ?)
         exit 1
     fi
     # start simple webserver serving files in background
@@ -658,8 +683,8 @@ if [[ ! `which VBoxManage 2>/dev/null` ]]; then
     exit 1
 fi
 vb_version=$(get_vb_version)
-# todo [LOW]: update postinstall/adm_envrc (only if exist) with current VBOX_VERSION (vboxmanage -v and sed should do a job)
-# todo [LOW]: update validate/adm_envrc (only if exist) with current VBOX_VERSION (vboxmanage -v and sed should do a job)
+# todo [LOW]: list of files to update e.g. {postinstall,validate}/adm_envrc (only if exist) with current VBOX_VERSION
+# (vboxmanage -v and sed should do a job)
 # signals and error handler
 trap clean_up SIGHUP SIGINT SIGTERM ERR
 process_args "${1}" "${2}"

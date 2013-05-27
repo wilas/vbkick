@@ -31,3 +31,6 @@ General TODO
     - howto contribute: (create issue) and/or (create branch, request pull) or (write email)
  - Ideas.md (arena + garden + levels/priority) and/or (create issue)
  - describe options in definition.cfg (possibility and consequences)(OS influence)
+
+Idea:
+ - concurrent VM build (arg: list of VM) - CPU waste - better create one and use clone

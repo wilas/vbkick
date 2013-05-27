@@ -156,11 +156,3 @@ More details soon.
 
  default: 20
 
-
-## TODO
-
-```
-ssh_password="vbkick"
-ssh_login_timeout=7200
-iso_download_timeout=1800
-```
