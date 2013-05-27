@@ -1,3 +1,10 @@
+# Shell autocompletion
+
+add to ~/.bashrc
+```
+complete -W "$(vbkick --help | awk '/^\t/{print $1}')" vbkick
+```
+
 # git todo
 
 add to ~/.gitconfig

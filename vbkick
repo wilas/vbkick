@@ -135,16 +135,17 @@ sharedfolder_was_removed=0
 
 # Display help
 function usage {
+    printf "Desc: the automatic Virtualbox Guests and Vagrant Base Boxes builder\n"
     printf "\n"
-    printf "Usage: $0 [build|destroy|export|validate|postinstall|help] VM_NAME\n"
-    printf "Help creates Virtualbox Guests and Vagrant Base Boxes\n"
+    printf "Usage: vbkick ACTION VM_NAME\n"
     printf "\n"
-    printf "build                 build VM\n"
-    printf "postinstall           run postinstall scripts via ssh\n"
-    printf "validate              run validate/feature scripts via ssh\n"
-    printf "export                export VM and create Vagrant VM_NAME.box\n"
-    printf "destroy               destroy VM\n"
-    printf "help                  display this help and exit\n"
+    printf "Available actions:\n"
+    printf "\tbuild                 build VM\n"
+    printf "\tpostinstall           run postinstall scripts via ssh\n"
+    printf "\tvalidate              run validate/feature scripts via ssh\n"
+    printf "\texport                export VM and create Vagrant VM_NAME.box\n"
+    printf "\tdestroy               destroy VM\n"
+    printf "\thelp                  display this help and exit\n"
     printf "\n"
 }
 
