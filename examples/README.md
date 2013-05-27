@@ -50,6 +50,7 @@ Postinstall scripts are later (after machine reboot) transport (via SCP) to alre
 
 ### Why?
  - to create easy way for tuning box/PC after installation (tuning.sh as an example).
+ - you can run postinstall command many times (e.g puppet repo is unavailalble, then try later again)
  - to upgrade already existing Virtualbox Guest (e.g. install new GuestAdditions)
  - to create easy/automated and tested way to upgrade desktop/OS and check if everything works
 

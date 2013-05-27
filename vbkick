@@ -131,7 +131,6 @@ natmapping_was_removed=0
 sharedfolder_was_removed=0
 
 # todo [LOW]: future option: ssh_password="vbkick"
-# todo [LOW]: $VM variable should be global everywhere
 
 # Display help
 function usage {
@@ -153,11 +152,11 @@ function usage {
 function process_args {
     VM="${2}"
     case "$1" in
-        "build") build_vm "${VM}" ;;
-        "destroy") destroy_vm "${VM}" ;;
-        "export") export_vm "${VM}" ;;
-        "validate") validate_vm "${VM}" ;;
-        "postinstall") lazy_postinstall "${VM}" ;;
+        "build") build_vm ;;
+        "destroy") destroy_vm ;;
+        "export") export_vm ;;
+        "validate") validate_vm ;;
+        "postinstall") lazy_postinstall ;;
         *) usage; exit ;;
     esac
 }
@@ -235,7 +234,6 @@ function get_priv_ssh_key {
 }
 
 function build_vm {
-    local VM=$1
     # check whether VM already exist
     if [[ `VBoxManage list vms | grep -w "${VM}"` ]]; then
         printf "\e[1;31m${VM} already exist\n\e[0m"
@@ -252,7 +250,7 @@ function build_vm {
     # start simple webserver (in background)
     start_web_server
     # create VM box with given settings
-    create_box "${VM}"
+    create_box
     # host ip to connect from guest
     local host_ip=10.0.2.2
     # start VM
@@ -295,7 +293,6 @@ function build_vm {
 }
 
 function create_box {
-    local VM=$1
     # register vm
     VBoxManage createvm --name "${VM}" --ostype "${os_type_id}" --register
 
@@ -371,7 +368,6 @@ function kickstart_monitoring {
 }
 
 function destroy_vm {
-    local VM=$1
     # check whether VM already exist
     if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
         printf "\e[1;31m${VM} doesn't exist\n\e[0m"
@@ -399,7 +395,6 @@ function export_vm {
     # vagrant package --base "${VM}" --output "${VM}.box"
     # if more customisation required use: vagrant package (--help)
     #
-    local VM=$1
     # load vm description/definition
     load_definition
     # check whether VM_NAME.box exist in current dir
@@ -413,7 +408,7 @@ function export_vm {
         exit 1
     fi
     # check whether VM is running and shutdown it 
-    shutdown "${VM}"
+    shutdown
 
     # clearing previously set port forwarding rules (only if exist)
     if [[ `VBoxManage showvminfo "${VM}" | grep -w "vbkickSSH"` ]]; then
@@ -472,8 +467,6 @@ function recover_vm_state {
 }
 
 function shutdown {
-    local VM=$1
-
     # ssh key authentication enabled
     if [ $ssh_keys_enabled -eq 1 ]; then        
         # if key not exist then get it
@@ -512,20 +505,18 @@ function validate_vm {
     # test should be smart enough to check what I really want to test
     # e.g. If I don't need chef, don't test whether I have chef
     #
-    local VM=$1
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    ssh_exec $VM "${validate_transport[@]}" "${validate_launch[@]}" 1
+    ssh_exec "${validate_transport[@]}" "${validate_launch[@]}" 1
     exit 0
 }
 
 function lazy_postinstall {
-    local VM=$1
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    ssh_exec $VM "${postinstall_transport[@]}" "${postinstall_launch[@]}" 0
+    ssh_exec "${postinstall_transport[@]}" "${postinstall_launch[@]}" 0
     exit 0
 }
 
@@ -533,11 +524,10 @@ function ssh_exec {
     #
     # transport scripts to VM Guest via SCP and exec them via SSH
     #
-    local VM=$1
-    local transport=$2
-    local launch=$3
+    local transport=$1
+    local launch=$2
     # useful for running tests on destination machine, tests don't stop after first ERROR
-    local accept_ssh_command_fail=$4
+    local accept_ssh_command_fail=$3
 
     # check whether VM is running 
     if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
