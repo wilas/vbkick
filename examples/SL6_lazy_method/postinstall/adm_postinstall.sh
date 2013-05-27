@@ -13,6 +13,5 @@ while read -r script; do
     if [[ -s "${script}" ]]; then
         echo "${script}"
         sh "${script}"
-        #bash "$script"
     fi
 done < "${context_file}"

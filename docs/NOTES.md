@@ -1,7 +1,5 @@
 Dirty notes:
  - ! kickstart_port is setup in 2 places for injection postinstall: kickstart_file, definition.cfg
- - shell completion: https://github.com/mitchellh/vagrant/blob/master/contrib/bash/completion.sh
- - idea: I as vbkick want just kick Virtualbox and bring you OS to play (keep it simple - not too much features/options, do well one thing)
  - Create bootable usb stick from definition.cfg (os_type is a key)
 
 Howto:
@@ -9,20 +7,18 @@ Howto:
  - expect + passwd: http://stackoverflow.com/questions/12202587/ssh-script-that-automatically-enters-password
  - expect + passwd: http://www.linuxquestions.org/questions/linux-newbie-8/ssh-with-password-533684/
  - sshpass: http://www.debianadmin.com/sshpass-non-interactive-ssh-password-authentication.html
- - some bash options (set -e; set -o pipefail): http://stackoverflow.com/questions/11231937/bash-ignoring-error-for-a-particular-command
- - bash script prelude: http://gfxmonk.net/2012/06/17/my-new-bash-script-prelude.html
 
 Links: 
  - smartos: https://gist.github.com/benr/5505198
  - good to know about set -e: http://stackoverflow.com/questions/6930295/set-e-and-short-tests
+ - bash script prelude: http://gfxmonk.net/2012/06/17/my-new-bash-script-prelude.html
+ - some bash options (set -e; set -o pipefail): http://stackoverflow.com/questions/11231937/bash-ignoring-error-for-a-particular-command
  - Debian + kde + usb stick: http://www.debian.org/releases/stable/i386/apbs02.html.en
  - Centos + gnome + usb stick: http://wiki.centos.org/HowTos/InstallFromUSBkey
 
 General TODO
  - wget/curl installer
- - docs and manuals
  - contribute
-    - Help yourself: to_do, to_do_r, autocompletion
     - to_do priority:
         - LOW - (cosmetic problem, nothing important but nice to have) [COULD, WOULD]
         - MEDIUM - ({default} minor loss of func. easy workaround is present , not as time-critical, can be held back until a future delivery) [SHOULD]
@@ -32,5 +28,6 @@ General TODO
     - howto contribute: (create issue) and/or (create branch, request pull) or (write email)
  - Ideas.md (arena + garden + levels/priority) and/or (create issue)
  - describe options in definition.cfg (possibility and consequences)(OS influence)
- - tests:
-    - features dir: When I …{exec}… then I expect …{OK/result}…: http://chrismdp.com/2013/03/bdd-with-shell-script/
+
+Idea:
+ - concurrent VM build (arg: list of VM) - CPU waste - better create one and use clone

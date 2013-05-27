@@ -21,7 +21,7 @@ Run postinstall scripts during kickstarting process in chroot environment.
 ### Why?
 
  - no extra users and SSH keys needed to run postinstall scripts (more secure for kickstarting hardware machine, useful for production env. e.g. with PXE)
- - to create easy/automated and tested way to switch/upgrade desktop/OS and check if all needed (for us) apps still works (This is answer for that question: What if the next release breaks something in my applications?)
+ - to create easy/automated and tested way to switch/install desktop/OS and check if all needed (for us) apps still works (This is answer for that question: What if the next release breaks something in my applications?)
  - to create easy way for tuning box/PC during installation (tuning.sh as an example) - running puppet manifest, ansible playbooks is just one line :-) (puppet modules, ansible playbooks may be downloaded during kickstarting [if usb_stick then earlier upload to flash disc], git clone is also possible - do what you need)
  - create bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and sh scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier)
 
@@ -35,6 +35,7 @@ postinstall_transport and postinstall_launch options are not required in this me
 Use Case flow:
 ```
 vbkick build SL6_inject
+vbkick validate SL6_inject
 vbkick export SL6_inject
 
 vagrant box add 'SL64_inject' SL6_inject.box
@@ -49,6 +50,9 @@ Postinstall scripts are later (after machine reboot) transport (via SCP) to alre
 
 ### Why?
  - to create easy way for tuning box/PC after installation (tuning.sh as an example).
+ - you can run postinstall command many times (e.g puppet repo is unavailalble, then try later again)
+ - to upgrade already existing Virtualbox Guest (e.g. install new GuestAdditions)
+ - to create easy/automated and tested way to upgrade desktop/OS and check if everything works
 
 ### Good to know
 
@@ -59,9 +63,9 @@ Use Case flow:
 ```
 vbkick build SL6_lazy
 vbkick postinstall SL6_lazy
+vbkick validate SL6_lazy
 vbkick export SL6_lazy
 
 vagrant box add 'SL64_lazy' SL6_lazy.box
 vagrant box list
 ```
-

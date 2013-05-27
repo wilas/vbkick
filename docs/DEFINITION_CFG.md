@@ -130,14 +130,29 @@ More details soon.
 
  default: ("")
 
-## TODO
 
-```
-ssh_password="vbkick"
-ssh_login_timeout=7200
-iso_download_timeout=1800
-postinstall_timeout=1800
-sudo_cmd="sudo -S sh %s"
-shutdown_cmd="/sbin/halt -h -p"
-```
+## VALIDATE
+
+ - validate_launch
+
+ default: ("")
+
+ - validate_transport
+
+ default: ("")
+
+
+## CLEAN
+
+ - clean_transported
+
+ default: 0
+
+ - shutdown_cmd
+
+ default: "sudo /sbin/halt -h -p"
+
+ - shutdown_timeout
+
+ default: 20
 

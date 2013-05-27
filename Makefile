@@ -4,6 +4,7 @@
 # where place scripts
 prefix = /usr/local
 bindir = $(prefix)/bin
+mandir = /usr/local/man/man1
 
 # install command
 INSTALL = install
@@ -18,6 +19,8 @@ all:
 install:
 	$(INSTALL) -m 0755 -d $(bindir)
 	$(INSTALL) -m 0755 -p $(EXEC) $(bindir)/
+	$(INSTALL) -g 0 -o 0 -m 0644 -p docs/man/vbkick.1 ${mandir}
 
 uninstall:
 	cd $(bindir) && rm -f $(EXEC)
+	cd ${mandir} && rm -f vbkick.1

@@ -29,7 +29,7 @@
 # Note:
 # Script work with python 2.6+ and python 3
 # When scancode not exist for given char 
-# then script exit with code 1 and error to stderr is write
+# then script exit with code 1 and an error is write to stderr.
 
 # Helpful links:
 # - http://humbledown.org/files/scancodes.l
@@ -107,16 +107,7 @@ def process_multiply(input):
         input = input.replace(match.group(0), replacement)
     return input
 
-if __name__ == "__main__":
-    # read from stdin
-    input = sys.stdin.readlines()
-    # convert input list to string
-    input = ''.join(input).rstrip('\n')
-    # process multiply
-    input = process_multiply(input)
-    # replace white-spaces with <Spacebar>
-    input = input.replace(' ', '<Spacebar>')
-
+def translate_chars(input):
     # create list to collect information about input string structure
     # -1 mean no key yet assign to cell in array
     keys_array = [-1] * len(input) 
@@ -150,6 +141,20 @@ if __name__ == "__main__":
 
     # remove empty string from keys_array
     keys_array = [x for x in keys_array if x != '']
+    return keys_array
+
+
+if __name__ == "__main__":
+    # read from stdin
+    input = sys.stdin.readlines()
+    # convert input list to string
+    input = ''.join(input).rstrip('\n')
+    # process multiply
+    input = process_multiply(input)
+    # replace white-spaces with <Spacebar>
+    input = input.replace(' ', '<Spacebar>')
+    # process keys
+    keys_array = translate_chars(input)
     # write result to stdout
     print(' '.join(keys_array))
 

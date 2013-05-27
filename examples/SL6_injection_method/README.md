@@ -9,4 +9,5 @@ drwxr-xr-x  iso
 drwxr-xr-x  keys
 drwxr-xr-x  kickstart
 drwxr-xr-x  postinstall
+drwxr-xr-x  validate
 ```
