@@ -77,7 +77,7 @@ kickstart_timeout=7200
 
 # SSH default settings (veeded to run vbkick validate and/or lazy_posinstall)
 # by default use ssh keys
-ssh_keys_enabled=0
+ssh_keys_enabled=1
 # default user
 ssh_user="vbkick"
 # default path to ssh keys

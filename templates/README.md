@@ -81,7 +81,6 @@ Description:
 ## vbkick templates hall of fame
 
  - ScientificLinux6 <@wilas>
- - RedHat ?
  - Debian ?
  - Ubuntu ?
  - FreeBSD ?
