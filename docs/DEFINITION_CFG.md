@@ -89,7 +89,7 @@ More details soon.
 
  - ssh_keys_enabled
 
- defualt: 0
+ default: 1
 
  - ssh_user
 

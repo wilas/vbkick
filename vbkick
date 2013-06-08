@@ -332,6 +332,7 @@ function create_box {
 
     # ssh NAT mapping
     if [[ ! `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
+        # TODO [LOW]: check whether ssh_host_port is already in use and take other
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
@@ -373,19 +374,23 @@ function destroy_vm {
         printf "\e[1;31m${VM} doesn't exist\n\e[0m"
         exit 1
     fi
+
+    # destroy VM
+    printf "Destroy ${VM}\n"
+    read -r -p "Are you sure? [y/N]" ans
+    if [[ ! $ans =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+
     # check whether VM is running
     if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
         printf "Poweroff ${VM}\n"
         VBoxManage controlvm "${VM}" poweroff
         sleep 1
     fi
-    # destroy VM
-    printf "Destroy ${VM}\n"
-    read -r -p "Are you sure? [y/N]" ans
-    if [[ $ans =~ ^[Yy]$ ]]; then
-        printf "Destroying...\n"
-        VBoxManage unregistervm "${VM}" --delete
-    fi
+
+    printf "Destroying...\n"
+    VBoxManage unregistervm "${VM}" --delete
     exit 0
 }
 
