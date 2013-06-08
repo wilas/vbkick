@@ -10,6 +10,6 @@ while read -r script; do
     [[ "${script}" =~ ^#.*$ ]] && continue
     if [[ -s "${script}" ]]; then
         #cat "${script}" | grep -E "^# (Feature|Scenario|And|Given|When|Then)"
-        sh "${script}"
+        bash "${script}"
     fi
 done < "${context_file}"
