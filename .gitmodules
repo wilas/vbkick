@@ -1,3 +1,9 @@
 [submodule "templates/ScientificLinux6"]
 	path = templates/ScientificLinux6
 	url = git@github.com:wilas/scientificlinux6-vbkick-template.git
+[submodule "templates/CentOS6"]
+	path = templates/CentOS6
+	url = git@github.com:wilas/centos6-vbkick-template.git
+[submodule "templates/Debian7"]
+	path = templates/Debian7
+	url = git@github.com:wilas/debian7-vbkick-template.git

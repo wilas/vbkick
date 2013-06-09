@@ -1,46 +1,46 @@
 # Puppet Labs repositories
-#wget -O /etc/pki/rpm-gpg/RPM-GPG-KEY-puppetlabs https://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
+wget -O /etc/pki/rpm-gpg/RPM-GPG-KEY-puppetlabs https://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
 cat > /etc/yum.repos.d/puppetlabs.repo << "EOF"
 [puppetlabs-products]
 name=Puppet Labs Products EL 6 - $basearch
 baseurl=http://yum.puppetlabs.com/el/6/products/$basearch
 enabled=0
-gpgcheck=0
+gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-puppetlabs
 
 [puppetlabs-deps]
 name=Puppet Labs Dependencies EL 6 - $basearch
 baseurl=http://yum.puppetlabs.com/el/6/dependencies/$basearch
 enabled=0
-gpgcheck=0
+gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-puppetlabs
 
 [puppetlabs-devel]
 name=Puppet Labs Devel EL 6 - $basearch
 baseurl=http://yum.puppetlabs.com/el/6/devel/$basearch
 enabled=0
-gpgcheck=0
+gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-puppetlabs
 
 [puppetlabs-products-src]
 name=Puppet Labs Products EL 6 - $basearch - Source
 baseurl=http://yum.puppetlabs.com/el/6/products/SRPMS
 enabled=0
-gpgcheck=0
+gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-puppetlabs
 
 [puppetlabs-deps-src]
 name=Puppet Labs Dependencies EL 6 - $basearch - Source
 baseurl=http://yum.puppetlabs.com/el/6/dependencies/SRPMS
 enabled=0
-gpgcheck=0
+gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-puppetlabs
 
 [puppetlabs-devel-src]
 name=Puppet Labs Devel EL 6 - $basearch - Source
 baseurl=http://yum.puppetlabs.com/el/6/devel/SRPMS
 enabled=0
-gpgcheck=0
+gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-puppetlabs
 EOF
 

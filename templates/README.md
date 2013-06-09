@@ -12,32 +12,32 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
     .
     ├── RedHat6
     │   ├── definition.cfg
-    │   ├── definition62.cfg
-    │   ├── definition63.cfg
-    │   ├── definition64.cfg
+    │   ├── definition-6.2-x86_64.cfg
+    │   ├── definition-6.3-x86_64.cfg
+    │   ├── definition-6.4-x86_64.cfg
     │   ├── kickstart
-    │   │   └── <redhat63-x86_64-JDK.cfg, redhat64-x86_64-noX.cfg, ...>
+    │   │   └── <redhat-6.3-x86_64-JDK.cfg, redhat-6.4-x86_64-noX.cfg, ...>
     │   ├── validate
     │   │   └── <adm_features.sh, adm_context.txt, adm_envrc, test_puppet.sh, test_ruby.sh, test_virtualbox.sh, test_vagrant, ....sh >
     │   └── postinstall
     │       └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
     ├── RedHat5
     │   ├── definition.cfg
-    │   ├── definition55.cfg
-    │   ├── definition56.cfg
-    │   ├── definition59.cfg
+    │   ├── definition-5.5-x86_64.cfg
+    │   ├── definition-5.6-x86_64.cfg
+    │   ├── definition-5.9-x86_64.cfg
     │   ├── kickstart
-    │   │   └── <redhat56-x86_64-puppet.cfg, redhat59-i386-noX.cfg, ...>
+    │   │   └── <redhat-5.6-x86_64-puppet.cfg, redhat-5.9-i386-noX.cfg, ...>
     │   ├── validate
     │   │   └── <adm_features.sh, adm_context.txt, adm_envrc, test_puppet.sh, test_ruby.sh, test_virtualbox.sh, test_vagrant, ....sh >
     │   └── postinstall
     │       └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
-    └── Debian6
+    └── Debian7
         ├── definition.cfg
-        ├── definition600.cfg
-        ├── definition607.cfg
+        ├── definition-7.0-i386.cfg
+        ├── definition-7.0-x86_64.cfg
         ├── kickstart
-        │   └── <Debian6-x86_64-KDE.cfg, Debian6-i386-noX.cfg, ...>
+        │   └── <Debian-7.0-x86_64-KDE.cfg, Debian-7.0-i386-noX.cfg, ...>
         ├── validate
         │   └── <adm_features.sh, adm_context.txt, adm_envrc, test_puppet.sh, test_ruby.sh, test_virtualbox.sh, test_vagrant, ....sh >
         └── postinstall
@@ -47,11 +47,11 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
 ```
     drwxr-xr-x  .
     drwxr-xr-x. ..
-    lrwxrwxrwx  definition.cfg -> definition64_injection.cfg
-    -rw-r--r--  definition63_lazy.cfg
-    -rw-r--r--  definition63_injection.cfg
-    -rw-r--r--  definition64_lazy.cfg
-    -rw-r--r--  definition64_injection.cfg
+    lrwxrwxrwx  definition.cfg -> definition-6.4-x86_64.cfg
+    -rw-r--r--  definition-6.3-i386.cfg
+    -rw-r--r--  definition-6.3-x86_64.cfg
+    -rw-r--r--  definition-6.4-i386.cfg
+    -rw-r--r--  definition-6.4-x86_64.cfg
     drwxr-xr-x  iso
     drwxr-xr-x  keys
     drwxr-xr-x  kickstart
@@ -63,16 +63,16 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
 
 howto update symlink:
 ```
-    ln -fs definition63_injection.cfg definition.cfg
+    ln -fs definition-6.4-i386.cfg definition.cfg
 ```
 
 Description:
  - postinstall dir contain all scripts run during postinstall process
  - validate dir contain all scripts run during validate process
- - kickstart dir contain all files used during boot/kickstart process
- - each file in kickstart (e.g. ks.cfg/preseed.cfg) has descriptive names (OS_NAMEVERSION-ARCH-SPEC_DESC.cfg) e.g.: redhat63-x86_64-noX.cfg, redhat64-x86_64-JDK.cfg, debian700-x86_64-KDE.cfg
+ - kickstart dir contain all files used during bootstrap process
+ - each file in kickstart (e.g. ks.cfg/preseed.cfg) has descriptive names (OS_NAME-VERSION-ARCH-SPEC_DESC.cfg) e.g.: redhat-6.3-x86_64-noX.cfg, redhat-6.4-x86_64-JDK.cfg, debian-7.0-x86_64-KDE.cfg
  - definition.cfg is symlink to default vbkick definition
- - each definition has descriptive name e.g. definition63.cfg, definition64.cfg, definition65_beta.cfg, definition64_injection.cfg
+ - each definition has descriptive name e.g. definition-6.3-x86_64.cfg, definition-6.4-x86_64.cfg, definition-6.5-x86_64-beta.cfg
  - each template take care about "big" OS release, e.g. RedHat6, Redhat5, Debian7, Debian6
  - OS ISOs and SSH keys are not included
  - README.md and LICENSE files are required
@@ -80,8 +80,12 @@ Description:
 
 ## vbkick templates hall of fame
 
+ - CentOS6 <@wilas>
+ - Debian7 <@wilas>
  - ScientificLinux6 <@wilas>
- - Debian ?
+ - ScientificLinux5 ?
+ - CentOS5 ?
+ - Debian6 ?
  - Ubuntu ?
  - FreeBSD ?
  - Gentoo ?
