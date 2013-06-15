@@ -62,6 +62,8 @@ iso_path="iso"
 # by default sha256sum is empty - 
 # WARNING is given during processing if sha256 sum is wrong (use: sha256sum --help)
 iso_sha256=""
+# download or not VBoxGuestAdditions on host
+guest_additions_download=1
 
 # Boot default settings
 # default time before boot_cmd_sequence start
@@ -211,10 +213,14 @@ function download_install_media {
         printf "INFO: SHA256SUM:${iso_sha256} is valid.\n"
     fi
 
-    # check whether VBoxGuestAdditions exist
-    if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
-        local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
-        wget --no-check-certificate "${additions_url}" -P "${iso_path}"
+    # download VBoxGuestAdditions if required
+    if [ $guest_additions_download -eq 1 ]; then
+        #todo [LOW]: rm old guestAdditions from iso directory
+        # check whether VBoxGuestAdditions exist
+        if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
+            local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
+            wget --no-check-certificate "${additions_url}" -P "${iso_path}"
+        fi
     fi
 }
 
@@ -289,6 +295,8 @@ function build_vm {
 
     # stop webserver
     stop_web_server
+
+    #todo [LOW]: release media - VBoxGuestAdditions, Install_iso
     exit 0
 }
 
@@ -311,8 +319,10 @@ function create_box {
     VBoxManage storagectl "${VM}" --name "IDE Controller" --add ide
     VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
     --type dvddrive --port 0 --device 0 --medium "${iso_path}/${iso_file}"
-    VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-    --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso"
+    if [ $guest_additions_download -eq 1 ]; then
+        VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+        --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso"
+    fi
 
     # Tuning VM
     # setting cpu's

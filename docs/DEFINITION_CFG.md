@@ -65,6 +65,10 @@ More details soon.
 
  default: ""
 
+ - guest_additions_download
+
+ default: 1
+
 
 ## BOOT
 
