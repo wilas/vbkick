@@ -9,7 +9,6 @@ while read -r script; do
     # don't process comments
     [[ "${script}" =~ ^#.*$ ]] && continue
     if [[ -s "${script}" ]]; then
-        #cat "${script}" | grep -E "^# (Feature|Scenario|And|Given|When|Then)"
         bash "${script}"
     fi
 done < "${context_file}"

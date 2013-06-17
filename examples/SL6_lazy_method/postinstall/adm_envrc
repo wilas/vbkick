@@ -6,5 +6,3 @@ VM_DESC="vagrant box"
 export VM_DESC
 VBOX_VERSION="4.2.12"
 export VBOX_VERSION
-#CHEF_VERSION=
-#PUPPET_VERSION=

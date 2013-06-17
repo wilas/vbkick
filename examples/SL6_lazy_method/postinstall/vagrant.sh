@@ -1,7 +1,5 @@
 # Vagrant specific
-date > /etc/vagrant_box_build_time
-
-# create vagrant user and group
+# Create vagrant user and group
 /usr/sbin/groupadd vagrant
 /usr/sbin/useradd vagrant -g vagrant -G wheel -d /home/vagrant -c "Vagrant box user"
 # set password
