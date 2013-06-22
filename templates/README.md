@@ -82,12 +82,10 @@ Description:
 
  - CentOS6 <@wilas>
  - Debian7 <@wilas>
+ - Debian6 <@wilas>
+ - Fedora18 <@wilas>
  - ScientificLinux6 <@wilas>
- - ScientificLinux5 ?
- - CentOS5 ?
- - Debian6 ?
- - Ubuntu ?
- - FreeBSD ?
- - Gentoo ?
- - SmartOS ?
+ - Ubuntu12.04 <@wilas>
+ - FreeBSD/PC-BSD ?
  - OpenIndiana ?
+ - SmartOS ?
