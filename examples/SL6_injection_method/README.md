@@ -11,3 +11,12 @@ drwxr-xr-x  kickstart
 drwxr-xr-x  postinstall
 drwxr-xr-x  validate
 ```
+
+```
+vbkick build SL6_inject
+vbkick validate SL6_inject
+vbkick export SL6_inject
+
+vagrant box add 'SL64_inject' SL6_inject.box
+vagrant box list
+```
