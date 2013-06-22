@@ -1,8 +1,5 @@
 # Some variables which may help customize box
 # info: using export in sh, variable become available for all scripts exec by adm_postinstall
-VM_TYPE="vbox"
-export VM_TYPE
-VM_DESC="vagrant box"
-export VM_DESC
-VBOX_VERSION="4.2.12"
-export VBOX_VERSION
+# Example:
+#VBOX_VERSION="4.2.12"
+#export VBOX_VERSION
