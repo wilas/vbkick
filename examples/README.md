@@ -66,24 +66,29 @@
 
 ## Typical build flow.
 
-creates own definition based on selected template
- - vim definition-6.4-x86_64-my_custom.cfg
- - ln -fs definition-6.4-x86_64-my_custom.cfg definition.cfg
+Starting
+ - creates own definition based on selected template
+ - cmd: `vim definition-6.4-x86_64-my_custom.cfg`
+ - cmd: `ln -fs definition-6.4-x86_64-my_custom.cfg definition.cfg`
 
-`vbkick build VM_NAME`
+Building
  - creates a new VM
  - download install media
  - boot (kickstart) machine and talk to installer using boot_cmd_sequence
  - wait until machine is ready or a timeout is reached
+ - cmd: `vbkick build VM_NAME`
 
-`vbkick postinstall VM_NAME`
+Tuning
  - postinstall configuration - transport posinstall scripts via SCP and exec launch commands via SSH
+ - cmd: `vbkick postinstall VM_NAME`
 
-`vbkick validate VM_NAME`
+Testing
  - validate the new VM
+ - cmd: `vbkick validate VM_NAME`
 
-`vbkick export VM_NAME`
+Releasing
  - export machine as a vagrant box
+ - cmd: `vbkick export VM_NAME`
 
 
 ## Postinstall
@@ -92,7 +97,7 @@ There are 2 main postinstall methods:
  - lazy - run postinstall scripts "later" - after installing the OS.
  - injection - run postinstall scripts during kickstarting process in chroot environment (implemented inside the kickstart file),
 
-Of course you can also mix these methods. Postinstall process help answer for this question: What if the next OS release breaks something in my applications?
+Of course you can also mix these methods.
 
 Open Source mean freedom – enjoy that freedom and choose best solution for you.
 

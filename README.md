@@ -38,7 +38,7 @@ Task is mostly about run VBoxManage command in proper order with proper options 
 ## Create own box definition
 
  - look on [templates](templates) and choose OS (learn also how to organize own definitions)
- - look on [examples](examples) and choose method
+ - look on [examples](examples) and customize your box
  - read about [available options](docs/DEFINITION_CFG.md) in definition.cfg
  - read about [VM Guest validation](docs/VALIDATE.md)
  - [help yourself](docs/HELP_YOURSELF.md)
