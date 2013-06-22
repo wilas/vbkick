@@ -81,8 +81,8 @@ Description:
 ## vbkick templates hall of fame
 
  - CentOS6 <@wilas>
- - Debian7 <@wilas>
  - Debian6 <@wilas>
+ - Debian7 <@wilas>
  - Fedora18 <@wilas>
  - ScientificLinux6 <@wilas>
  - Ubuntu12.04 <@wilas>
