@@ -1,3 +1,18 @@
 [submodule "templates/ScientificLinux6"]
 	path = templates/ScientificLinux6
-	url = git@github.com:wilas/scientificlinux6-vbkick-template.git
+	url = git@github.com:wilas/vbkick-template-scientificlinux6.git
+[submodule "templates/CentOS6"]
+	path = templates/CentOS6
+	url = git@github.com:wilas/vbkick-template-centos6.git
+[submodule "templates/Debian7"]
+	path = templates/Debian7
+	url = git@github.com:wilas/vbkick-template-debian7.git
+[submodule "templates/Debian6"]
+	path = templates/Debian6
+	url = git@github.com:wilas/vbkick-template-debian6.git
+[submodule "templates/Fedora18"]
+	path = templates/Fedora18
+	url = git@github.com:wilas/vbkick-template-fedora18.git
+[submodule "templates/Ubuntu12.04"]
+	path = templates/Ubuntu12.04
+	url = git@github.com:wilas/vbkick-template-ubuntu12.04.git

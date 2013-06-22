@@ -62,6 +62,8 @@ iso_path="iso"
 # by default sha256sum is empty - 
 # WARNING is given during processing if sha256 sum is wrong (use: sha256sum --help)
 iso_sha256=""
+# download or not VBoxGuestAdditions on host
+guest_additions_download=1
 
 # Boot default settings
 # default time before boot_cmd_sequence start
@@ -77,7 +79,7 @@ kickstart_timeout=7200
 
 # SSH default settings (veeded to run vbkick validate and/or lazy_posinstall)
 # by default use ssh keys
-ssh_keys_enabled=0
+ssh_keys_enabled=1
 # default user
 ssh_user="vbkick"
 # default path to ssh keys
@@ -211,10 +213,14 @@ function download_install_media {
         printf "INFO: SHA256SUM:${iso_sha256} is valid.\n"
     fi
 
-    # check whether VBoxGuestAdditions exist
-    if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
-        local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
-        wget --no-check-certificate "${additions_url}" -P "${iso_path}"
+    # download VBoxGuestAdditions if required
+    if [ $guest_additions_download -eq 1 ]; then
+        #todo [LOW]: rm old guestAdditions from iso directory
+        # check whether VBoxGuestAdditions exist
+        if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
+            local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
+            wget --no-check-certificate "${additions_url}" -P "${iso_path}"
+        fi
     fi
 }
 
@@ -289,6 +295,8 @@ function build_vm {
 
     # stop webserver
     stop_web_server
+
+    #todo [LOW]: release media - VBoxGuestAdditions, Install_iso
     exit 0
 }
 
@@ -311,8 +319,10 @@ function create_box {
     VBoxManage storagectl "${VM}" --name "IDE Controller" --add ide
     VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
     --type dvddrive --port 0 --device 0 --medium "${iso_path}/${iso_file}"
-    VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-    --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso"
+    if [ $guest_additions_download -eq 1 ]; then
+        VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+        --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso"
+    fi
 
     # Tuning VM
     # setting cpu's
@@ -332,6 +342,7 @@ function create_box {
 
     # ssh NAT mapping
     if [[ ! `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
+        # TODO [LOW]: check whether ssh_host_port is already in use and take other
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
@@ -373,19 +384,23 @@ function destroy_vm {
         printf "\e[1;31m${VM} doesn't exist\n\e[0m"
         exit 1
     fi
+
+    # destroy VM
+    printf "Destroy ${VM}\n"
+    read -r -p "Are you sure? [y/N]" ans
+    if [[ ! $ans =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+
     # check whether VM is running
     if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
         printf "Poweroff ${VM}\n"
         VBoxManage controlvm "${VM}" poweroff
         sleep 1
     fi
-    # destroy VM
-    printf "Destroy ${VM}\n"
-    read -r -p "Are you sure? [y/N]" ans
-    if [[ $ans =~ ^[Yy]$ ]]; then
-        printf "Destroying...\n"
-        VBoxManage unregistervm "${VM}" --delete
-    fi
+
+    printf "Destroying...\n"
+    VBoxManage unregistervm "${VM}" --delete
     exit 0
 }
 

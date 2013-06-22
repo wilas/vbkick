@@ -65,6 +65,10 @@ More details soon.
 
  default: ""
 
+ - guest_additions_download
+
+ default: 1
+
 
 ## BOOT
 
@@ -89,7 +93,7 @@ More details soon.
 
  - ssh_keys_enabled
 
- defualt: 0
+ default: 1
 
  - ssh_user
 

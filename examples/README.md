@@ -1,8 +1,108 @@
-# Examples
+# Examples - how to customize box definition.
+
+## Typical box definition structure.
+
+```
+    .
+    └─ SL6
+       ├── definition.cfg -> definition-6.4-x86_64.cfg
+       ├── definition-6.3-i386.cfg
+       ├── definition-6.3-x86_64.cfg
+       ├── definition-6.4-i386.cfg
+       ├── definition-6.4-x86_64.cfg
+       ├── kickstart
+       │   └── <scientificlinux-6.4-x86_64-noX.cfg, scientificlinux-6.4-x86_64-GNOME.cfg, ...>
+       ├── validate
+       │   └── <adm_features.sh, adm_context.txt, adm_envrc, test_puppet.sh, test_ruby.sh, test_virtualbox.sh, test_vagrant, ....sh >
+       └── postinstall
+           └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
+```
+
+**The definition.cfg is symlink** to choosen vbkick definition. The definition contains all crucial parameters to build and tuning the new box, e.g.:
+
+ - number of CPUs
+ - memory size
+ - disk size
+ - os type
+ - url to install ISO
+ - boot sequence
+ - ssh key
+ - command for clean shutdown
+ - list of postinstall commands/scripts
+ - list of validation commands/tests
+
+## Example definition.cfg - the core file of each box.
+
+```
+    cpu_count=1
+    memory_size=512
+    disk_size=10140
+    disk_format="vdi"
+    video_memory_size=10
+    hostiocache="on"
+    vm_options=("ioapic:on")
+    os_type_id="RedHat_64"
+    iso_file="SL-64-x86_64-2013-03-18-boot.iso"
+    iso_src="http://ftp1.scientificlinux.org/linux/scientific/6.4/x86_64/iso/SL-64-x86_64-2013-03-18-boot.iso"
+    iso_sha256="f0ccbd8cb802b489ab6a606c90f05f5d249db1cb1e0e931dbb703240b4d97d8c"
+    boot_wait=10
+    boot_cmd_sequence=(
+        "<Tab> text ks=http://%IP%:%PORT%/kickstart/scientificlinux-6.4-x86_64-lazy_noX.cfg<Enter>"
+    )
+    kickstart_port=7122
+    kickstart_timeout=7200
+    ssh_host_port=2222
+    ssh_user="vagrant"
+    ssh_priv_key="vagrant_key"
+    ssh_priv_key_src="https://raw.github.com/mitchellh/vagrant/master/keys/vagrant"
+    postinstall_launch=("cd postinstall && sudo -E bash adm_postinstall.sh")
+    postinstall_transport=("postinstall")
+    validate_launch=("cd validate && bash adm_features.sh")
+    validate_transport=("validate")
+    clean_transported=0
+    shutdown_cmd="sudo /sbin/halt -h -p"
+    shutdown_timeout=20
+```
+
+## Typical build flow.
+
+Starting
+ - creates own definition based on selected template
+ - cmd: `vim definition-6.4-x86_64-my_custom.cfg`
+ - cmd: `ln -fs definition-6.4-x86_64-my_custom.cfg definition.cfg`
+
+Building
+ - creates a new VM
+ - download install media
+ - boot (kickstart) machine and talk to installer using boot_cmd_sequence
+ - wait until machine is ready or a timeout is reached
+ - cmd: `vbkick build VM_NAME`
+
+Tuning
+ - postinstall configuration - transport posinstall scripts via SCP and exec launch commands via SSH
+ - cmd: `vbkick postinstall VM_NAME`
+
+Testing
+ - validate the new VM
+ - cmd: `vbkick validate VM_NAME`
+
+Releasing
+ - export machine as a vagrant box
+ - cmd: `vbkick export VM_NAME`
+
+
+## Postinstall
+
+There are 2 main postinstall methods:
+ - lazy - run postinstall scripts "later" - after installing the OS.
+ - injection - run postinstall scripts during kickstarting process in chroot environment (implemented inside the kickstart file),
+
+Of course you can also mix these methods.
 
 Open Source mean freedom – enjoy that freedom and choose best solution for you.
 
-## adm_postinstall.sh - used in both method
+
+### adm_postinstall.sh - used in both postinstall methods
 
 Easy way to administer postinstall scripts.
 ```
@@ -13,53 +113,48 @@ adm_postinstall.sh      # take care about exec other scripts
 
 Use adm_postinstall.sh is a convenient manner, but not mandatory.
 
+Simply, you can use below options in definition.cfg
 
-## injection postinstall method
-
-Run postinstall scripts during kickstarting process in chroot environment.
-
-### Why?
-
- - no extra users and SSH keys needed to run postinstall scripts (more secure for kickstarting hardware machine, useful for production env. e.g. with PXE)
- - to create easy/automated and tested way to switch/install desktop/OS and check if all needed (for us) apps still works (This is answer for that question: What if the next release breaks something in my applications?)
- - to create easy way for tuning box/PC during installation (tuning.sh as an example) - running puppet manifest, ansible playbooks is just one line :-) (puppet modules, ansible playbooks may be downloaded during kickstarting [if usb_stick then earlier upload to flash disc], git clone is also possible - do what you need)
- - create bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and sh scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier)
-
-### Good to know
-
-If something fail during installation, e.g puppet was not installed (maybe puppet repo was temporary unavailable) then anyway postinstall process is continued and completed (mean: all sh scripts exec). After runing `vbkick validate VM_NAME` you should realize that puppet was not installed. Next step should be login into box, go into postinstall dir (e.g. cd /var/tmp/postinstall)(dir was already created by kickstart) and run: sh puppet.sh (there is no objection to run that scrip also via SSH).
-
-postinstall_transport and postinstall_launch options are not required in this method.
-
-
-Use Case flow:
 ```
-vbkick build SL6_inject
-vbkick validate SL6_inject
-vbkick export SL6_inject
-
-vagrant box add 'SL64_inject' SL6_inject.box
-vagrant box list
+postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh")
+postinstall_transport=("postinstall")
 ```
 
-## lazy postinstall method
+instead of
+
+```
+postinstall_launch=(
+"bash postinstall/basic.sh"
+"bash postinstall/ruby.sh"
+"bash postinstall/puppet.sh"
+"bash postinstall/chef.sh"
+"bash postinstall/ansible.sh"
+"bash postinstall/virtualbox.sh"
+)
+postinstall_transport=("postinstall")
+```
+
+### lazy postinstall method
 
 This method is already used by *Veewee* and *Vagrant*.
-Kickstart process create base machine and configure SSH connection (creates user, copy SSH keys, configure sudo, etc.).
+Kickstart process creates a base machine and configure SSH connection (creates user, copy SSH keys, configure sudo, etc.).
 Postinstall scripts are later (after machine reboot) transport (via SCP) to already created box and exec there (via SSH).
 
-### Why?
- - to create easy way for tuning box/PC after installation (tuning.sh as an example).
- - you can run postinstall command many times (e.g puppet repo is unavailalble, then try later again)
- - to upgrade already existing Virtualbox Guest (e.g. install new GuestAdditions)
- - to create easy/automated and tested way to upgrade desktop/OS and check if everything works
+postinstall_transport and postinstall_launch parameters in the definition.cfg are required in this method:
+```
+postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh")
+postinstall_transport=("postinstall")
+```
 
-### Good to know
+#### Why?
 
-postinstall_transport and postinstall_launch options are required in this method. 
-If these options are empty then nothing is run during postinstall.
+ - easy way for tuning box/PC after installation (tuning.sh as an example)
+ - allow run postinstall commands many times (e.g puppet repo is unavailalble, then try later again)
+ - works with all Unix/Linux systems
+ - allow upgrade already exisiting VM, e.g. install new GuestAdditions, new KDE version, etc. (build new VM is not needed)
 
-Use Case flow:
+
+#### Use Case flow:
 ```
 vbkick build SL6_lazy
 vbkick postinstall SL6_lazy
@@ -69,3 +164,38 @@ vbkick export SL6_lazy
 vagrant box add 'SL64_lazy' SL6_lazy.box
 vagrant box list
 ```
+
+### injection postinstall method
+
+Run postinstall scripts during kickstarting process in chroot environment.
+
+postinstall_transport and postinstall_launch options in the definition.cfg are not required in this method:
+```
+postinstall_launch=("")
+postinstall_transport=("")
+```
+It is ok to remove these options from definition as well, default value from vbkick is exactly the same.
+
+#### Why?
+
+ - no extra users and SSH keys needed to run postinstall scripts (more secure for kickstarting hardware machine, useful for production env. e.g. with PXE)
+ - easy way for tuning box/PC during installation (tuning.sh as an example) - running puppet manifest, ansible playbooks is just one line :-) (puppet modules, ansible playbooks may be downloaded during kickstarting [if usb_stick then earlier upload to flash disc], git clone is also possible - do what you need)
+ - help creates bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and sh scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier)
+ - cons: may not work for every OS
+ - cons: postinstall commands are exec only once
+
+#### Good to know
+
+If something fail during installation, e.g puppet was not installed (maybe puppet repo was temporary unavailable) then anyway postinstall process is continued and completed (mean: all sh scripts exec). After runing `vbkick validate VM_NAME` you should realize that puppet was not installed. Next step should be login into box, go into postinstall dir (e.g. cd /var/tmp/postinstall)(dir was already created by kickstart) and run: sh puppet.sh (there is no objection to run that scrip also via SSH).
+
+
+#### Use Case flow:
+```
+vbkick build SL6_inject
+vbkick validate SL6_inject
+vbkick export SL6_inject
+
+vagrant box add 'SL64_inject' SL6_inject.box
+vagrant box list
+```
+

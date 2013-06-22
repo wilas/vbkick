@@ -1,3 +1,14 @@
+## 0.3.1 (22-06-2013)
+
+FEATURES:
+ - guest_additions_download option to enable/disable VBoxGuestAdditions download on host
+ - CentOS6, Debian6, Debian7, Fedora18, Ubuntu12.04 templates were added
+
+IMPROVEMENTS
+ - use /dev/sr1 to install VBoxGuestAdditions instead of "wget method" (virtualbox.sh postinstall script as an example)
+ - Q&A to confirm action during destroying VM is now before shutdown
+ - use SSH keys is enabled by default
+
 ## 0.3 (27-05-2013)
 
 FEATURES:
