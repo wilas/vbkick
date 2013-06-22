@@ -70,7 +70,7 @@ Description:
  - postinstall dir contain all scripts run during postinstall process
  - validate dir contain all scripts run during validate process
  - kickstart dir contain all files used during bootstrap process
- - each file in kickstart (e.g. ks.cfg/preseed.cfg) has descriptive names (OS_NAME-VERSION-ARCH-SPEC_DESC.cfg) e.g.: redhat-6.3-x86_64-noX.cfg, redhat-6.4-x86_64-JDK.cfg, debian-7.0-x86_64-KDE.cfg
+ - each file in kickstart (e.g. ks.cfg/preseed.cfg) has descriptive names (`<OS_NAME>-<VERSION>-<ARCH>-<SPEC_DESC>.cfg`) e.g.: redhat-6.3-x86_64-noX.cfg, redhat-6.4-x86_64-JDK.cfg, debian-7.0-x86_64-KDE.cfg
  - **definition.cfg is symlink** to default vbkick definition
  - each definition has descriptive name e.g. definition-6.3-x86_64.cfg, definition-6.4-x86_64.cfg, definition-6.5-x86_64-beta.cfg
  - each template take care about "big" OS release, e.g. RedHat6, Redhat5, Debian7, Debian6
