@@ -71,24 +71,23 @@ Starting
  - cmd: `vim definition-6.4-x86_64-my_custom.cfg`
  - cmd: `ln -fs definition-6.4-x86_64-my_custom.cfg definition.cfg`
 
-Building
+Building - `vbkick build VM_NAME`
  - creates a new VM
  - download install media
  - boot (kickstart) machine and talk to installer using boot_cmd_sequence
  - wait until machine is ready or a timeout is reached
- - cmd: `vbkick build VM_NAME`
 
-Tuning
+
+Tuning - `vbkick postinstall VM_NAME`
  - postinstall configuration - transport posinstall scripts via SCP and exec launch commands via SSH
- - cmd: `vbkick postinstall VM_NAME`
 
-Testing
+
+Testing - `vbkick validate VM_NAME`
  - validate the new VM
- - cmd: `vbkick validate VM_NAME`
 
-Releasing
+
+Releasing - `vbkick export VM_NAME`
  - export machine as a vagrant box
- - cmd: `vbkick export VM_NAME`
 
 
 ## Postinstall
