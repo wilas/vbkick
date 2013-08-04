@@ -111,6 +111,8 @@ validate_transport=("")
 validate_launch=("")
 
 # Clean
+# list of files to update with current VBOX_VERSION
+files_to_autoupdate_vbox_version=("")
 # rm or not already transported via SCP files/directories (from postinstall, validate)
 clean_transported=0
 # nice for OS shutdown command
@@ -163,6 +165,17 @@ function process_args {
     esac
 }
 
+function autoupdate_files_with_vbox_version {
+    # help automatically update/maintain VBOX_VERSION in given files list
+    for file in "${files_to_autoupdate_vbox_version[@]}"; do
+        # check whether file exist
+        if [ -s "${file}" ]; then
+            # example value to update: VBOX_VERSION="4.2.12", but ignore comments
+            sed -r -i "/^#/!s/(VBOX_VERSION)=\"([0-9\.]+)\"/\1=\"$vb_version\"/g" "${file}"
+        fi
+    done
+}
+
 # Load definition.cfg config file; it overwrite default settings
 function load_definition {
     if [ -s "definition.cfg" ]; then
@@ -174,6 +187,7 @@ function load_definition {
         printf "Terminating...\n" >&2
         exit 1
     fi
+    autoupdate_files_with_vbox_version
 }
 
 # Get virtualbox version
@@ -215,7 +229,7 @@ function download_install_media {
 
     # download VBoxGuestAdditions if required
     if [ $guest_additions_download -eq 1 ]; then
-        #todo [LOW]: rm old guestAdditions from iso directory
+        #todo [LOW]: rm other guestAdditions from iso directory
         # check whether VBoxGuestAdditions exist
         if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
             local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
@@ -315,10 +329,11 @@ function create_box {
     VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
     --port 0 --device 0 --type hdd --medium "${location}/${VM}/${VM}.${disk_format}"
 
-    # IDE controler - add iso
+    # IDE controler - add install iso
     VBoxManage storagectl "${VM}" --name "IDE Controller" --add ide
     VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
     --type dvddrive --port 0 --device 0 --medium "${iso_path}/${iso_file}"
+    # IDE controler - add VBoxGuestAdditions iso
     if [ $guest_additions_download -eq 1 ]; then
         VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
         --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso"
@@ -479,6 +494,7 @@ function recover_vm_state {
         VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
         sharedfolder_was_removed=0
     fi
+    # todo: attach guest add - only if exist prev.
 }
 
 function shutdown {
@@ -533,6 +549,13 @@ function lazy_postinstall {
     # exec scripts on VM Guest via ssh
     ssh_exec "${postinstall_transport[@]}" "${postinstall_launch[@]}" 0
     exit 0
+}
+
+function lazy_update {
+    # update already existing VM Guest by run cmd via ssh
+    # e.g update Package, VBoxGuestAdditions
+    printf "Not implemented yet.\n"
+    exit 1
 }
 
 function ssh_exec {
@@ -688,8 +711,6 @@ if [[ ! `which VBoxManage 2>/dev/null` ]]; then
     exit 1
 fi
 vb_version=$(get_vb_version)
-# todo [LOW]: list of files to update e.g. {postinstall,validate}/adm_envrc (only if exist) with current VBOX_VERSION
-# (vboxmanage -v and sed should do a job)
 # signals and error handler
 trap clean_up SIGHUP SIGINT SIGTERM ERR
 process_args "${1}" "${2}"

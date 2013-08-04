@@ -160,3 +160,6 @@ More details soon.
 
  default: 20
 
+ - files_to_autoupdate_vbox_version
+
+ default: ("")

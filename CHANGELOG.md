@@ -1,3 +1,8 @@
+## Not released
+
+FEATURES
+ - auto update VBOX_VERSION="version" in given files list with current vbox version
+
 ## 0.3.1 (22-06-2013)
 
 FEATURES:
