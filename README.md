@@ -53,6 +53,8 @@ Task is mostly about run VBoxManage command in proper order with proper options 
 
     vagrant box add newVM newVM.box
     vagrant box list
+    
+    vbkick update newVM
 ```
 
 # Commands
@@ -72,6 +74,7 @@ Tested currently only in bash 4 (use POSIX mode). If you have trouble using scri
     vbkick  postinstall  VM_NAME        # run postinstall scripts via ssh
     vbkick  validate     VM_NAME        # run validate/feature scripts via ssh
     vbkick  export       VM_NAME        # export VM and create Vagrant VM_NAME.box
+    vbkick  update       VM_NAME        # update VBoxGuestAdditions and run update scripts via ssh
     vbkick  destroy      VM_NAME        # destroy VM
     vbkick  help                        # display help and exit
 ```

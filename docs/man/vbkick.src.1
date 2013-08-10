@@ -1,4 +1,4 @@
-.TH man 1 "27 May 2013" "0.3" "vbkick man page"
+.TH man 1 "10 August 2013" "0.4.0" "vbkick man page"
 .SH NAME
 vbkick - the automatic Virtualbox Guests and/or Vagrant base boxes builder.
 .SH SYNOPSIS
@@ -24,6 +24,9 @@ Run defined features scripts via SSH on Virtualbox Guest. Check whether new VM G
 .TP
 .B export
 Exports Virtualbox Guest as a Vagrant base box (base image for a future VMs) - \fIVM_NAME.box\fP gzipped file is created. \fIdefinition.cfg\fP file is required in directory where command is run.
+.TP
+.B update
+Updates Virtualbox Guest Additions and runs defined update scripts via SSH on Virtualbox Guest. \fIdefinition.cfg\fP file is required in directory where command is run.
 .TP
 .B destroy
 Remove virtual machine from Virtualbox. Doing this will also remove the files containing the machine's virtual hard disks if they are not in use by another machine. 

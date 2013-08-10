@@ -1,7 +1,8 @@
 ## Not released
 
 FEATURES
- - auto update VBOX_VERSION="version" in given files list with current vbox version
+ - vbkick was taught how to auto update VboxGuestAdditions on Guest machine and "lazy" run other update scripts
+ - auto update value of VBOX_VERSION="version" in given files list with current vbox version
 
 ## 0.3.1 (22-06-2013)
 
@@ -17,7 +18,7 @@ IMPROVEMENTS
 ## 0.3 (27-05-2013)
 
 FEATURES:
- - vbkick was teach how to validate VM
+ - vbkick was taught how to validate VM
  - vbkick check whether VM was kickstarted before kickstart_timeout
  - clean VM shutdown via SSH and shutdown_cmd (nicer for OS)
  - Manual was added
@@ -30,10 +31,10 @@ IMPROVEMENTS:
 ## 0.2 (19-05-2013)
 
 FEATURES:
- - vbkick was teach how to build VM from given definition.cfg
- - vbkick was teach how to "lazy" run postinstall scripts
- - vbkick was teach how to export VM to Vagrant base box
- - vbkick was teach how to destroy given VM
+ - vbkick was taught how to build VM from given definition.cfg
+ - vbkick was taught how to "lazy" run postinstall scripts
+ - vbkick was taught how to export VM to Vagrant base box
+ - vbkick was taught how to destroy given VM
  - vbkick templates structure was designed
  - examples and descriptions for both postinstall methods were added
  - Makefile installer was added
