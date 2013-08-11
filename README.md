@@ -45,6 +45,7 @@ Task is mostly about run VBoxManage command in proper order with proper options 
 
 ## Child steps
 
+### create new vagrant box
 ```
     vbkick build newVM
     vbkick postinstall newVM
@@ -53,8 +54,17 @@ Task is mostly about run VBoxManage command in proper order with proper options 
 
     vagrant box add newVM newVM.box
     vagrant box list
-    
-    vbkick update newVM
+```
+
+### update existing vagrant box
+```
+    vbkick update existingVM
+    vbkick validate existingVM
+    vbkick export existingVM
+ 
+    vagrant box remove existingVM virtualbox
+    vagrant box add existingVM existingVM.box
+    vagrant box list
 ```
 
 # Commands

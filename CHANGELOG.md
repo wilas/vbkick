@@ -1,8 +1,13 @@
 ## Not released
 
 FEATURES
- - vbkick was taught how to auto update VboxGuestAdditions on Guest machine and "lazy" run other update scripts
- - auto update value of VBOX_VERSION="version" in given files list with current vbox version
+ - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts
+ - auto update value of VBOX_VERSION="version" in the given files list with current vbox version
+ - rm other (older) VBoxGuestAdditions isos from media directory (before remove ask about confirmation)
+
+IMPROVEMENTS
+ - guest_additions_download option is disbaled by default
+ - instead downloading custom VBoxGuestAdditions image use default already existing on Host machine: "VBoxManage storageattach --medium additions" (it save space on disk and time)
 
 ## 0.3.1 (22-06-2013)
 
