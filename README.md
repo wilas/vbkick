@@ -16,6 +16,17 @@ There is one job to do: talk to Virtualbox and build a new Guest and/or Vagrant 
 
 Task is mostly about run VBoxManage command in proper order with proper options - bash is perfect for that kind of job - no wrappers (python subprocess.Popen, ruby IO.popen/Kernel.exec, etc.) are needed.
 
+## Model and Philosophy (base on Unix)
+
+Model:
+ - lots of small tools that can be combined in lots of useful ways
+
+Philosophy:
+ - do one thing well,
+ - small is beautiful, easy to write and easy to maintain,
+ - gracefully handle errors and signals,
+ - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
+
 
 # Getting Started
 
@@ -71,8 +82,7 @@ Task is mostly about run VBoxManage command in proper order with proper options 
 
 ## vbkick
 
-Tested currently only in bash 4 (use POSIX mode). If you have trouble using script in bash 3, let me know - create issue or send mail to help.vbkick[at]gmail.com.
-
+Tested currently only in bash 4 (use POSIX mode). If you have trouble using script in bash 3, let me know.
 
 ```
     cd to_directory_with definition.cfg
@@ -124,18 +134,6 @@ Special keys:
 ```
 
 `<Multiply(what, N)>` - repeat "what" N times
-
-
-## Model and Philosophy (base on Unix)
-
-Model:
- - lots of small tools that can be combined in lots of useful ways
-
-Philosophy:
- - do one thing well,
- - small is beautiful, easy to write and easy to maintain,
- - gracefully handle errors and signals,
- - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
 
 
 # Bibliography

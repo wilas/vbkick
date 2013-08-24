@@ -30,6 +30,7 @@
  - command for clean shutdown
  - list of postinstall commands/scripts
  - list of validation commands/tests
+ - list of update commands/scripts
 
 ## Example definition.cfg - the core file of each box.
 
@@ -55,11 +56,13 @@
     ssh_user="vagrant"
     ssh_priv_key="vagrant_key"
     ssh_priv_key_src="https://raw.github.com/mitchellh/vagrant/master/keys/vagrant"
-    postinstall_launch=("cd postinstall && sudo -E bash adm_postinstall.sh")
+    postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh")
     postinstall_transport=("postinstall")
     validate_launch=("cd validate && bash adm_features.sh")
     validate_transport=("validate")
-    clean_transported=0
+    update_launch=("sudo bash -c 'yum -y --enablerepo=puppetlabs-products,puppetlabs-deps,epel,elrepo update && yum -y clean all'")
+    update_transport=("")
+    clean_transported=1
     shutdown_cmd="sudo /sbin/halt -h -p"
     shutdown_timeout=20
 ```
@@ -89,6 +92,8 @@ Testing - `vbkick validate VM_NAME`
 Releasing - `vbkick export VM_NAME`
  - export machine as a vagrant box
 
+Updating - `vbkick update VM_NAME`
+ - update already existing VM
 
 ## Postinstall
 
