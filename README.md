@@ -12,9 +12,6 @@ After vagrant 1.1 release, veewee stop working in nice way (veewee conflicts wit
 
 I decide write something light, what do one thing well, a tool that I can rely on.
 
-There is one job to do: talk to Virtualbox and build a new Guest and/or Vagrant base box - nothing more.
-
-Task is mostly about run VBoxManage command in proper order with proper options - bash is perfect for that kind of job - no wrappers (python subprocess.Popen, ruby IO.popen/Kernel.exec, etc.) are needed.
 
 ## Model and Philosophy (base on Unix)
 
