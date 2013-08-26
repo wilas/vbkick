@@ -1,5 +1,4 @@
 # Initial SL system clean-up
-yum -y erase wireless-tools gtk2 libX11 hicolor-icon-theme avahi freetype bitstream-vera-fonts
 yum -y clean all
 
 # Make sure Udev doesn't block our network - http://6.ptmc.org/?p=164
