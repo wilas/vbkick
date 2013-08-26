@@ -10,7 +10,7 @@ After vagrant 1.1 release, veewee stop working in nice way (veewee conflicts wit
  - https://github.com/mitchellh/vagrant/blob/v1.2.0/CHANGELOG.md#110-march-14-2013
 
 
-I decide write something light, what do one thing well, a tool that I can rely on.
+I've decided write something light, what do one thing well, a tool that I can rely on.
 
 
 ## Model and Philosophy (base on Unix)
