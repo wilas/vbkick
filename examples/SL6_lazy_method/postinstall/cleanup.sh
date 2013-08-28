@@ -1,4 +1,4 @@
-# Initial SL system clean-up
+# system clean-up
 yum -y clean all
 
 # Make sure Udev doesn't block our network - http://6.ptmc.org/?p=164

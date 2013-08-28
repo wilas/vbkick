@@ -6,9 +6,6 @@ There are 2 main postinstall methods:
 
 Of course you can also mix these methods.
 
-Open Source mean freedom – enjoy that freedom and choose best solution for you.
-
-
 ### adm_postinstall.sh - used in both postinstall methods
 
 Easy way to administer postinstall scripts.
@@ -45,7 +42,7 @@ postinstall_transport=("postinstall")
 
 This method is already used by *Veewee* and *Vagrant*.
 Kickstart process creates a base machine and configure SSH connection (creates user, copy SSH keys, configure sudo, etc.).
-Postinstall scripts are later (after machine reboot) transport (via SCP) to already created box and exec there (via SSH).
+Postinstall scripts are later (after machine reboot) transported (via SCP) to already created box and exec there (via SSH).
 
 postinstall_transport and postinstall_launch parameters in the definition.cfg are required in this method:
 ```
@@ -85,15 +82,14 @@ It is ok to remove these options from definition as well, default value from vbk
 
 #### Why?
 
- - no extra users and SSH keys needed to run postinstall scripts (more secure for kickstarting hardware machine, useful for production env. e.g. with PXE)
- - easy way for tuning box/PC during installation (tuning.sh as an example) - running puppet manifest, ansible playbooks is just one line :-) (puppet modules, ansible playbooks may be downloaded during kickstarting [if usb_stick then earlier upload to flash disc], git clone is also possible - do what you need)
- - help creates bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and sh scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier)
+ - no extra users and SSH keys needed to run postinstall scripts (more secure, useful for production env. e.g. with PXE)
+ - help creates bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and shell scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier)
  - cons: may not work for every OS
  - cons: postinstall commands are exec only once
 
 #### Good to know
 
-If something fail during installation, e.g puppet was not installed (maybe puppet repo was temporary unavailable) then anyway postinstall process is continued and completed (mean: all sh scripts exec). After runing `vbkick validate VM_NAME` you should realize that puppet was not installed. Next step should be login into box, go into postinstall dir (e.g. cd /var/tmp/postinstall)(dir was already created by kickstart) and run: sh puppet.sh (there is no objection to run that scrip also via SSH).
+If something fail during installation, e.g puppet was not installed (maybe puppet repo was temporary unavailable) then anyway postinstall process is continued and completed (mean: all shell scripts exec). After runing `vbkick validate VM_NAME` you should realize that puppet was not installed. Next step should be login into box, go into postinstall dir (e.g. cd /var/tmp/postinstall)(dir was already created by kickstart) and run: bash puppet.sh (there is no objection to run that scrip also via SSH).
 
 
 #### Use Case flow:
