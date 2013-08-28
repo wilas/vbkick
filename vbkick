@@ -142,6 +142,20 @@ natmapping_was_removed=0
 # during exporting Shared folder is removed (temporary) - help recover state before exporting
 sharedfolder_was_removed=0
 
+# For nice printing
+GREEN="\e[1;32m"
+RED="\e[1;31m"
+YELLOW="\e[1;33m"
+NORMAL="\e[0m"
+function green {
+    printf "$GREEN$*$NORMAL"
+}
+function red {
+    printf "$RED$*$NORMAL"
+}
+function yellow {
+    printf "$YELLOW$*$NORMAL"
+}
 
 # Display help
 function usage {
@@ -256,7 +270,7 @@ function download_install_media {
     if [ ! -f "${iso_path}/${iso_file}" ]; then
         # iso_src is empty (not defined)
         if [ -z "${iso_src}" ]; then 
-            printf "${iso_path}/${iso_file} not exist and iso_src is empty\n"
+            red "${iso_path}/${iso_file} not exist and iso_src is empty\n"
             exit 1
         fi
         wget --no-check-certificate "${iso_src}" -O "${iso_path}/${iso_file}"
@@ -265,7 +279,7 @@ function download_install_media {
     # verify iso_src sha256sum
     local get_sha256=$(sha256sum ${iso_path}/${iso_file} | cut -d" " -f 1)
     if [[ "${iso_sha256}" != "${get_sha256}" ]]; then
-        printf "\e[1;33mWARNING: SHA256SUM is different then expected !\n\e[0m"
+        yellow "WARNING: SHA256SUM is different then expected !\n"
         read -r -p "Do you want continue? [y/N]" ans
         if [[ ! $ans =~ ^[Yy]$ ]]; then
             exit 1
@@ -293,7 +307,7 @@ function get_priv_ssh_key {
 function build_vm {
     # check whether VM already exist
     if [[ `VBoxManage list vms | grep -w "${VM}"` ]]; then
-        printf "\e[1;31m${VM} already exist\n\e[0m"
+        red "${VM} already exist\n"
         exit 1
     fi
     # load vm description/definition
@@ -441,7 +455,7 @@ function kickstart_monitoring {
 function destroy_vm {
     # check whether VM already exist
     if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
-        printf "\e[1;31m${VM} doesn't exist\n\e[0m"
+        red "${VM} doesn't exist\n"
         exit 1
     fi
 
@@ -474,12 +488,12 @@ function export_vm {
     load_definition
     # check whether VM_NAME.box exist in current dir
     if [ -f "${VM}.box" ]; then
-        printf "\e[1;31m${VM}.box already exist in `pwd`\n\e[0m"
+        red "${VM}.box already exist in `pwd`\n"
         exit 1
     fi
     # check whether VM exist
     if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
-        printf "\e[1;31m${VM} doesn't exist\n\e[0m"
+        red "${VM} doesn't exist\n"
         exit 1
     fi
     # check whether VM is running and shutdown it 
@@ -601,7 +615,7 @@ function lazy_update {
     load_definition
     # check whether VM is running, must be running 
     if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
-        printf "\e[1;31m${VM} is not running...\n\e[0m"
+        red "${VM} is not running...\n"
         exit 1
     fi
     
@@ -620,14 +634,14 @@ function lazy_update {
         # check whether "IDE Controller (0, 0)" and "IDE Controller (1, 0)" exist - require to attach iso and create /dev/sr1
         if [[ ! `VBoxManage showvminfo "${VM}" | grep -w "IDE Controller (0, 0)"` ]] || \
             [[ ! `VBoxManage showvminfo "${VM}" | grep -w "IDE Controller (1, 0)"` ]]; then
-            printf "\e[1;31m\"IDE Controller (0, 0)\" (Primary Master) or \"IDE Controller (1, 0)\" (Secondary Master) for \"${VM}\" doesn't exist.\n\e[0m"
-            printf "\e[1;31m\"IDE Controller\" is ide controller name used by vbkick.\n\e[0m"
-            printf "\e[1;31mMore: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n\e[0m"
-            printf "\e[1;31m\nTo create proper controller use:\n\e[0m"
-            printf "\e[1;31m'VBoxManage storagectl \"${VM}\" --name \"IDE Controller\" --add ide'\n\e[0m"
-            printf "\e[1;31m'VBoxManage storageattach \"${VM}\" --storagectl \"IDE Controller\" --type dvddrive --port 0 --device 0 --medium emptydrive'\n\e[0m"
-            printf "\e[1;31m'VBoxManage storageattach \"${VM}\" --storagectl \"IDE Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n\e[0m"
-            printf "\e[1;31m\nTo do this \"${VM}\" must be shutdown !!! \nRemember - VM Guest may have only one ide controller.\n\e[0m"
+            red "\"IDE Controller (0, 0)\" (Primary Master) or \"IDE Controller (1, 0)\" (Secondary Master) for \"${VM}\" doesn't exist.\n"
+            red "\"IDE Controller\" is ide controller name used by vbkick.\n"
+            red "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
+            red "\nTo create proper controller use:\n"
+            red "'VBoxManage storagectl \"${VM}\" --name \"IDE Controller\" --add ide'\n"
+            red "'VBoxManage storageattach \"${VM}\" --storagectl \"IDE Controller\" --type dvddrive --port 0 --device 0 --medium emptydrive'\n"
+            red "'VBoxManage storageattach \"${VM}\" --storagectl \"IDE Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
+            red "\nTo do this \"${VM}\" must be shutdown !!! \nRemember - VM Guest may have only one ide controller.\n"
             exit 1
         fi
         # Attach new VBoxGuestAdditions to install
@@ -662,7 +676,7 @@ function lazy_update {
         # Cleaning
         # todo [LOW]: release VBoxGuestAdditions image; it break virtualbox.sh postinstall script
     else
-        printf "\e[1;32mVBoxGuestAdditions on ${VM} is up-to-date\n\e[0m"
+        green "VBoxGuestAdditions on ${VM} is up-to-date\n"
     fi
 
     # Run other update scripts on VM Guest via ssh
@@ -681,7 +695,7 @@ function ssh_exec {
 
     # check whether VM is running 
     if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
-        printf "\e[1;31m${VM} is not running...\n\e[0m"
+        red "${VM} is not running...\n"
         exit 1
     fi
 
@@ -750,7 +764,7 @@ function ssh_exec {
 function start_web_server {
     # check whether port is not used by other proc
     if [[ `nc -z localhost $kickstart_port` ]]; then
-        printf "\e[1;31m$kickstart_port port is already in use\n\e[0m"
+        red "$kickstart_port port is already in use\n"
         # TODO [LOW]: choose next webserver port if present is in use from kickstart_port list, 
         # and update current_kickstart_port - this not working with injection method (list of files to update ?)
         exit 1
