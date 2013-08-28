@@ -84,6 +84,7 @@ Description:
  - Debian6 <@wilas>
  - Debian7 <@wilas>
  - Fedora18 <@wilas>
+ - Fedora19 <@wilas>
  - ScientificLinux6 <@wilas>
  - Ubuntu12.04 <@wilas>
  - FreeBSD/PC-BSD ?
