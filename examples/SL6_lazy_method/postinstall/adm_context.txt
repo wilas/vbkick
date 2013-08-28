@@ -3,11 +3,9 @@
 base.sh
 repos.sh
 sudo.sh
-#vagrant.sh
+vagrant.sh
 #vbkick_user.sh
 virtualbox.sh
-#kvm.sh
-#aws.sh
 ruby.sh
 ansible.sh
 puppet.sh

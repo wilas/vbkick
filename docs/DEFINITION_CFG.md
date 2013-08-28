@@ -146,6 +146,21 @@ More details soon.
  default: ("")
 
 
+## UPDATE
+
+ - update_transport
+
+ default: ("")
+
+ - update_launch
+ 
+ default: ("")
+
+ - manuall_update_guest_additions
+
+ default: "sudo mount /dev/sr1 /mnt && sudo sh /mnt/VBoxLinuxAdditions.run && sudo umount /mnt"
+
+
 ## CLEAN
 
  - clean_transported
@@ -160,3 +175,6 @@ More details soon.
 
  default: 20
 
+ - files_to_autoupdate_vbox_version
+
+ default: ("")

@@ -34,10 +34,10 @@ By default template defines Vagrant Base Box, so in each template vagrant user i
     │       └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
     └── Debian7
         ├── definition.cfg
-        ├── definition-7.0-i386.cfg
-        ├── definition-7.0-x86_64.cfg
+        ├── definition-7.1-i386.cfg
+        ├── definition-7.1-x86_64.cfg
         ├── kickstart
-        │   └── <Debian-7.0-x86_64-KDE.cfg, Debian-7.0-i386-noX.cfg, ...>
+        │   └── <Debian-7.1-x86_64-KDE.cfg, Debian-7.1-i386-noX.cfg, ...>
         ├── validate
         │   └── <adm_features.sh, adm_context.txt, adm_envrc, test_puppet.sh, test_ruby.sh, test_virtualbox.sh, test_vagrant, ....sh >
         └── postinstall
@@ -84,6 +84,7 @@ Description:
  - Debian6 <@wilas>
  - Debian7 <@wilas>
  - Fedora18 <@wilas>
+ - Fedora19 <@wilas>
  - ScientificLinux6 <@wilas>
  - Ubuntu12.04 <@wilas>
  - FreeBSD/PC-BSD ?

@@ -1,3 +1,15 @@
+## 0.4 (28-08-2013)
+
+FEATURES
+ - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts
+ - auto update value of VBOX_VERSION="version" in the given files list with current vbox version
+ - rm other (older) VBoxGuestAdditions isos from media directory (before remove ask about confirmation)
+ - Fedora19 template was added
+
+IMPROVEMENTS
+ - guest_additions_download option is disbaled by default
+ - instead downloading custom VBoxGuestAdditions image use default already existing on Host machine: "VBoxManage storageattach --medium additions" (it save space on disk and time)
+
 ## 0.3.1 (22-06-2013)
 
 FEATURES:
@@ -12,7 +24,7 @@ IMPROVEMENTS
 ## 0.3 (27-05-2013)
 
 FEATURES:
- - vbkick was teach how to validate VM
+ - vbkick was taught how to validate VM
  - vbkick check whether VM was kickstarted before kickstart_timeout
  - clean VM shutdown via SSH and shutdown_cmd (nicer for OS)
  - Manual was added
@@ -25,10 +37,10 @@ IMPROVEMENTS:
 ## 0.2 (19-05-2013)
 
 FEATURES:
- - vbkick was teach how to build VM from given definition.cfg
- - vbkick was teach how to "lazy" run postinstall scripts
- - vbkick was teach how to export VM to Vagrant base box
- - vbkick was teach how to destroy given VM
+ - vbkick was taught how to build VM from given definition.cfg
+ - vbkick was taught how to "lazy" run postinstall scripts
+ - vbkick was taught how to export VM to Vagrant base box
+ - vbkick was taught how to destroy given VM
  - vbkick templates structure was designed
  - examples and descriptions for both postinstall methods were added
  - Makefile installer was added

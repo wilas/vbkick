@@ -10,11 +10,19 @@ After vagrant 1.1 release, veewee stop working in nice way (veewee conflicts wit
  - https://github.com/mitchellh/vagrant/blob/v1.2.0/CHANGELOG.md#110-march-14-2013
 
 
-I decide write something light, what do one thing well, a tool that I can rely on.
+I've decided write something light, what do one thing well, a tool that I can rely on.
 
-There is one job to do: talk to Virtualbox and build a new Guest and/or Vagrant base box - nothing more.
 
-Task is mostly about run VBoxManage command in proper order with proper options - bash is perfect for that kind of job - no wrappers (python subprocess.Popen, ruby IO.popen/Kernel.exec, etc.) are needed.
+## Model and Philosophy (base on Unix)
+
+Model:
+ - lots of small tools that can be combined in lots of useful ways
+
+Philosophy:
+ - do one thing well,
+ - small is beautiful, easy to write and easy to maintain,
+ - gracefully handle errors and signals,
+ - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
 
 
 # Getting Started
@@ -45,6 +53,7 @@ Task is mostly about run VBoxManage command in proper order with proper options 
 
 ## Child steps
 
+### create new vagrant box
 ```
     vbkick build newVM
     vbkick postinstall newVM
@@ -55,12 +64,22 @@ Task is mostly about run VBoxManage command in proper order with proper options 
     vagrant box list
 ```
 
+### update existing vagrant box
+```
+    vbkick update existingVM
+    vbkick validate existingVM
+    vbkick export existingVM
+ 
+    vagrant box remove existingVM virtualbox
+    vagrant box add existingVM existingVM.box
+    vagrant box list
+```
+
 # Commands
 
 ## vbkick
 
-Tested currently only in bash 4 (use POSIX mode). If you have trouble using script in bash 3, let me know - create issue or send mail to help.vbkick[at]gmail.com.
-
+Tested currently only in bash 4 (use POSIX mode). If you have trouble using script in bash 3, let me know.
 
 ```
     cd to_directory_with definition.cfg
@@ -72,6 +91,7 @@ Tested currently only in bash 4 (use POSIX mode). If you have trouble using scri
     vbkick  postinstall  VM_NAME        # run postinstall scripts via ssh
     vbkick  validate     VM_NAME        # run validate/feature scripts via ssh
     vbkick  export       VM_NAME        # export VM and create Vagrant VM_NAME.box
+    vbkick  update       VM_NAME        # update VBoxGuestAdditions and run update scripts via ssh
     vbkick  destroy      VM_NAME        # destroy VM
     vbkick  help                        # display help and exit
 ```
@@ -111,18 +131,6 @@ Special keys:
 ```
 
 `<Multiply(what, N)>` - repeat "what" N times
-
-
-## Model and Philosophy (base on Unix)
-
-Model:
- - lots of small tools that can be combined in lots of useful ways
-
-Philosophy:
- - do one thing well,
- - small is beautiful, easy to write and easy to maintain,
- - gracefully handle errors and signals,
- - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
 
 
 # Bibliography

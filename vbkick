@@ -62,8 +62,8 @@ iso_path="iso"
 # by default sha256sum is empty - 
 # WARNING is given during processing if sha256 sum is wrong (use: sha256sum --help)
 iso_sha256=""
-# download or not VBoxGuestAdditions on host
-guest_additions_download=1
+# set to 1 to download custom VBoxGuestAdditions on host, otherwise use default VBoxGuestAdditions - recommended
+guest_additions_download=0
 
 # Boot default settings
 # default time before boot_cmd_sequence start
@@ -110,7 +110,17 @@ validate_transport=("")
 # list of validate commands
 validate_launch=("")
 
+# Lazy Update default settings
+# list of files and directories to transport to guest
+update_transport=("")
+# list of update commands
+update_launch=("")
+# default command to update VBoxGuestAdditions
+manuall_update_guest_additions="sudo mount /dev/sr1 /mnt && sudo sh /mnt/VBoxLinuxAdditions.run && sudo umount /mnt"
+
 # Clean
+# list of files to autoupdate VBOX_VERSION value
+files_to_autoupdate_vbox_version=("")
 # rm or not already transported via SCP files/directories (from postinstall, validate)
 clean_transported=0
 # nice for OS shutdown command
@@ -132,7 +142,20 @@ natmapping_was_removed=0
 # during exporting Shared folder is removed (temporary) - help recover state before exporting
 sharedfolder_was_removed=0
 
-# todo [LOW]: future option: ssh_password="vbkick"
+# For nice printing
+GREEN="\e[1;32m"
+RED="\e[1;31m"
+YELLOW="\e[1;33m"
+NORMAL="\e[0m"
+function green {
+    printf "$GREEN$*$NORMAL"
+}
+function red {
+    printf "$RED$*$NORMAL"
+}
+function yellow {
+    printf "$YELLOW$*$NORMAL"
+}
 
 # Display help
 function usage {
@@ -145,6 +168,7 @@ function usage {
     printf "\tpostinstall           run postinstall scripts via ssh\n"
     printf "\tvalidate              run validate/feature scripts via ssh\n"
     printf "\texport                export VM and create Vagrant VM_NAME.box\n"
+    printf "\tupdate                update VBoxGuestAdditions and run update scripts via ssh\n"
     printf "\tdestroy               destroy VM\n"
     printf "\thelp                  display this help and exit\n"
     printf "\n"
@@ -159,8 +183,20 @@ function process_args {
         "export") export_vm ;;
         "validate") validate_vm ;;
         "postinstall") lazy_postinstall ;;
+        "update") lazy_update ;;
         *) usage; exit ;;
     esac
+}
+
+# Help automatically update/maintain value of VBOX_VERSION in given files list
+function autoupdate_files_with_vbox_version {
+    for file in "${files_to_autoupdate_vbox_version[@]}"; do
+        # check whether file exist
+        if [ -s "${file}" ]; then
+            # example value to update: VBOX_VERSION="4.2.12", but ignore comments
+            sed -r -i "/^#/!s/(VBOX_VERSION)=\"([0-9\.]+)\"/\1=\"$vb_version\"/g" "${file}"
+        fi
+    done
 }
 
 # Load definition.cfg config file; it overwrite default settings
@@ -174,6 +210,7 @@ function load_definition {
         printf "Terminating...\n" >&2
         exit 1
     fi
+    autoupdate_files_with_vbox_version
 }
 
 # Get virtualbox version
@@ -183,19 +220,57 @@ function get_vb_version {
     printf "${version}\n"
 }
 
-# Prepare installation media
-function download_install_media {
-    # check whether iso dir exist
+# Check whether iso/media dir exist
+function prepare_media_dir {
     if [ ! -d "${iso_path}" ]; then
         printf "Creates iso directory\n"
         mkdir "${iso_path}"
     fi
+}
 
+# Downloads custom VBoxGuestAdditions if required
+function download_guest_additions_media {
+    if [ $guest_additions_download -eq 1 ]; then
+        prepare_media_dir
+        # check whether VBoxGuestAdditions exist
+        if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
+            local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
+            wget --no-check-certificate "${additions_url}" -P "${iso_path}"
+        fi
+    fi
+    # rm useless images
+    remove_guest_additions_media
+}
+
+# Remove other (not needed) VBoxGuestAdditions from media directory
+function remove_guest_additions_media {
+    # true is usefull to not fail whole cmd, and return empty string 
+    local file_list=$(ls "${iso_path}" | grep "GuestAdditions" | grep -v "${vb_version}" || true)
+    # continue only if we have some files to remove
+    if [ -n "${file_list}" ]; then
+        printf "List of VBoxGuestAdditions files to remove:\n"
+        for file in "${file_list}"; do
+            printf "${file}\n"
+        done
+        # to remove files ask about confirmation
+        read -r -p "Do you want remove above VBoxGuestAdditions files? [y/N]" ans
+        if [[ $ans =~ ^[Yy]$ ]]; then
+            for file in "${file_list}"; do
+                printf "${file}\n"
+                rm -f "${iso_path}/${file}"
+            done
+        fi
+    fi
+}
+
+# Prepare installation media
+function download_install_media {
+    prepare_media_dir
     # check whether iso_file exist
     if [ ! -f "${iso_path}/${iso_file}" ]; then
         # iso_src is empty (not defined)
         if [ -z "${iso_src}" ]; then 
-            printf "${iso_path}/${iso_file} not exist and iso_src is empty\n"
+            red "${iso_path}/${iso_file} not exist and iso_src is empty\n"
             exit 1
         fi
         wget --no-check-certificate "${iso_src}" -O "${iso_path}/${iso_file}"
@@ -204,23 +279,13 @@ function download_install_media {
     # verify iso_src sha256sum
     local get_sha256=$(sha256sum ${iso_path}/${iso_file} | cut -d" " -f 1)
     if [[ "${iso_sha256}" != "${get_sha256}" ]]; then
-        printf "\e[1;33mWARNING: SHA256SUM is different then expected !\n\e[0m"
+        yellow "WARNING: SHA256SUM is different then expected !\n"
         read -r -p "Do you want continue? [y/N]" ans
         if [[ ! $ans =~ ^[Yy]$ ]]; then
             exit 1
         fi
     else
         printf "INFO: SHA256SUM:${iso_sha256} is valid.\n"
-    fi
-
-    # download VBoxGuestAdditions if required
-    if [ $guest_additions_download -eq 1 ]; then
-        #todo [LOW]: rm old guestAdditions from iso directory
-        # check whether VBoxGuestAdditions exist
-        if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
-            local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
-            wget --no-check-certificate "${additions_url}" -P "${iso_path}"
-        fi
     fi
 }
 
@@ -242,13 +307,14 @@ function get_priv_ssh_key {
 function build_vm {
     # check whether VM already exist
     if [[ `VBoxManage list vms | grep -w "${VM}"` ]]; then
-        printf "\e[1;31m${VM} already exist\n\e[0m"
+        red "${VM} already exist\n"
         exit 1
     fi
     # load vm description/definition
     load_definition
     # download iso files
     download_install_media
+    download_guest_additions_media
     # get ssh private key
     if [ $ssh_keys_enabled -eq 1 ]; then
         get_priv_ssh_key
@@ -296,7 +362,10 @@ function build_vm {
     # stop webserver
     stop_web_server
 
-    #todo [LOW]: release media - VBoxGuestAdditions, Install_iso
+    # release install image
+    VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+    --type dvddrive --port 0 --device 0 --medium emptydrive --forceunmount
+
     exit 0
 }
 
@@ -315,13 +384,21 @@ function create_box {
     VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
     --port 0 --device 0 --type hdd --medium "${location}/${VM}/${VM}.${disk_format}"
 
-    # IDE controler - add iso
+    # IDE controler - add install iso
     VBoxManage storagectl "${VM}" --name "IDE Controller" --add ide
     VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
     --type dvddrive --port 0 --device 0 --medium "${iso_path}/${iso_file}"
+    # IDE controler - add VBoxGuestAdditions iso
     if [ $guest_additions_download -eq 1 ]; then
+        # custom VBoxGuestAdditions
         VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
         --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso"
+    else
+        # default VBoxGuestAdditions
+        VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+        --type dvddrive --port 1 --device 0 --medium emptydrive
+        VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+        --type dvddrive --port 1 --device 0 --medium additions
     fi
 
     # Tuning VM
@@ -352,13 +429,10 @@ function create_box {
     fi
 }
 
+# Check whether machine was kickstarted before timeout
 function kickstart_monitoring {
-    #
-    # check whether machine was kickstarted before timeout
-    #
     local kickstart_counter=0
     local extra_ssh_options="-o ConnectionAttempts=1 -o ConnectTimeout=1"
-
     # ssh key authentication enabled
     if [ $ssh_keys_enabled -eq 1 ]; then        
         # create path to ssh private key
@@ -381,7 +455,7 @@ function kickstart_monitoring {
 function destroy_vm {
     # check whether VM already exist
     if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
-        printf "\e[1;31m${VM} doesn't exist\n\e[0m"
+        red "${VM} doesn't exist\n"
         exit 1
     fi
 
@@ -414,12 +488,12 @@ function export_vm {
     load_definition
     # check whether VM_NAME.box exist in current dir
     if [ -f "${VM}.box" ]; then
-        printf "\e[1;31m${VM}.box already exist in `pwd`\n\e[0m"
+        red "${VM}.box already exist in `pwd`\n"
         exit 1
     fi
     # check whether VM exist
     if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
-        printf "\e[1;31m${VM} doesn't exist\n\e[0m"
+        red "${VM} doesn't exist\n"
         exit 1
     fi
     # check whether VM is running and shutdown it 
@@ -528,10 +602,85 @@ function validate_vm {
 }
 
 function lazy_postinstall {
+    #todo [LOW]: attach and release  VBoxGuestAdditions image to not break virtualbox.sh postinstall script
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
     ssh_exec "${postinstall_transport[@]}" "${postinstall_launch[@]}" 0
+    exit 0
+}
+
+function lazy_update {
+    # load vm description/definition
+    load_definition
+    # check whether VM is running, must be running 
+    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+        red "${VM} is not running...\n"
+        exit 1
+    fi
+    
+    # get current guest version
+    if [[ `VBoxManage guestproperty enumerate "${VM}" | grep "GuestAdd/Version"` ]]; then
+        # guest already exist, get current version
+        local guest_version=$(VBoxManage guestproperty get "${VM}" "/VirtualBox/GuestAdd/Version" | cut -f 2 -d " ")
+    else
+        # guest doesn't exist
+        local guest_version=""
+    fi
+
+    # check whether we need update or install VBoxGuestAdditions
+    if [ "${vb_version}" != "${guest_version}" ]; then
+        # todo [LOW]: use Storage Controller Name (1) and type to find controller name
+        # check whether "IDE Controller (0, 0)" and "IDE Controller (1, 0)" exist - require to attach iso and create /dev/sr1
+        if [[ ! `VBoxManage showvminfo "${VM}" | grep -w "IDE Controller (0, 0)"` ]] || \
+            [[ ! `VBoxManage showvminfo "${VM}" | grep -w "IDE Controller (1, 0)"` ]]; then
+            red "\"IDE Controller (0, 0)\" (Primary Master) or \"IDE Controller (1, 0)\" (Secondary Master) for \"${VM}\" doesn't exist.\n"
+            red "\"IDE Controller\" is ide controller name used by vbkick.\n"
+            red "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
+            red "\nTo create proper controller use:\n"
+            red "'VBoxManage storagectl \"${VM}\" --name \"IDE Controller\" --add ide'\n"
+            red "'VBoxManage storageattach \"${VM}\" --storagectl \"IDE Controller\" --type dvddrive --port 0 --device 0 --medium emptydrive'\n"
+            red "'VBoxManage storageattach \"${VM}\" --storagectl \"IDE Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
+            red "\nTo do this \"${VM}\" must be shutdown !!! \nRemember - VM Guest may have only one ide controller.\n"
+            exit 1
+        fi
+        # Attach new VBoxGuestAdditions to install
+        # vbkick always use port=1 and device=0 for Guest Additions (Secondary Master)
+        # Note: which cd-rom device use on guest? /dev/sr1 or /dev/sr0 if "IDE Controller (0, 0)" not exist. If is "Empty" then still exist.
+        # vbkick creates VM with two SCSI CD-ROM devices: first - install iso, second - VBoxGuestAdditions iso.
+        if [ $guest_additions_download -eq 1 ]; then
+            # custom VBoxGuestAdditions
+            download_guest_additions_media
+            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+            --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" --forceunmount
+        else
+            # default VBoxGuestAdditions
+            remove_guest_additions_media
+            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+            --type dvddrive --port 1 --device 0 --medium additions --forceunmount
+            # Note: howto check default location for guest additions:
+            # `VBoxManage list  systemproperties | grep -w "Default Guest Additions ISO" | cut -f 2 -d ":"`
+            # example output: /usr/share/virtualbox/
+        fi
+        # Note: Guest OS (Linux) does not support automatic Guest Additions updating: 
+        # VBoxManage guestcontrol <vmname>|<uuid> updateadditions
+        # Manuall Guest Additions update/installation.
+        if [ $ssh_keys_enabled -eq 1 ]; then        
+            # if key not exist then get it
+            get_priv_ssh_key
+            # create path to ssh private key
+            local key_path="${ssh_keys_path}/${ssh_priv_key}"
+            # true to ignore fails because, install cmd may fail when no X on guest OS: "Installing the Window System drivers ...fail"
+            ssh "${ssh_user}@localhost" -t -i "${key_path}" -p $ssh_host_port $ssh_options -C "${manuall_update_guest_additions}" || true
+        fi
+        # Cleaning
+        # todo [LOW]: release VBoxGuestAdditions image; it break virtualbox.sh postinstall script
+    else
+        green "VBoxGuestAdditions on ${VM} is up-to-date\n"
+    fi
+
+    # Run other update scripts on VM Guest via ssh
+    ssh_exec "${update_transport[@]}" "${update_launch[@]}" 0
     exit 0
 }
 
@@ -546,7 +695,7 @@ function ssh_exec {
 
     # check whether VM is running 
     if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
-        printf "\e[1;31m${VM} is not running...\n\e[0m"
+        red "${VM} is not running...\n"
         exit 1
     fi
 
@@ -608,14 +757,14 @@ function ssh_exec {
             done
         fi
     fi
-    # todo [LOW]: if ssh keys authentication is not enabled try login using password
+    # todo [LOW]: if ssh keys authentication is not enabled try login using password (ask about passwd ?)
     # (root, user, sshpass, expect, VBoxManage guestcontrol)(same for shutdown, kickstart_monitoring)
 }
 
 function start_web_server {
     # check whether port is not used by other proc
     if [[ `nc -z localhost $kickstart_port` ]]; then
-        printf "\e[1;31m$kickstart_port port is already in use\n\e[0m"
+        red "$kickstart_port port is already in use\n"
         # TODO [LOW]: choose next webserver port if present is in use from kickstart_port list, 
         # and update current_kickstart_port - this not working with injection method (list of files to update ?)
         exit 1
@@ -688,8 +837,6 @@ if [[ ! `which VBoxManage 2>/dev/null` ]]; then
     exit 1
 fi
 vb_version=$(get_vb_version)
-# todo [LOW]: list of files to update e.g. {postinstall,validate}/adm_envrc (only if exist) with current VBOX_VERSION
-# (vboxmanage -v and sed should do a job)
 # signals and error handler
 trap clean_up SIGHUP SIGINT SIGTERM ERR
 process_args "${1}" "${2}"

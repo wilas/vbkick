@@ -16,3 +16,6 @@
 [submodule "templates/Ubuntu12.04"]
 	path = templates/Ubuntu12.04
 	url = git@github.com:wilas/vbkick-template-ubuntu12.04.git
+[submodule "templates/Fedora19"]
+	path = templates/Fedora19
+	url = git@github.com:wilas/vbkick-template-fedora19.git
