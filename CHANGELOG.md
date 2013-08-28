@@ -1,4 +1,4 @@
-## Not released
+## 0.4 (28-08-2013)
 
 FEATURES
  - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts
