@@ -4,6 +4,7 @@ FEATURES
  - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts
  - auto update value of VBOX_VERSION="version" in the given files list with current vbox version
  - rm other (older) VBoxGuestAdditions isos from media directory (before remove ask about confirmation)
+ - Fedora19 template was added
 
 IMPROVEMENTS
  - guest_additions_download option is disbaled by default
