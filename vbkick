@@ -597,7 +597,7 @@ function validate_vm {
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    ssh_exec "${validate_transport[@]}" "${validate_launch[@]}" 1
+    ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}" 1
     exit 0
 }
 
@@ -606,7 +606,7 @@ function lazy_postinstall {
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    ssh_exec "${postinstall_transport[@]}" "${postinstall_launch[@]}" 0
+    ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}" 1
     exit 0
 }
 
@@ -680,7 +680,7 @@ function lazy_update {
     fi
 
     # Run other update scripts on VM Guest via ssh
-    ssh_exec "${update_transport[@]}" "${update_launch[@]}" 0
+    ssh_exec ${#update_transport[@]} "${update_transport[@]}" "${update_launch[@]}" 0
     exit 0
 }
 
@@ -688,10 +688,19 @@ function ssh_exec {
     #
     # transport scripts to VM Guest via SCP and exec them via SSH
     #
-    local transport=$1
-    local launch=$2
+    # get number of transport files/directories; transport array length
+    local pos=$1
+    shift
+    # get transport array; everything to $pos
+    local transport=("${@:1:$pos}")
+    shift $pos
+    # get launch array; everything but last arg
+    local len=$(($#-1))
+    local launch=("${@:1:$len}")
+    shift $len
+    # get last arg
     # useful for running tests on destination machine, tests don't stop after first ERROR
-    local accept_ssh_command_fail=$3
+    local accept_ssh_command_fail=$1
 
     # check whether VM is running 
     if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
