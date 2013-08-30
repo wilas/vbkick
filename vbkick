@@ -739,7 +739,7 @@ function ssh_exec {
                 printf "${pkt} is neither file nor directory\n"
                 exit 1
             fi
-            sleep 0.5
+            sleep 2
         done
 
         # run commands via ssh
@@ -755,7 +755,7 @@ function ssh_exec {
                 # fail is accepted
                 ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}" || true
             fi
-            sleep 0.5
+            sleep 2
         done
         
         # clean after scp by rm transported media/scripts
@@ -765,7 +765,7 @@ function ssh_exec {
                     continue
                 fi
                 ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}"
-                sleep 0.5
+                sleep 2
             done
         fi
     fi
