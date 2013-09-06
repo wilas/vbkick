@@ -93,6 +93,7 @@ Tested currently only in bash 4 (use POSIX mode). If you have trouble using scri
     vbkick  export       VM_NAME        # export VM and create Vagrant VM_NAME.box
     vbkick  update       VM_NAME        # update VBoxGuestAdditions and run update scripts via ssh
     vbkick  destroy      VM_NAME        # destroy VM
+    vbkick  ssh          VM_NAME        # ssh to VM
     vbkick  help                        # display help and exit
 ```
 
