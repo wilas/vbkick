@@ -1,7 +1,23 @@
+## Not released
+
+FEATURES
+ - list of disks (given as list of disks sizes) instead of one disk
+ - ssh ACTION was added - ssh to VM with same as postinstall/validate/update options
+ - postinstall, validate and update commands works without ssh_key authentication, prompt you for the password for the each ssh command (tmp solution)
+ - disbale/enable autoupdate VBoxGuestAdditions on Guest machine (guest_additions_attach)
+ - disbale/enable autoattach VBoxGuestAdditions media to Guest machine (guest_additions_attach)
+
+IMPROVEMENTS
+ - added delay between ssh commands; command not fail if previous one contain `reboot`. Wait until host boot or ssh ConnectTimeout will be reached (useful for lxc-docker installation)
+ - disks are added to SATA Controller, ports 1-30 instead of ports 0-30; port 0 is reserve for boot disk.
+
+BUG FIXES
+ - process lauch and transport arrays
+
 ## 0.4 (28-08-2013)
 
 FEATURES
- - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts
+ - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts (manuall_update_guest_additions option)
  - auto update value of VBOX_VERSION="version" in the given files list with current vbox version
  - rm other (older) VBoxGuestAdditions isos from media directory (before remove ask about confirmation)
  - Fedora19 template was added

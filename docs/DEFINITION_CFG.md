@@ -14,7 +14,7 @@ More details soon.
 
  - disk_size
 
- default: 10140
+ default: (10140)
 
  - disk_format
 
@@ -66,6 +66,10 @@ More details soon.
  default: ""
 
  - guest_additions_download
+
+ default: 0
+
+- guest_additions_attach
 
  default: 1
 

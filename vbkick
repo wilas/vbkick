@@ -62,8 +62,10 @@ iso_path="iso"
 # by default sha256sum is empty - 
 # WARNING is given during processing if sha256 sum is wrong (use: sha256sum --help)
 iso_sha256=""
-# set to 1 to download custom VBoxGuestAdditions on host, otherwise use default VBoxGuestAdditions - recommended
+# set to 1 to download custom VBoxGuestAdditions to host, otherwise use default VBoxGuestAdditions - recommended
 guest_additions_download=0
+# set to 0 to not install/update VBoxGuestAdditions on guest
+guest_additions_attach=1
 
 # Boot default settings
 # default time before boot_cmd_sequence start
@@ -117,6 +119,7 @@ update_transport=("")
 update_launch=("")
 # default command to update VBoxGuestAdditions
 manuall_update_guest_additions="sudo mount /dev/sr1 /mnt && sudo sh /mnt/VBoxLinuxAdditions.run && sudo umount /mnt"
+#TODO [MEDIUM]: update_boot_media=1 replace boot (usb_disk,iso) media during update action, usefull for smartOS, host must be shutdown
 
 # Clean
 # list of files to autoupdate VBOX_VERSION value
@@ -170,6 +173,7 @@ function usage {
     printf "\texport                export VM and create Vagrant VM_NAME.box\n"
     printf "\tupdate                update VBoxGuestAdditions and run update scripts via ssh\n"
     printf "\tdestroy               destroy VM\n"
+    printf "\tssh                   ssh to VM\n"
     printf "\thelp                  display this help and exit\n"
     printf "\n"
 }
@@ -184,6 +188,7 @@ function process_args {
         "validate") validate_vm ;;
         "postinstall") lazy_postinstall ;;
         "update") lazy_update ;;
+        "ssh") lazy_ssh ;;
         *) usage; exit ;;
     esac
 }
@@ -222,6 +227,7 @@ function get_vb_version {
 
 # Check whether iso/media dir exist
 function prepare_media_dir {
+    # TODO [LOW]: special iso_path="%VBOXFOLDER%/%NAME%"
     if [ ! -d "${iso_path}" ]; then
         printf "Creates iso directory\n"
         mkdir "${iso_path}"
@@ -344,9 +350,7 @@ function build_vm {
         local boot_cmd_code=$(printf "${boot_cmd}" | convert_2_scancode.py)
         # sends code to VM
         for code in $boot_cmd_code; do
-            #printf "${code}\n"
             if [ "${code}" == "wait" ]; then
-                #printf "waiting...\n"
                 sleep 1
             else
                 VBoxManage controlvm "${VM}" keyboardputscancode $code
@@ -363,42 +367,58 @@ function build_vm {
     stop_web_server
 
     # release install image
-    VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-    --type dvddrive --port 0 --device 0 --medium emptydrive --forceunmount
+    # TODO [MEDIUM]: release install media should be optional
+    #VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+    #--type dvddrive --port 0 --device 0 --medium emptydrive --forceunmount
 
     exit 0
 }
 
 function create_box {
-    # register vm
+    # Register vm
     VBoxManage createvm --name "${VM}" --ostype "${os_type_id}" --register
 
-    # create disk
+    # Creates disks
+    # Get default location for disks
     local location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^ *//g')
-    VBoxManage createhd --filename "${location}/${VM}/${VM}.${disk_format}"\
-    --size $disk_size --format "${disk_format}" --variant Standard
 
-    # SATA controler - add hard disk
+    # SATA controller - add hard disks
+    # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media
+    # check disk_size lenght
+    if [ ${#disk_size[@]} -gt 29 ]; then
+        red "Too many disks in disk_size (limited to 29 disks)\n"
+        exit 1; 
+    fi
     VBoxManage storagectl "${VM}" --name "SATA Controller"\
-    --add sata --hostiocache $hostiocache --sataportcount 1
-    VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
-    --port 0 --device 0 --type hdd --medium "${location}/${VM}/${VM}.${disk_format}"
+    --add sata --hostiocache $hostiocache --sataportcount ${#disk_size[@]}
+    local port_nr=1
+    for disk in "${disk_size[@]}"; do
+        VBoxManage createhd --filename "${location}/${VM}/${VM}-${port_nr}.${disk_format}"\
+        --size $disk --format "${disk_format}" --variant Standard
+        VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+        --port $port_nr --device 0 --type hdd --medium "${location}/${VM}/${VM}-${port_nr}.${disk_format}"
+        local port_nr=$((port_nr+1))
+    done
 
+    # TODO [LOW]: use only SATA for everything !?
+    # TODO [MEDIUM]: iso media may be optional, boot from disk instead
     # IDE controler - add install iso
     VBoxManage storagectl "${VM}" --name "IDE Controller" --add ide
     VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
     --type dvddrive --port 0 --device 0 --medium "${iso_path}/${iso_file}"
     # IDE controler - add VBoxGuestAdditions iso
-    if [ $guest_additions_download -eq 1 ]; then
-        # custom VBoxGuestAdditions
-        VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-        --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso"
-    else
-        # default VBoxGuestAdditions
-        VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-        --type dvddrive --port 1 --device 0 --medium emptydrive
-        VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-        --type dvddrive --port 1 --device 0 --medium additions
+    if [ $guest_additions_attach -eq 1 ]; then
+        if [ $guest_additions_download -eq 1 ]; then
+            # custom VBoxGuestAdditions
+            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+            --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso"
+        else
+            # default VBoxGuestAdditions
+            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+            --type dvddrive --port 1 --device 0 --medium emptydrive
+            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+            --type dvddrive --port 1 --device 0 --medium additions
+        fi
     fi
 
     # Tuning VM
@@ -419,7 +439,7 @@ function create_box {
 
     # ssh NAT mapping
     if [[ ! `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
-        # TODO [LOW]: check whether ssh_host_port is already in use and take other
+        # TODO [LOW]: check whether ssh_host_port is already in use and take other (random from list/range)
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
@@ -447,7 +467,8 @@ function kickstart_monitoring {
         done
         printf "\n"
     else
-        # if no ssh key authentication enabled then wait until timeout was reached
+        # if no ssh key authentication enabled then wait until timeout will be reached
+        printf "Sleeping ${kickstart_timeout} seconds ..."
         sleep $kickstart_timeout
     fi
 }
@@ -519,16 +540,16 @@ function export_vm {
     local mac_address=$(VBoxManage showvminfo --details --machinereadable "${VM}"\
     | grep macaddress1 | cut -d"=" -f 2)
     # add Vagrantfile
-    printf "Vagrant::Config.run do |config|
+    printf "Vagrant.configure(\"2\") do |config|
     \t# This Vagrantfile is auto-generated by \`vagrant package\` to contain
     \t# the MAC address of the box. Custom configuration should be placed in
     \t# the actual \`Vagrantfile\` in this box.
     \tconfig.vm.base_mac = ${mac_address}
-    \rend\n
-    \r# Load include vagrant file if it exists after the auto-generated
-    \r# so it can override any of the settings
-    \rinclude_vagrantfile = File.expand_path(\"../include/_Vagrantfile\", __FILE__)
-    \rload include_vagrantfile if File.exist?(include_vagrantfile)\n" > "${tmp_dir}/Vagrantfile"
+    end\n
+    # Load include vagrant file if it exists after the auto-generated
+    # so it can override any of the settings
+    include_vagrantfile = File.expand_path(\"../include/_Vagrantfile\", __FILE__)
+    load include_vagrantfile if File.exist?(include_vagrantfile)\n" > "${tmp_dir}/Vagrantfile"
     # add metadata.json
     printf "{\"provider\":\"virtualbox\"}\n" > "${tmp_dir}/metadata.json"
     # create VM_NAME.box (gzip) file
@@ -577,7 +598,7 @@ function shutdown {
             sleep 1
         done
     fi
-    
+
     # check whether VM is still running, if so poweroff it using hard way.
     if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
         VBoxManage controlvm "${VM}" poweroff
@@ -589,36 +610,7 @@ function shutdown {
     fi
 }
 
-function validate_vm {
-    #
-    # test should be smart enough to check what I really want to test
-    # e.g. If I don't need chef, don't test whether I have chef
-    #
-    # load vm description/definition
-    load_definition
-    # exec scripts on VM Guest via ssh
-    ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}" 1
-    exit 0
-}
-
-function lazy_postinstall {
-    #todo [LOW]: attach and release  VBoxGuestAdditions image to not break virtualbox.sh postinstall script
-    # load vm description/definition
-    load_definition
-    # exec scripts on VM Guest via ssh
-    ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}" 1
-    exit 0
-}
-
-function lazy_update {
-    # load vm description/definition
-    load_definition
-    # check whether VM is running, must be running 
-    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
-        red "${VM} is not running...\n"
-        exit 1
-    fi
-    
+function update_guest_additions {
     # get current guest version
     if [[ `VBoxManage guestproperty enumerate "${VM}" | grep "GuestAdd/Version"` ]]; then
         # guest already exist, get current version
@@ -627,7 +619,7 @@ function lazy_update {
         # guest doesn't exist
         local guest_version=""
     fi
-
+    
     # check whether we need update or install VBoxGuestAdditions
     if [ "${vb_version}" != "${guest_version}" ]; then
         # todo [LOW]: use Storage Controller Name (1) and type to find controller name
@@ -665,18 +657,49 @@ function lazy_update {
         # Note: Guest OS (Linux) does not support automatic Guest Additions updating: 
         # VBoxManage guestcontrol <vmname>|<uuid> updateadditions
         # Manuall Guest Additions update/installation.
-        if [ $ssh_keys_enabled -eq 1 ]; then        
-            # if key not exist then get it
-            get_priv_ssh_key
-            # create path to ssh private key
-            local key_path="${ssh_keys_path}/${ssh_priv_key}"
-            # true to ignore fails because, install cmd may fail when no X on guest OS: "Installing the Window System drivers ...fail"
-            ssh "${ssh_user}@localhost" -t -i "${key_path}" -p $ssh_host_port $ssh_options -C "${manuall_update_guest_additions}" || true
-        fi
+        # true to ignore fails because, install cmd may fail when no X on guest OS: "Installing the Window System drivers ...fail"
+        ssh_exec 1 "" "${manuall_update_guest_additions}" 1
         # Cleaning
         # todo [LOW]: release VBoxGuestAdditions image; it break virtualbox.sh postinstall script
     else
         green "VBoxGuestAdditions on ${VM} is up-to-date\n"
+    fi
+
+}
+
+function validate_vm {
+    #
+    # test should be smart enough to check what I really want to test
+    # e.g. If I don't need chef, don't test whether I have chef
+    #
+    # load vm description/definition
+    load_definition
+    # exec scripts on VM Guest via ssh
+    ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}" 1
+    exit 0
+}
+
+function lazy_postinstall {
+    # TODO [LOW]: attach and release  VBoxGuestAdditions image to not break virtualbox.sh postinstall script
+    # load vm description/definition
+    load_definition
+    # exec scripts on VM Guest via ssh
+    ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}" 1
+    exit 0
+}
+
+function lazy_update {
+    # load vm description/definition
+    load_definition
+    # check whether VM is running, must be running 
+    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+        red "${VM} is not running...\n"
+        exit 1
+    fi
+    
+    # Check whether VBoxGuestAdditions should be installed. If not then not update additions.
+    if [ $guest_additions_attach -eq 1 ]; then
+        update_guest_additions
     fi
 
     # Run other update scripts on VM Guest via ssh
@@ -721,56 +744,94 @@ function ssh_exec {
         get_priv_ssh_key
         # create path to ssh private key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
+    fi
 
-        # transport scripts to guest
-        for pkt in "${transport[@]}"; do
-            if [ -z "${pkt}" ]; then 
-                continue #consider break
-            fi
-            # check whether pkt is file or dir
-            if [[ -d "${pkt}" ]]; then
-                # pkt is directory
+    # transport scripts to guest
+    for pkt in "${transport[@]}"; do
+        if [ -z "${pkt}" ]; then 
+            continue
+        fi
+        printf "Scp: ${pkt}\n"
+        # check whether pkt is file or dir
+        if [[ -d "${pkt}" ]]; then
+            # pkt is directory
+            if [ $ssh_keys_enabled -eq 1 ]; then        
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
-            elif [[ -f "${pkt}" ]]; then
-                # pkt is file
+            else
+                scp -q -P $ssh_host_port $ssh_options -r "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
+            fi
+        elif [[ -f "${pkt}" ]]; then
+            # pkt is file
+            if [ $ssh_keys_enabled -eq 1 ]; then        
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
             else
-                # pkt is neither file nor directory
-                printf "${pkt} is neither file nor directory\n"
-                exit 1
+                scp -q -P $ssh_host_port $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
             fi
-            sleep 2
-        done
+        else
+            # pkt is neither file nor directory
+            printf "${pkt} is neither file nor directory\n"
+            exit 1
+        fi
+        sleep 2
+    done
 
-        # run commands via ssh
-        for cmd in "${launch[@]}"; do
-            if [ -z "${cmd}" ]; then 
-                continue #consider break
-            fi
-            printf "Exec: ${cmd}\n"
-            if [ $accept_ssh_command_fail -eq 0 ]; then
-                # fail is not accepted
+    # run commands via ssh
+    for cmd in "${launch[@]}"; do
+        if [ -z "${cmd}" ]; then 
+            continue
+        fi
+        printf "Exec: ${cmd}\n"
+        if [ $accept_ssh_command_fail -eq 0 ]; then
+            # fail is not accepted
+            if [ $ssh_keys_enabled -eq 1 ]; then        
                 ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
             else
-                # fail is accepted
+                ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options -C "${cmd}"
+            fi
+        else
+            # fail is accepted
+            if [ $ssh_keys_enabled -eq 1 ]; then        
                 ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}" || true
+            else
+                ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options -C "${cmd}" || true
+            fi
+        fi
+        sleep 2
+    done
+    
+    # clean after scp by rm transported media/scripts
+    if [ $clean_transported -eq 1 ]; then
+        for pkt in "${transport[@]}"; do
+            if [ -z "${pkt}" ]; then 
+                continue
+            fi
+            printf "Clean transported: ${pkt}\n"
+            if [ $ssh_keys_enabled -eq 1 ]; then        
+                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}"
+            else
+                ssh -q "${ssh_user}@localhost" -t -i -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}"
             fi
             sleep 2
         done
-        
-        # clean after scp by rm transported media/scripts
-        if [ $clean_transported -eq 1 ]; then
-            for pkt in "${transport[@]}"; do
-                if [ -z "${pkt}" ]; then 
-                    continue
-                fi
-                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}"
-                sleep 2
-            done
-        fi
     fi
-    # todo [LOW]: if ssh keys authentication is not enabled try login using password (ask about passwd ?)
+    # TODO [LOW]: if ssh keys authentication is not enabled try login using password from definition
     # (root, user, sshpass, expect, VBoxManage guestcontrol)(same for shutdown, kickstart_monitoring)
+}
+
+function lazy_ssh {
+    # load vm description/definition
+    load_definition
+    if [ $ssh_keys_enabled -eq 1 ]; then        
+        # if key not exist then get it
+        get_priv_ssh_key
+        # create path to ssh private key
+        local key_path="${ssh_keys_path}/${ssh_priv_key}"
+        ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options
+    else
+        ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options
+        #ssh -v "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options
+        #echo "ssh -q -t -p $ssh_host_port $ssh_options \"${ssh_user}@localhost\" "
+    fi
 }
 
 function start_web_server {
