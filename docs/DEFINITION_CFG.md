@@ -51,7 +51,7 @@ More details soon.
  
  default: ""
 
-- guest_additions_attach
+ - guest_additions_attach
 
  default: 1
 
