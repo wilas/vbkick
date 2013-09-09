@@ -87,6 +87,7 @@ Description:
  - Fedora19 <@wilas>
  - ScientificLinux6 <@wilas>
  - Ubuntu12.04 <@wilas>
+ - CoreOS ?
  - FreeBSD/PC-BSD ?
  - OpenIndiana ?
  - SmartOS ?

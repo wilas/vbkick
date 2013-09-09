@@ -26,7 +26,6 @@ General TODO
         - Info: https://confluence.atlassian.com/display/JIRA/Defining+'Priority'+Field+Values
  - Ideas.md (arena + garden + levels/priority) and/or (create issue)
  - describe options in definition.cfg (possibility and consequences)(OS influence)
- - prepare and boot VM from media disk attached to SATA Controller, port 0 (iso is not needed, useful for SmartOS)
 
 Idea:
  - concurrent VM build (arg: list of VM) - CPU waste - better create one and use clone

@@ -45,29 +45,11 @@ More details soon.
  no default - REQUIRED!
 
 
-## ISO
-
- - iso_path
-
- default: "iso"
-
- - iso_file
-
- no default - REQUIRED!
-
- - iso_src
-
- no default - REQUIRED! 
-
- Note: may be equal "" if iso_file exist in iso_path - downloaded manually
-
- - iso_sha256
-
+## GUEST ADDITIONS
+ 
+ - guest_additions_path
+ 
  default: ""
-
- - guest_additions_download
-
- default: 0
 
 - guest_additions_attach
 
@@ -75,6 +57,40 @@ More details soon.
 
 
 ## BOOT
+
+ - boot_file
+
+ no default - REQUIRED!
+ 
+ - boot_file_type
+
+ default: "dvddrive"
+
+ - boot_file_src
+
+ no default - REQUIRED! 
+
+ Note: may be equal "" if boot_file exist - downloaded manually
+ 
+ - boot_file_src_path
+
+ default: "iso"
+
+ - boot_file_src_sha256
+
+ default: ""
+
+ - boot_file_unpack_cmd
+
+ default: ""
+ 
+ - boot_file_unpack_name
+
+ default: ""
+ 
+ - boot_file_convert_from_raw
+
+ default: 0
 
  - boot_wait
 
@@ -159,10 +175,6 @@ More details soon.
  - update_launch
  
  default: ("")
-
- - manuall_update_guest_additions
-
- default: "sudo mount /dev/sr1 /mnt && sudo sh /mnt/VBoxLinuxAdditions.run && sudo umount /mnt"
 
 
 ## CLEAN

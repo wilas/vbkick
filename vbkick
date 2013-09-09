@@ -46,7 +46,7 @@ set -o posix
 hostiocache="on"
 cpu_count=1
 memory_size=512
-disk_size=10140
+disk_size=(10140)
 disk_format="vdi"
 video_memory_size=10
 # list of VM options: ("option1:value" "option2:value")
@@ -56,18 +56,28 @@ gui_enabled=1
 # by default add shared folder - to disable: shared_folder=""
 shared_folder="vbkick"
 
-# ISO default settings
-# default path to directory with iso files
-iso_path="iso"
-# by default sha256sum is empty - 
-# WARNING is given during processing if sha256 sum is wrong (use: sha256sum --help)
-iso_sha256=""
-# set to 1 to download custom VBoxGuestAdditions to host, otherwise use default VBoxGuestAdditions - recommended
-guest_additions_download=0
-# set to 0 to not install/update VBoxGuestAdditions on guest
+# Guest Additions default settings
+# set to 0 to not attach VBoxGuestAdditions iso to guest
 guest_additions_attach=1
+# path where guest_additions should be download, if empty then not download custom VBoxGuestAdditions to host, use default one
+guest_additions_path=""
 
 # Boot default settings
+#boot_file -> required option, fail if not in definition
+#boot_file_src -> required option, fail if not in definition
+# type of boot media e.g.: hdd, dvddrive; by default dvddrive
+boot_file_type="dvddrive"
+# default path for src media needed to create destination boot_file
+boot_file_src_path="iso"
+# by default sha256sum is empty
+# WARNING is given during processing if sha256 sum is wrong (use: sha256sum --help)
+boot_file_src_sha256=""
+# by default unpacke is not needed
+boot_file_unpack_cmd=""
+# where is the path and the filename after unpack
+boot_file_unpack_name=""
+# is boot_file_src raw image and need to be converted
+boot_file_convert_from_raw=0
 # default time before boot_cmd_sequence start
 boot_wait=10
 # list of boot_cmd: ("cmd1" "cmd2" "cmd3")
@@ -78,6 +88,7 @@ boot_seq_wait=1
 kickstart_port=7122
 # default max webserver live time
 kickstart_timeout=7200
+#TODO [LOW]: update_boot_media=1 replace boot (usb, iso) media during update action, usefull for smartOS, host must be shutdown
 
 # SSH default settings (veeded to run vbkick validate and/or lazy_posinstall)
 # by default use ssh keys
@@ -99,6 +110,7 @@ ssh_guest_port=22
 # StrictHostKeyChecking - if "no" then automatically add new host keys to the host key database file
 # you may consider editing ssh config: http://superuser.com/questions/141344/ssh-dont-add-hostkey-to-known-hosts
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+# TODO [MEDIUM]: ssh_password=""
 
 # Lazy Postinstall default settings
 # list of files and directories to transport to guest
@@ -117,9 +129,6 @@ validate_launch=("")
 update_transport=("")
 # list of update commands
 update_launch=("")
-# default command to update VBoxGuestAdditions
-manuall_update_guest_additions="sudo mount /dev/sr1 /mnt && sudo sh /mnt/VBoxLinuxAdditions.run && sudo umount /mnt"
-#TODO [MEDIUM]: update_boot_media=1 replace boot (usb_disk,iso) media during update action, usefull for smartOS, host must be shutdown
 
 # Clean
 # list of files to autoupdate VBOX_VERSION value
@@ -222,27 +231,38 @@ function load_definition {
 function get_vb_version {
     local version=$(VBoxManage --version) # e.g. 4.2.12r84980
     local version=${version%r*} #e.g. 4.2.12
-    printf "${version}\n"
+    printf "${version}"
 }
 
-# Check whether iso/media dir exist
-function prepare_media_dir {
-    # TODO [LOW]: special iso_path="%VBOXFOLDER%/%NAME%"
-    if [ ! -d "${iso_path}" ]; then
-        printf "Creates iso directory\n"
-        mkdir "${iso_path}"
+# Check whether given directory exist
+function prepare_path {
+    local path="${1}"
+    local mkdir_path="${2}"
+    # Process special variables in path definition e.g. path="%VBOXFOLDER%/%NAME%"
+    local location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^ *//g')
+    # TODO [MEDIUM]: %PWD%, %HOME%
+    local path=$(echo "${path}" | sed -r "s#%SRCPATH%#${boot_file_src_path}#g")
+    local path=$(echo "${path}" | sed -r "s#%VBOXFOLDER%#${location}#g")
+    local path=$(echo "${path}" | sed -r "s/%NAME%/${VM}/g")
+    # Creates dir if necessary
+    if [ $mkdir_path -eq 1 ] && [ ! -z "${path}" ] && [ ! -d "${path}" ]; then
+        mkdir -p "${path}"
     fi
+    # Return path
+    printf "${path}"
 }
 
 # Downloads custom VBoxGuestAdditions if required
 function download_guest_additions_media {
-    if [ $guest_additions_download -eq 1 ]; then
-        prepare_media_dir
-        # check whether VBoxGuestAdditions exist
-        if [ ! -f "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
-            local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
-            wget --no-check-certificate "${additions_url}" -P "${iso_path}"
-        fi
+    if [ -z "${guest_additions_path}" ]; then
+        # nothing to do
+        return
+    fi
+    guest_additions_path=$(prepare_path "${guest_additions_path}" 1)
+    # check whether VBoxGuestAdditions exist
+    if [ ! -f "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
+        local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
+        wget --no-check-certificate "${additions_url}" -P "${guest_additions_path}"
     fi
     # rm useless images
     remove_guest_additions_media
@@ -250,48 +270,97 @@ function download_guest_additions_media {
 
 # Remove other (not needed) VBoxGuestAdditions from media directory
 function remove_guest_additions_media {
-    # true is usefull to not fail whole cmd, and return empty string 
-    local file_list=$(ls "${iso_path}" | grep "GuestAdditions" | grep -v "${vb_version}" || true)
+    if [ -z "${guest_additions_path}" ]; then
+        # nothing to do
+        return
+    fi
+    guest_additions_path=$(prepare_path "${guest_additions_path}" 0)
+    # true is use to not fail whole cmd, and return empty string 
+    local file_list=$(ls "${guest_additions_path}" | grep "GuestAdditions" | grep -v "${vb_version}" || true)
     # continue only if we have some files to remove
     if [ -n "${file_list}" ]; then
         printf "List of VBoxGuestAdditions files to remove:\n"
-        for file in "${file_list}"; do
+        for file in ${file_list}; do
             printf "${file}\n"
         done
         # to remove files ask about confirmation
         read -r -p "Do you want remove above VBoxGuestAdditions files? [y/N]" ans
         if [[ $ans =~ ^[Yy]$ ]]; then
-            for file in "${file_list}"; do
+            for file in ${file_list}; do
                 printf "${file}\n"
-                rm -f "${iso_path}/${file}"
+                rm -f "${guest_additions_path}/${file}"
             done
         fi
     fi
 }
 
-# Prepare installation media
-function download_install_media {
-    prepare_media_dir
-    # check whether iso_file exist
-    if [ ! -f "${iso_path}/${iso_file}" ]; then
-        # iso_src is empty (not defined)
-        if [ -z "${iso_src}" ]; then 
-            red "${iso_path}/${iso_file} not exist and iso_src is empty\n"
-            exit 1
-        fi
-        wget --no-check-certificate "${iso_src}" -O "${iso_path}/${iso_file}"
+# Prepare installation/boot media
+function download_boot_media {
+    local boot_file_path=$(dirname "${boot_file}")
+    local boot_file_name=$(basename "${boot_file}")
+    local boot_file_path=$(prepare_path "${boot_file_path}" 1)
+    boot_file="${boot_file_path}/${boot_file_name}"
+     
+    # check whether boot file exist
+    if [ -f "${boot_file}" ]; then
+        # file exist, nothing to do
+        return
     fi
 
-    # verify iso_src sha256sum
-    local get_sha256=$(sha256sum ${iso_path}/${iso_file} | cut -d" " -f 1)
-    if [[ "${iso_sha256}" != "${get_sha256}" ]]; then
+    # boot_file_src is empty (not defined)
+    if [ -z "${boot_file_src}" ]; then 
+        red "${boot_file} not exist and boot_file_src is empty\n"
+        exit 1
+    fi
+
+    # the temporary name for boot_file is last part from boot_file_src
+    local tmp_name=$(basename "${boot_file_src}")
+    boot_file_src_path=$(prepare_path "${boot_file_src_path}" 1)
+    local boot_file_src_file="${boot_file_src_path}/${tmp_name}"
+    # check whether boot_file_src exist
+    if [ ! -f "${boot_file_src_file}" ]; then
+        wget --no-check-certificate "${boot_file_src}" -O "${boot_file_src_file}"
+    fi
+
+    # verify boot_file_src sha256sum
+    local get_sha256=$(sha256sum "${boot_file_src_file}" | cut -d" " -f 1)
+    if [[ "${boot_file_src_sha256}" != "${get_sha256}" ]]; then
         yellow "WARNING: SHA256SUM is different then expected !\n"
         read -r -p "Do you want continue? [y/N]" ans
         if [[ ! $ans =~ ^[Yy]$ ]]; then
             exit 1
         fi
     else
-        printf "INFO: SHA256SUM:${iso_sha256} is valid.\n"
+        printf "INFO: SHA256SUM:${boot_file_src_sha256} is valid.\n"
+    fi
+
+    # process unpack
+    if [ ! -z "${boot_file_unpack_cmd}" ]; then
+        # check whether boot_file_unpack_name is empty if so then error
+        if [ -z "${boot_file_unpack_name}" ]; then
+            red "boot_file_unpack_name is empty, but boot_file_unpack_cmd is specify\n"
+            exit 1
+        fi
+        # prepare path - this is full path, must already exist in filesystem
+        boot_file_unpack_name=$(prepare_path "${boot_file_unpack_name}" 0)
+        # check whether boot_file_unpack_name exist - if not then run unpack cmd
+        if [ ! -f "${boot_file_unpack_name}" ]; then
+            # prepare and run unpack cmd
+            boot_file_unpack_cmd=$(prepare_path "${boot_file_unpack_cmd}" 0)
+            printf "${boot_file_unpack_cmd}\n"
+            eval "${boot_file_unpack_cmd}"
+        fi
+        local boot_file_src_file="${boot_file_unpack_name}"
+    fi
+
+    # process convert from raw
+    if [ $boot_file_convert_from_raw -eq 1 ]; then
+        VBoxManage convertfromraw "${boot_file_src_file}" "${boot_file}" --format "${disk_format}"
+    else
+        # check whether full path to boot_file_src_file is same as boot_file and boot_file was already created
+        if [ ! -f "${boot_file}" ]; then
+            cp "${boot_file_src_file}" "${boot_file}"
+        fi
     fi
 }
 
@@ -317,18 +386,18 @@ function build_vm {
         exit 1
     fi
     # load vm description/definition
-    load_definition
-    # download iso files
-    download_install_media
-    download_guest_additions_media
+    load_definition 
     # get ssh private key
     if [ $ssh_keys_enabled -eq 1 ]; then
         get_priv_ssh_key
     fi
-    # start simple webserver (in background)
-    start_web_server
+    # download boot/iso files
+    download_boot_media
+    download_guest_additions_media
     # create VM box with given settings
     create_box
+    # start simple webserver (in background)
+    start_web_server
     # host ip to connect from guest
     local host_ip=10.0.2.2
     # start VM
@@ -366,11 +435,6 @@ function build_vm {
     # stop webserver
     stop_web_server
 
-    # release install image
-    # TODO [MEDIUM]: release install media should be optional
-    #VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-    #--type dvddrive --port 0 --device 0 --medium emptydrive --forceunmount
-
     exit 0
 }
 
@@ -382,41 +446,41 @@ function create_box {
     # Get default location for disks
     local location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^ *//g')
 
-    # SATA controller - add hard disks
-    # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media
+    # SATA controller - place for hdd and iso files
+    # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media and port 1 for guest additions
     # check disk_size lenght
-    if [ ${#disk_size[@]} -gt 29 ]; then
-        red "Too many disks in disk_size (limited to 29 disks)\n"
+    if [ ${#disk_size[@]} -gt 28 ]; then
+        red "Too many disks in disk_size (limited to 28 disks)\n"
         exit 1; 
     fi
     VBoxManage storagectl "${VM}" --name "SATA Controller"\
-    --add sata --hostiocache $hostiocache --sataportcount ${#disk_size[@]}
-    local port_nr=1
+    --add sata --hostiocache $hostiocache --sataportcount $((${#disk_size[@]}+2))
+    # SATA controller - add boot media
+    VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+    --type "${boot_file_type}" --port 0 --device 0 --medium "${boot_file}"
+    # SATA controller - create and add hdd disks
+    local port_nr=2
     for disk in "${disk_size[@]}"; do
+        if [ -z "${disk}" ]; then 
+            continue
+        fi
         VBoxManage createhd --filename "${location}/${VM}/${VM}-${port_nr}.${disk_format}"\
         --size $disk --format "${disk_format}" --variant Standard
         VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
         --port $port_nr --device 0 --type hdd --medium "${location}/${VM}/${VM}-${port_nr}.${disk_format}"
         local port_nr=$((port_nr+1))
     done
-
-    # TODO [LOW]: use only SATA for everything !?
-    # TODO [MEDIUM]: iso media may be optional, boot from disk instead
-    # IDE controler - add install iso
-    VBoxManage storagectl "${VM}" --name "IDE Controller" --add ide
-    VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-    --type dvddrive --port 0 --device 0 --medium "${iso_path}/${iso_file}"
-    # IDE controler - add VBoxGuestAdditions iso
+    # SATA controller - add VBoxGuestAdditions iso
     if [ $guest_additions_attach -eq 1 ]; then
-        if [ $guest_additions_download -eq 1 ]; then
+        if [ ! -z "${guest_additions_path}" ]; then
             # custom VBoxGuestAdditions
-            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-            --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso"
+            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+            --type dvddrive --port 1 --device 0 --medium "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso"
         else
             # default VBoxGuestAdditions
-            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium emptydrive
-            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium additions
         fi
     fi
@@ -438,12 +502,14 @@ function create_box {
     done
 
     # ssh NAT mapping
+    # TODO [MEDIUM]: allow mapping more ports (nat_mapping_array)
     if [[ ! `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
         # TODO [LOW]: check whether ssh_host_port is already in use and take other (random from list/range)
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
     # add shared folders
+    # TODO [MEDIUM]: allow share more folders (shared_folders_array)
     if [ -n "${shared_folder}" ]; then 
         VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
     fi
@@ -468,7 +534,7 @@ function kickstart_monitoring {
         printf "\n"
     else
         # if no ssh key authentication enabled then wait until timeout will be reached
-        printf "Sleeping ${kickstart_timeout} seconds ..."
+        printf "Sleeping ${kickstart_timeout} seconds ...\n"
         sleep $kickstart_timeout
     fi
 }
@@ -577,19 +643,20 @@ function recover_vm_state {
 }
 
 function shutdown {
-    # ssh key authentication enabled
-    if [ $ssh_keys_enabled -eq 1 ]; then        
-        # if key not exist then get it
-        get_priv_ssh_key
-        # create path to ssh private key
-        local key_path="${ssh_keys_path}/${ssh_priv_key}"
 
-        # check whether VM is running and exec shutdown_cmd via SSH
-        if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
-            printf "Shutting down ${VM} "
-            ssh "${ssh_user}@localhost" -q -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${shutdown_cmd}"
+    # check whether VM is running and exec shutdown_cmd via SSH
+    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+        printf "Shutting down ${VM} "
+        if [ $ssh_keys_enabled -eq 1 ]; then        
+            # ssh key authentication enabled
+            # if key not exist then get it
+            get_priv_ssh_key
+            # create path to ssh private key
+            local key_path="${ssh_keys_path}/${ssh_priv_key}"
+            ssh "${ssh_user}@localhost" -q -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${shutdown_cmd}" || true
+        else
+            ssh "${ssh_user}@localhost" -q -t -p $ssh_host_port $ssh_options -C "${shutdown_cmd}" || true
         fi
-
         # wait until VM is down or shutdown_timeout was reached
         local shutdown_counter=0
         while [[ `VBoxManage list runningvms | grep -w "${VM}"` && $shutdown_counter -le $shutdown_timeout ]]; do
@@ -597,6 +664,17 @@ function shutdown {
             printf "."
             sleep 1
         done
+    fi
+
+    # check whether VM is still running, if so use acpipowerbutton
+    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+        VBoxManage controlvm "${VM}" acpipowerbutton
+        printf "\n${VM} - acpipowerbutton was used. Waiting 60 seconds...\n"
+        sleep 60
+    else
+        printf "\n${VM} was shutdown cleanly.\n"
+        sleep 5
+        return
     fi
 
     # check whether VM is still running, if so poweroff it using hard way.
@@ -610,7 +688,7 @@ function shutdown {
     fi
 }
 
-function update_guest_additions {
+function update_guest_additions_media {
     # get current guest version
     if [[ `VBoxManage guestproperty enumerate "${VM}" | grep "GuestAdd/Version"` ]]; then
         # guest already exist, get current version
@@ -622,49 +700,36 @@ function update_guest_additions {
     
     # check whether we need update or install VBoxGuestAdditions
     if [ "${vb_version}" != "${guest_version}" ]; then
-        # todo [LOW]: use Storage Controller Name (1) and type to find controller name
-        # check whether "IDE Controller (0, 0)" and "IDE Controller (1, 0)" exist - require to attach iso and create /dev/sr1
-        if [[ ! `VBoxManage showvminfo "${VM}" | grep -w "IDE Controller (0, 0)"` ]] || \
-            [[ ! `VBoxManage showvminfo "${VM}" | grep -w "IDE Controller (1, 0)"` ]]; then
-            red "\"IDE Controller (0, 0)\" (Primary Master) or \"IDE Controller (1, 0)\" (Secondary Master) for \"${VM}\" doesn't exist.\n"
-            red "\"IDE Controller\" is ide controller name used by vbkick.\n"
+        # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
+        # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
+        if [[ ! `VBoxManage showvminfo "${VM}" | grep -w "SATA Controller (1, 0)"` ]]; then
+            red "\"SATA Controller (1, 0)\" for \"${VM}\" doesn't exist.\n"
+            red "\"SATA Controller\" is sata controller name used by vbkick.\n"
             red "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
             red "\nTo create proper controller use:\n"
-            red "'VBoxManage storagectl \"${VM}\" --name \"IDE Controller\" --add ide'\n"
-            red "'VBoxManage storageattach \"${VM}\" --storagectl \"IDE Controller\" --type dvddrive --port 0 --device 0 --medium emptydrive'\n"
-            red "'VBoxManage storageattach \"${VM}\" --storagectl \"IDE Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
-            red "\nTo do this \"${VM}\" must be shutdown !!! \nRemember - VM Guest may have only one ide controller.\n"
+            red "'VBoxManage storagectl \"${VM}\" --name \"SATA Controller\" --add sata --hostiocache $hostiocache --sataportcount $((${#disk_size[@]}+2))'\n"
+            red "'VBoxManage storageattach \"${VM}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
+            red "\nTo do this \"${VM}\" must be shutdown !!! \nRemember - VM Guest may have only one sata controller.\n"
             exit 1
         fi
         # Attach new VBoxGuestAdditions to install
-        # vbkick always use port=1 and device=0 for Guest Additions (Secondary Master)
-        # Note: which cd-rom device use on guest? /dev/sr1 or /dev/sr0 if "IDE Controller (0, 0)" not exist. If is "Empty" then still exist.
-        # vbkick creates VM with two SCSI CD-ROM devices: first - install iso, second - VBoxGuestAdditions iso.
-        if [ $guest_additions_download -eq 1 ]; then
+        # vbkick creates VM with SATA Controller port 1 available for VBoxGuestAdditions iso.
+        if [ ! -z "${guest_additions_path}" ]; then
             # custom VBoxGuestAdditions
             download_guest_additions_media
-            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
-            --type dvddrive --port 1 --device 0 --medium "${iso_path}/VBoxGuestAdditions_${vb_version}.iso" --forceunmount
+            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+            --type dvddrive --port 1 --device 0 --medium "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" --forceunmount
         else
             # default VBoxGuestAdditions
-            remove_guest_additions_media
-            VBoxManage storageattach "${VM}" --storagectl "IDE Controller"\
+            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium additions --forceunmount
-            # Note: howto check default location for guest additions:
-            # `VBoxManage list  systemproperties | grep -w "Default Guest Additions ISO" | cut -f 2 -d ":"`
-            # example output: /usr/share/virtualbox/
         fi
         # Note: Guest OS (Linux) does not support automatic Guest Additions updating: 
         # VBoxManage guestcontrol <vmname>|<uuid> updateadditions
-        # Manuall Guest Additions update/installation.
-        # true to ignore fails because, install cmd may fail when no X on guest OS: "Installing the Window System drivers ...fail"
-        ssh_exec 1 "" "${manuall_update_guest_additions}" 1
-        # Cleaning
-        # todo [LOW]: release VBoxGuestAdditions image; it break virtualbox.sh postinstall script
+        # Manuall Guest Additions update/installation is required (via lazy_update cmd).
     else
         green "VBoxGuestAdditions on ${VM} is up-to-date\n"
     fi
-
 }
 
 function validate_vm {
@@ -680,7 +745,6 @@ function validate_vm {
 }
 
 function lazy_postinstall {
-    # TODO [LOW]: attach and release  VBoxGuestAdditions image to not break virtualbox.sh postinstall script
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
@@ -691,19 +755,12 @@ function lazy_postinstall {
 function lazy_update {
     # load vm description/definition
     load_definition
-    # check whether VM is running, must be running 
-    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
-        red "${VM} is not running...\n"
-        exit 1
-    fi
-    
     # Check whether VBoxGuestAdditions should be installed. If not then not update additions.
     if [ $guest_additions_attach -eq 1 ]; then
-        update_guest_additions
+        update_guest_additions_media
     fi
-
     # Run other update scripts on VM Guest via ssh
-    ssh_exec ${#update_transport[@]} "${update_transport[@]}" "${update_launch[@]}" 0
+    ssh_exec ${#update_transport[@]} "${update_transport[@]}" "${update_launch[@]}" 1
     exit 0
 }
 
@@ -800,6 +857,7 @@ function ssh_exec {
     done
     
     # clean after scp by rm transported media/scripts
+    # TODO [MEDIUM]: better cleaning - scp dir1/dir2/file creates file not full structure
     if [ $clean_transported -eq 1 ]; then
         for pkt in "${transport[@]}"; do
             if [ -z "${pkt}" ]; then 
@@ -814,7 +872,7 @@ function ssh_exec {
             sleep 2
         done
     fi
-    # TODO [LOW]: if ssh keys authentication is not enabled try login using password from definition
+    # TODO [MEDIUM]: if ssh keys authentication is not enabled try login using password from definition
     # (root, user, sshpass, expect, VBoxManage guestcontrol)(same for shutdown, kickstart_monitoring)
 }
 
@@ -829,8 +887,6 @@ function lazy_ssh {
         ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options
     else
         ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options
-        #ssh -v "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options
-        #echo "ssh -q -t -p $ssh_host_port $ssh_options \"${ssh_user}@localhost\" "
     fi
 }
 
