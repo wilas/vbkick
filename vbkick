@@ -240,10 +240,12 @@ function prepare_path {
     local mkdir_path="${2}"
     # Process special variables in path definition e.g. path="%VBOXFOLDER%/%NAME%"
     local location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^ *//g')
-    # TODO [MEDIUM]: %PWD%, %HOME%
-    local path=$(echo "${path}" | sed -r "s#%SRCPATH%#${boot_file_src_path}#g")
-    local path=$(echo "${path}" | sed -r "s#%VBOXFOLDER%#${location}#g")
-    local path=$(echo "${path}" | sed -r "s/%NAME%/${VM}/g")
+    local home_dir=$(getent passwd `id -u` | cut -d: -f6)
+    local path=$(echo "${path}" | sed -r "s:%SRCPATH%:${boot_file_src_path}:g")
+    local path=$(echo "${path}" | sed -r "s:%VBOXFOLDER%:${location}:g")
+    local path=$(echo "${path}" | sed -r "s:%PWD%:`pwd`:g")
+    local path=$(echo "${path}" | sed -r "s:%HOME%:${home_dir}:g")
+    local path=$(echo "${path}" | sed -r "s:%NAME%:${VM}:g")
     # Creates dir if necessary
     if [ $mkdir_path -eq 1 ] && [ ! -z "${path}" ] && [ ! -d "${path}" ]; then
         mkdir -p "${path}"
