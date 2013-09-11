@@ -3,14 +3,14 @@
 More details soon.
 
 ### Table of Contents
-[VM](#vm)
-[GUEST ADDITIONS](#guest-additions)
-[BOOT](#boot)
-[SSH](#ssh)
-[POSTINSTALL](#postinstall)
-[VALIDATE](#validate)
-[UPDATE](#update)
-[CLEAN](#clean)
+ - [VM](#vm)
+ - [GUEST ADDITIONS](#guest-additions)
+ - [BOOT](#boot)
+ - [SSH](#ssh)
+ - [POSTINSTALL](#postinstall)
+ - [VALIDATE](#validate)
+ - [UPDATE](#update)
+ - [CLEAN](#clean)
 
 
 ## VM
