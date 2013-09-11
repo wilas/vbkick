@@ -2,6 +2,17 @@
 
 More details soon.
 
+### Table of Contents
+[VM](#VM)
+[GUEST ADDITIONS](#GUEST-ADDITIONS)
+[BOOT](#BOOT)
+[SSH](#SSH)
+[POSTINSTALL](#POSTINSTALL)
+[VALIDATE](#VALIDATE)
+[UPDATE](#UPDATE)
+[CLEAN](#CLEAN)
+
+
 ## VM
 
  - cpu_count

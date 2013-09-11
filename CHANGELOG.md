@@ -8,17 +8,18 @@ FEATURES
  - boot from other then dvddrive file, usefull for smartos
  - added options: boot_file, boot_file_type, boot_file_src, boot_file_src_sha256, boot_file_src_path, boot_file_unpack_name, boot_file_unpack_cmd, boot_file_convert_from_raw, guest_additions_path
  - removed options: iso_file, iso_path, iso_src, iso_sha256, guest_additions_download
- - extra variables %VBOXFOLDER%, %NAME% and %SRCPATH% in boot_file, boot_file_unpack_name, boot_file_unpack_cmd
- - extra variables %VBOXFOLDER% and %NAME% in boot_file_src_path
+ - extra variables %VBOXFOLDER%, %NAME%, %HOME%, %PWD% and %SRCPATH% in boot_file, boot_file_unpack_name, boot_file_unpack_cmd
+ - extra variables %VBOXFOLDER%, %NAME%, %HOME% and %PWD% in boot_file_src_path
  - unpack boot_file_src media if necessary
  - convert from raw boot_file_src media if necessary
+ - SmartOS template was added
 
 IMPROVEMENTS
  - added delay between ssh commands; command not fail if previous contain `reboot`. Wait until host boot or ssh ConnectTimeout will be reached (useful for lxc-docker installation)
  - hdd disks are added to SATA Controller, ports 2-30 instead of ports 0-30; port 0 is reserve for boot disk, port 1 is reserve for guest additions
  - SATA for boot iso and guest additions instead of IDE
  - manuall_guest_install option was removed; update VBoxGuestAdditions should be a part of update_lauch (if required); it is easier to find a proper block device with additions on the guest machine: /dev/sr0 or /dev/sr1
- - "acpipowerbutton + 60 seconds" to shutdown VM before poweroff
+ - "acpipowerbutton + 60 seconds" to shutdown VM before poweroff will be used
  - allow use disk_size=("") to not add hdd disks to VM
 
 BUG FIXES

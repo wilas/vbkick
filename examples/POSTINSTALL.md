@@ -6,37 +6,6 @@ There are 2 main postinstall methods:
 
 Of course you can also mix these methods.
 
-### adm_postinstall.sh - used in both postinstall methods
-
-Easy way to administer postinstall scripts.
-```
-adm_context.txt         # list of scrips run by adm_postinstall.sh during postinstall process (order matter), you can also use comments
-adm_envrc               # list of env. variables (may be used by all scripts) - help keep important variables in one place, e.g. Virtualbox version
-adm_postinstall.sh      # take care about exec other scripts
-```
-
-Use adm_postinstall.sh is a convenient manner, but not mandatory.
-
-Simply, you can use below options in definition.cfg
-
-```
-postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh")
-postinstall_transport=("postinstall")
-```
-
-instead of
-
-```
-postinstall_launch=(
-"bash postinstall/basic.sh"
-"bash postinstall/ruby.sh"
-"bash postinstall/puppet.sh"
-"bash postinstall/chef.sh"
-"bash postinstall/ansible.sh"
-"bash postinstall/virtualbox.sh"
-)
-postinstall_transport=("postinstall")
-```
 
 ### lazy postinstall method
 
@@ -101,3 +70,36 @@ vbkick export SL6_inject
 vagrant box add 'SL64_inject' SL6_inject.box
 vagrant box list
 ```
+
+### adm_postinstall.sh
+
+Easy way to administer postinstall scripts.
+```
+adm_context.txt         # list of scrips run by adm_postinstall.sh during postinstall process (order matter), you can also use comments
+adm_envrc               # list of env. variables (setup for all scripts) - help keeps important variables in one place, e.g. Virtualbox version
+adm_postinstall.sh      # take care about exec other scripts
+```
+
+Use adm_postinstall.sh is a convenient manner, but not mandatory.
+
+Simply, you can use below options in definition.cfg
+
+```
+postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh")
+postinstall_transport=("postinstall")
+```
+
+instead of
+
+```
+postinstall_launch=(
+"bash postinstall/basic.sh"
+"bash postinstall/ruby.sh"
+"bash postinstall/puppet.sh"
+"bash postinstall/chef.sh"
+"bash postinstall/ansible.sh"
+"bash postinstall/virtualbox.sh"
+)
+postinstall_transport=("postinstall")
+```
+
