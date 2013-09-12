@@ -90,10 +90,12 @@ Tested currently only in bash 4 (use POSIX mode). If you have trouble using scri
     vbkick  build        VM_NAME        # build VM
     vbkick  postinstall  VM_NAME        # run postinstall scripts via ssh
     vbkick  validate     VM_NAME        # run validate/feature scripts via ssh
-    vbkick  export       VM_NAME        # export VM and create Vagrant VM_NAME.box
-    vbkick  update       VM_NAME        # update VBoxGuestAdditions and run update scripts via ssh
+    vbkick  export       VM_NAME        # export VM and creates Vagrant VM_NAME.box
+    vbkick  update       VM_NAME        # run update scripts via ssh
     vbkick  destroy      VM_NAME        # destroy VM
     vbkick  ssh          VM_NAME        # ssh to VM
+    vbkick  on           VM_NAME        # turn on VM
+    vbkick  shutdown     VM_NAME        # shutdown VM
     vbkick  help                        # display help and exit
 ```
 

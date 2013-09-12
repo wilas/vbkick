@@ -80,14 +80,14 @@ Description:
 
 ## vbkick templates hall of fame
 
- - CentOS6 - <@wilas>
- - Debian6 "Squeeze" (End of life - May 2014) - <@wilas>
- - Debian7 "Wheezy" - <@wilas>
- - Fedora18 (End of life - Early 2014) - <@wilas>
- - Fedora19 - <@wilas>
- - ScientificLinux6 - <@wilas>
- - SmartOS - <@wilas>
- - Ubuntu12.04 LTS "Precise Pangolin" - <@wilas>
+ - CentOS6
+ - Debian6 "Squeeze" (End of life - May 2014)
+ - Debian7 "Wheezy"
+ - Fedora18 (End of life - Early 2014)
+ - Fedora19
+ - ScientificLinux6
+ - SmartOS
+ - Ubuntu12.04 LTS "Precise Pangolin"
  - CoreOS ?
  - FreeBSD/PC-BSD ?
  - OpenIndiana ?
