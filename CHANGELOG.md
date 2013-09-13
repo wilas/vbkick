@@ -3,9 +3,11 @@
 FEATURES
  - list of disks (given as list of disks sizes) instead of one disk
  - ssh ACTION was added - ssh to VM with same as postinstall/validate/update options
- - postinstall, validate and update commands works without ssh_key authentication, prompt you for the password for the each ssh command (tmp solution)
+ - on ACTION was added - turn on given VM
+ - shutdown ACTION was added - turn off given VM
+ - ssh_password authentication was added, "expect" installed on host machine is needed to use this feature, otherwise it prompt you for a password
  - disbale/enable autoupdate VBoxGuestAdditions iso attached to guest machine (guest_additions_attach)
- - boot from other then dvddrive file, usefull for smartos
+ - boot from other than dvddrive file (e.g. hdd) (usefull for SmartOS)
  - added options: boot_file, boot_file_type, boot_file_src, boot_file_src_sha256, boot_file_src_path, boot_file_unpack_name, boot_file_unpack_cmd, boot_file_convert_from_raw, guest_additions_path
  - removed options: iso_file, iso_path, iso_src, iso_sha256, guest_additions_download
  - extra variables %VBOXFOLDER%, %NAME%, %HOME%, %PWD% and %SRCPATH% in boot_file, boot_file_unpack_name, boot_file_unpack_cmd

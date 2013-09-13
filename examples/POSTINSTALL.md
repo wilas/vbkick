@@ -76,16 +76,22 @@ vagrant box list
 Easy way to administer postinstall scripts.
 ```
 adm_context.txt         # list of scrips run by adm_postinstall.sh during postinstall process (order matter), you can also use comments
+adm_context_desktop.txt # another context file
 adm_envrc               # list of env. variables (setup for all scripts) - help keeps important variables in one place, e.g. Virtualbox version
 adm_postinstall.sh      # take care about exec other scripts
 ```
 
-Use adm_postinstall.sh is a convenient manner, but not mandatory.
+Use adm_postinstall.sh is a convenient manner (help reduce number of ssh authentications), but not mandatory.
 
 Simply, you can use below options in definition.cfg
 
 ```
 postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh")
+postinstall_transport=("postinstall")
+
+or
+
+postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh adm_context_desktop.txt")
 postinstall_transport=("postinstall")
 ```
 

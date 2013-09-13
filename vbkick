@@ -95,6 +95,8 @@ kickstart_timeout=7200
 ssh_keys_enabled=1
 # default user
 ssh_user="vbkick"
+# default user password - not use when ssh_keys authentication is enabled
+ssh_password="vbkick"
 # default path to ssh keys
 ssh_keys_path="keys"
 # default private key name
@@ -109,8 +111,7 @@ ssh_guest_port=22
 # UserKnownHostsFile - database file to use for storing the user host keys
 # StrictHostKeyChecking - if "no" then automatically add new host keys to the host key database file
 # you may consider editing ssh config: http://superuser.com/questions/141344/ssh-dont-add-hostkey-to-known-hosts
-ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-# TODO [MEDIUM]: ssh_password=""
+ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=1"
 
 # Lazy Postinstall default settings
 # list of files and directories to transport to guest
@@ -666,6 +667,12 @@ function turn_on {
 }
 
 function turn_off {
+    # check whether VM is running 
+    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+        green "${VM} is already turn off.\n"
+        exit 0
+    fi
+
     # load vm description/definition
     load_definition 
 
@@ -686,7 +693,7 @@ function shutdown {
             local key_path="${ssh_keys_path}/${ssh_priv_key}"
             ssh "${ssh_user}@localhost" -q -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${shutdown_cmd}" || true
         else
-            ssh "${ssh_user}@localhost" -q -t -p $ssh_host_port $ssh_options -C "${shutdown_cmd}" || true
+            auto_passwd_ssh "${shutdown_cmd}"
         fi
         # wait until VM is down or shutdown_timeout was reached
         local shutdown_counter=0
@@ -771,7 +778,7 @@ function validate_vm {
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}" 1
+    ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}"
     exit 0
 }
 
@@ -779,7 +786,7 @@ function lazy_postinstall {
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}" 1
+    ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}"
     exit 0
 }
 
@@ -791,7 +798,7 @@ function lazy_update {
         update_guest_additions_media
     fi
     # Run other update scripts on VM Guest via ssh
-    ssh_exec ${#update_transport[@]} "${update_transport[@]}" "${update_launch[@]}" 1
+    ssh_exec ${#update_transport[@]} "${update_transport[@]}" "${update_launch[@]}"
     exit 0
 }
 
@@ -805,13 +812,8 @@ function ssh_exec {
     # get transport array; everything to $pos
     local transport=("${@:1:$pos}")
     shift $pos
-    # get launch array; everything but last arg
-    local len=$(($#-1))
-    local launch=("${@:1:$len}")
-    shift $len
-    # get last arg
-    # useful for running tests on destination machine, tests don't stop after first ERROR
-    local accept_ssh_command_fail=$1
+    # get launch array;
+    local launch=("${@}")
 
     # check whether VM is running 
     if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
@@ -846,18 +848,20 @@ function ssh_exec {
             if [ $ssh_keys_enabled -eq 1 ]; then        
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
             else
-                scp -q -P $ssh_host_port $ssh_options -r "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
+                # 1 mean scp directory (recursive)
+                auto_passwd_scp "${pkt}" 1
             fi
         elif [[ -f "${pkt}" ]]; then
             # pkt is file
             if [ $ssh_keys_enabled -eq 1 ]; then        
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
             else
-                scp -q -P $ssh_host_port $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
+                # 0 mean scp file
+                auto_passwd_scp "${pkt}" 0
             fi
         else
             # pkt is neither file nor directory
-            printf "${pkt} is neither file nor directory\n"
+            red "${pkt} is neither file nor directory\n"
             exit 1
         fi
         sleep 2
@@ -869,20 +873,11 @@ function ssh_exec {
             continue
         fi
         printf "Exec: ${cmd}\n"
-        if [ $accept_ssh_command_fail -eq 0 ]; then
-            # fail is not accepted
-            if [ $ssh_keys_enabled -eq 1 ]; then        
-                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
-            else
-                ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options -C "${cmd}"
-            fi
+        # true is used because fail is accepted
+        if [ $ssh_keys_enabled -eq 1 ]; then
+            ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}" || true
         else
-            # fail is accepted
-            if [ $ssh_keys_enabled -eq 1 ]; then        
-                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}" || true
-            else
-                ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options -C "${cmd}" || true
-            fi
+            auto_passwd_ssh "${cmd}"
         fi
         sleep 2
     done
@@ -896,18 +891,21 @@ function ssh_exec {
             fi
             printf "Clean transported: ${pkt}\n"
             if [ $ssh_keys_enabled -eq 1 ]; then        
-                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}"
+                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}" || true
             else
-                ssh -q "${ssh_user}@localhost" -t -i -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}"
+                auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt}"
             fi
             sleep 2
         done
     fi
-    # TODO [MEDIUM]: if ssh keys authentication is not enabled try login using password from definition
-    # (root, user, sshpass, expect, VBoxManage guestcontrol)(same for shutdown, kickstart_monitoring)
 }
 
 function lazy_ssh {
+    # check whether VM is running 
+    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+        red "${VM} is not running...\n"
+        exit 1
+    fi
     # load vm description/definition
     load_definition
     if [ $ssh_keys_enabled -eq 1 ]; then        
@@ -917,7 +915,53 @@ function lazy_ssh {
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
         ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options
     else
-        ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options
+        auto_passwd_ssh ""
+    fi
+}
+
+function auto_passwd_ssh {
+    local _cmd="${1}"
+    if [[ `which expect 2>/dev/null` ]]; then
+        if [ -z "${_cmd}" ]; then
+            # No cmd to exec, interactive shell
+            local _expect_cmd="ssh -q \"${ssh_user}@localhost\" -t -p $ssh_host_port $ssh_options"
+        else
+            local _expect_cmd="ssh -q \"${ssh_user}@localhost\" -t -p $ssh_host_port $ssh_options -C \"${_cmd}\""
+        fi
+        expect -c "spawn $_expect_cmd; expect password ; send \"$ssh_password\n\" ; interact"
+    else
+        yellow "WARNING: 'expect' command not exist - install 'expect' to automate ssh authentication without ssh_key.\n"
+        yellow "To use ssh_key authentication setup ssh_keys_enabled=1 in your definition.cfg\n"
+        # Process without expect
+        if [ -z "$_cmd" ]; then
+            # No cmd to exec, interactive shell
+            ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options || true
+        else
+            ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options -C "${cmd}" || true
+        fi
+    fi
+}
+
+function auto_passwd_scp {
+    #echo "Not implemented yet !"
+    local _src="${1}"
+    local _recursive="${2}"
+    if [[ `which expect 2>/dev/null` ]]; then
+        if [ $_recursive -eq 1 ]; then
+            local _expect_cmd="scp -q -P $ssh_host_port $ssh_options -r \"${_src}\" \"${ssh_user}@localhost:~${ssh_user}\""
+        else
+            local _expect_cmd="scp -q -P $ssh_host_port $ssh_options \"${_src}\" \"${ssh_user}@localhost:~${ssh_user}\""
+        fi
+        expect -c "spawn $_expect_cmd; expect password ; send \"$ssh_password\n\" ; interact"
+    else
+        yellow "WARNING: 'expect' command not exist - install 'expect' to automate ssh authentication without ssh_key.\n"
+        yellow "To use ssh_key authentication setup ssh_keys_enabled=1 in your definition.cfg\n"
+        # Process without expect
+        if [ $_recursive -eq 1 ]; then
+            scp -q -P $ssh_host_port $ssh_options -r "${_src}" "${ssh_user}@localhost:~${ssh_user}"
+        else
+            scp -q -P $ssh_host_port $ssh_options "${_src}" "${ssh_user}@localhost:~${ssh_user}"
+        fi
     fi
 }
 
@@ -957,7 +1001,7 @@ function stop_web_server {
         if [ ! `ps -ef | grep "python -m SimpleHTTPServer $kickstart_port" | grep -v grep` ]; then
             printf "INFO: webserver was stopped\n"
         else
-            printf "WARNING: problem with stopping webserver. Kill proces manually\n"
+            yellow "WARNING: problem with stopping webserver. Kill proces manually\n"
             ps -ef | grep "python -m SimpleHTTPServer $kickstart_port" | grep -v grep
         fi
         # update webserver_status variable
@@ -973,7 +1017,7 @@ function clean_up {
         stop_web_server
     else
         # previuosly executed stop_web_server function fail in killing $web_pid
-        printf "WARNING: problem with killing webserver (proc ${web_pid}). Kill proces manually\n"
+        yellow "WARNING: problem with killing webserver (proc ${web_pid}). Kill proces manually\n"
     fi
     # help recover some changes made on VM during exporting
     recover_vm_state
@@ -993,7 +1037,7 @@ fi
 
 # check whether Virtualbox is installed - VBoxManage command exist
 if [[ ! `which VBoxManage 2>/dev/null` ]]; then
-    printf "VBoxManage command not exist - install Virtualbox or check your PATH\n"
+    red "VBoxManage command not exist - install Virtualbox to continue\n"
     exit 1
 fi
 vb_version=$(get_vb_version)

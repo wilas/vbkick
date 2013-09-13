@@ -9,20 +9,7 @@ After vagrant 1.1 release, veewee stop working in nice way (veewee conflicts wit
  - https://github.com/jedi4ever/veewee/issues/611
  - https://github.com/mitchellh/vagrant/blob/v1.2.0/CHANGELOG.md#110-march-14-2013
 
-
-I've decided write something light, what do one thing well, a tool that I can rely on.
-
-
-## Model and Philosophy (base on Unix)
-
-Model:
- - lots of small tools that can be combined in lots of useful ways
-
-Philosophy:
- - do one thing well,
- - small is beautiful, easy to write and easy to maintain,
- - gracefully handle errors and signals,
- - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
+I have decided write something light, what do one thing well, a tool that I can rely on.
 
 
 # Getting Started
@@ -134,6 +121,18 @@ Special keys:
 ```
 
 `<Multiply(what, N)>` - repeat "what" N times
+
+
+# Model and Philosophy (base on Unix)
+
+Model:
+ - lots of small tools that can be combined in lots of useful ways
+
+Philosophy:
+ - do one thing well,
+ - small is beautiful, easy to write and easy to maintain,
+ - gracefully handle errors and signals,
+ - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
 
 
 # Bibliography
