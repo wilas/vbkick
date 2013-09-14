@@ -152,7 +152,7 @@ More details soon.
 
  - ssh_options
 
- default: "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+ default: "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=1"
 
 
 ## POSTINSTALL

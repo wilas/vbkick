@@ -430,7 +430,7 @@ function build_vm {
                 sleep 1
             else
                 VBoxManage controlvm "${VM}" keyboardputscancode $code
-                sleep 0.01
+                sleep 0.02
             fi
         done
         sleep $boot_seq_wait
@@ -707,8 +707,8 @@ function shutdown {
     # check whether VM is still running, if so use acpipowerbutton
     if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
         VBoxManage controlvm "${VM}" acpipowerbutton
-        printf "\n${VM} - acpipowerbutton was used. Waiting 60 seconds...\n"
-        sleep 60
+        printf "\n${VM} - acpipowerbutton was used. Waiting $shutdown_timeout seconds...\n"
+        sleep $shutdown_timeout
     else
         printf "\n${VM} was shutdown cleanly.\n"
         sleep 3
@@ -766,7 +766,7 @@ function update_guest_additions_media {
         # VBoxManage guestcontrol <vmname>|<uuid> updateadditions
         # Manuall Guest Additions update/installation is required (via lazy_update cmd).
     else
-        green "VBoxGuestAdditions on ${VM} is up-to-date\n"
+        green "VBoxGuestAdditions on ${VM} is up-to-date - update media iso is not needed\n"
     fi
 }
 
@@ -864,12 +864,20 @@ function ssh_exec {
             red "${pkt} is neither file nor directory\n"
             exit 1
         fi
-        sleep 2
+        sleep 1
     done
 
     # run commands via ssh
     for cmd in "${launch[@]}"; do
         if [ -z "${cmd}" ]; then 
+            continue
+        fi
+        # %HOST% tag - check whether command should be executed on host (not guest)
+        if [[ "${cmd}" =~ ^\ *%HOST% ]]; then
+            # extract command
+            cmd=${cmd//%HOST%/}
+            printf "Exec (on host): ${cmd}\n"
+            eval "${cmd}"
             continue
         fi
         printf "Exec: ${cmd}\n"
@@ -879,7 +887,7 @@ function ssh_exec {
         else
             auto_passwd_ssh "${cmd}"
         fi
-        sleep 2
+        sleep 1
     done
     
     # clean after scp by rm transported media/scripts
@@ -895,7 +903,7 @@ function ssh_exec {
             else
                 auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt}"
             fi
-            sleep 2
+            sleep 1
         done
     fi
 }
