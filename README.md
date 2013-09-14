@@ -136,3 +136,4 @@ Philosophy:
  - well-behave Python cmd line app: http://www.slideshare.net/gjcross/tutorial1-14045370
  - manpage creation: http://www.linuxhowtos.org/System/creatingman.htm (http://www.cyberciti.biz/faq/linux-unix-creating-a-manpage/)
  - BDD with shell scripts: http://chrismdp.com/2013/03/bdd-with-shell-script/
+ - expect + passwd: http://www.linuxquestions.org/questions/linux-newbie-8/ssh-with-password-533684/

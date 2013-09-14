@@ -88,7 +88,6 @@ Description:
  - ScientificLinux6
  - SmartOS
  - Ubuntu12.04 LTS "Precise Pangolin"
-
  - CoreOS ?
  - FreeBSD/PC-BSD ?
  - OmniOS ?

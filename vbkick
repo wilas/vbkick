@@ -510,16 +510,18 @@ function create_box {
 
     # ssh NAT mapping
     # TODO [MEDIUM]: allow mapping more ports (nat_mapping_array)
+    # list may be empty (check whether is empty or not..); ssh is special port
     if [[ ! `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
         # TODO [LOW]: check whether ssh_host_port is already in use and take other (random from list/range)
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
     # add shared folders
-    # TODO [MEDIUM]: allow share more folders (shared_folders_array)
+    # TODO [MEDIUM]: allow share more folders (shared_folders_array) %PWD%, etc
     if [ -n "${shared_folder}" ]; then 
         VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
     fi
+    # natmapping_was_removed+1; sharedfolder_was_removed+1 - retore one by one after export. (Note: remove or not during export ?)
 }
 
 # Check whether machine was kickstarted before timeout
