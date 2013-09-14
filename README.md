@@ -1,16 +1,6 @@
 # Description
 
-vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes (replacement to Veewee).
-
-## Why ?
-
-After vagrant 1.1 release, veewee stop working in nice way (veewee conflicts with vagrant 1.1+, dependency issues and other blablabla) - there are of course some workaround available, but mixing installed vagrant package, gem, rvm, bundle in not pleasant in use (read: it is f*** madness):
- - https://github.com/jedi4ever/veewee/issues/607
- - https://github.com/jedi4ever/veewee/issues/611
- - https://github.com/mitchellh/vagrant/blob/v1.2.0/CHANGELOG.md#110-march-14-2013
-
-I have decided write something light, what do one thing well, a tool that I can rely on.
-
+vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes (replacement to [Veewee](https://github.com/jedi4ever/veewee)). (Why ?)[docs/WHY.md]
 
 # Getting Started
 
