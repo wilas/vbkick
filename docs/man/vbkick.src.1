@@ -1,4 +1,4 @@
-.TH man 1 "10 August 2013" "0.4.0" "vbkick man page"
+.TH man 1 "15 September 2013" "0.5.0" "vbkick man page"
 .SH NAME
 vbkick - the automatic Virtualbox Guests and/or Vagrant base boxes builder.
 .SH SYNOPSIS
@@ -14,22 +14,31 @@ vbkick is supported by \fIconvert_2_scancode.py\fP tool, which help enter key-st
 .SH ACTIONS
 .TP
 .B build
-Builds a new Virtualbox Guest from given \fIdefinition.cfg\fP. definition.cfg file must exist in directory where command is run.
+Builds a new Virtualbox Guest from given \fIdefinition.cfg\fP. The definition.cfg file must exist in directory where command is run.
 .TP
 .B postinstall 
-Run defined postinstall scripts via SSH on Virtualbox Guest. \fIdefinition.cfg\fP file is required in directory where command is run.
+Run defined postinstall scripts via SSH on the Virtualbox Guest. The \fIdefinition.cfg\fP file is required in directory where command is run.
 .TP
 .B validate 
-Run defined features scripts via SSH on Virtualbox Guest. Check whether new VM Guest has expected behaviour. \fIdefinition.cfg\fP file is required in directory where command is run.
+Run defined features scripts via SSH on the Virtualbox Guest. Check whether new VM Guest has expected behaviour. The \fIdefinition.cfg\fP file is required in directory where command is run.
 .TP
 .B export
-Exports Virtualbox Guest as a Vagrant base box (base image for a future VMs) - \fIVM_NAME.box\fP gzipped file is created. \fIdefinition.cfg\fP file is required in directory where command is run.
+Exports the Virtualbox Guest as a Vagrant base box (base image for a future VMs) - \fIVM_NAME.box\fP gzipped file is created. The \fIdefinition.cfg\fP file is required in directory where command is run.
 .TP
 .B update
-Updates Virtualbox Guest Additions and runs defined update scripts via SSH on Virtualbox Guest. \fIdefinition.cfg\fP file is required in directory where command is run.
+Updates attached VBoxGuestAdditions iso and runs defined update scripts via SSH on the Virtualbox Guest. The \fIdefinition.cfg\fP file is required in directory where command is run.
 .TP
 .B destroy
-Remove virtual machine from Virtualbox. Doing this will also remove the files containing the machine's virtual hard disks if they are not in use by another machine. 
+Remove the guest machine from Virtualbox. Doing this will also remove the files containing the machine's virtual hard disks if they are not in use by another machine. 
+.TP
+.B ssh
+SSH to the guest machine with same ssh options like postinstall/validate/update. The \fIdefinition.cfg\fP file is required in directory where command is run.
+.TP
+.B on
+Turn on the guest machine.
+.TP
+.B shutdown
+Turn off the guest machine using shutdown command via ssh. If this fail then the acpipower button is used and if necessery the poweroff button. The \fIdefinition.cfg\fP file is required in directory where command is run.
 .TP
 .SH FILES
 .PP
