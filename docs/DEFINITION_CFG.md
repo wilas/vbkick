@@ -111,6 +111,10 @@ More details soon.
 
  default: ("")
 
+ - boot_seq_wait
+
+ default: 1
+
  - kickstart_port
 
  default: 7122
@@ -127,6 +131,10 @@ More details soon.
  default: 1
 
  - ssh_user
+
+ default: "vbkick"
+
+ - ssh_password
 
  default: "vbkick"
 
