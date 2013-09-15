@@ -1,7 +1,36 @@
+## 0.5 (15-09-2013)
+
+FEATURES
+ - list of disks (given as list of disks sizes) instead of one disk
+ - ssh ACTION was added - ssh to VM with same as postinstall/validate/update options
+ - on ACTION was added - turn on given VM
+ - shutdown ACTION was added - turn off given VM
+ - ssh_password authentication was added, "expect" installed on host machine is needed to use this feature, otherwise it prompt you for a password
+ - disbale/enable autoupdate VBoxGuestAdditions iso attached to guest machine (guest_additions_attach)
+ - boot from other than dvddrive file (e.g. hdd) (usefull for SmartOS)
+ - added options: boot_file, boot_file_type, boot_file_src, boot_file_src_sha256, boot_file_src_path, boot_file_unpack_name, boot_file_unpack_cmd, boot_file_convert_from_raw, guest_additions_path
+ - removed options: iso_file, iso_path, iso_src, iso_sha256, guest_additions_download
+ - extra variables %VBOXFOLDER%, %NAME%, %HOME%, %PWD% and %SRCPATH% in boot_file, boot_file_unpack_name, boot_file_unpack_cmd
+ - extra variables %VBOXFOLDER%, %NAME%, %HOME% and %PWD% in boot_file_src_path
+ - %HOST% in postinstall/validate/update lauch definition to execute given cmd on host not guest machine (e.g.: %HOST% sleep 20)
+ - unpack boot_file_src media if necessary
+ - convert from raw boot_file_src media if necessary
+ - SmartOS template was added
+
+IMPROVEMENTS
+ - hdd disks are added to SATA Controller, ports 2-30 instead of ports 0-30; port 0 is reserve for boot disk, port 1 is reserve for guest additions
+ - SATA for boot iso and guest additions instead of IDE
+ - manuall_guest_install option was removed; update VBoxGuestAdditions should be a part of update_lauch (if required); it is easier to find a proper block device with additions on the guest machine: /dev/sr0 or /dev/sr1
+ - "acpipowerbutton + shutdown_timeout seconds" to shutdown VM before poweroff will be used (both are used if normal shutdwon fail)
+ - allow use disk_size=("") to not add hdd disks to VM
+
+BUG FIXES
+ - process lauch and transport arrays in ssh_exec
+
 ## 0.4 (28-08-2013)
 
 FEATURES
- - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts
+ - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts (manuall_update_guest_additions option)
  - auto update value of VBOX_VERSION="version" in the given files list with current vbox version
  - rm other (older) VBoxGuestAdditions isos from media directory (before remove ask about confirmation)
  - Fedora19 template was added

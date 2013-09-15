@@ -1,11 +1,7 @@
 # Contribute to vbkick
 
-## Create issue
+ - Submit a [GitHub issue](https://github.com/wilas/vbkick/issues)
+ - Tweet [@wilask](https://twitter.com/wilask)
+ - Create and Share a new template
+ - Submit a pull request to the master branch
 
-## Adding a new template
-
-coming soon
-
-## Coding zone
-
-coming soon

@@ -2,6 +2,17 @@
 
 More details soon.
 
+### Table of Contents
+ - [VM](#vm)
+ - [GUEST ADDITIONS](#guest-additions)
+ - [BOOT](#boot)
+ - [SSH](#ssh)
+ - [POSTINSTALL](#postinstall)
+ - [VALIDATE](#validate)
+ - [UPDATE](#update)
+ - [CLEAN](#clean)
+
+
 ## VM
 
  - cpu_count
@@ -14,7 +25,7 @@ More details soon.
 
  - disk_size
 
- default: 10140
+ default: (10140)
 
  - disk_format
 
@@ -45,32 +56,52 @@ More details soon.
  no default - REQUIRED!
 
 
-## ISO
-
- - iso_path
-
- default: "iso"
-
- - iso_file
-
- no default - REQUIRED!
-
- - iso_src
-
- no default - REQUIRED! 
-
- Note: may be equal "" if iso_file exist in iso_path - downloaded manually
-
- - iso_sha256
-
+## GUEST ADDITIONS
+ 
+ - guest_additions_path
+ 
  default: ""
 
- - guest_additions_download
+ - guest_additions_attach
 
  default: 1
 
 
 ## BOOT
+
+ - boot_file
+
+ no default - REQUIRED!
+ 
+ - boot_file_type
+
+ default: "dvddrive"
+
+ - boot_file_src
+
+ no default - REQUIRED! 
+
+ Note: may be equal "" if boot_file exist - downloaded manually
+ 
+ - boot_file_src_path
+
+ default: "iso"
+
+ - boot_file_src_sha256
+
+ default: ""
+
+ - boot_file_unpack_cmd
+
+ default: ""
+ 
+ - boot_file_unpack_name
+
+ default: ""
+ 
+ - boot_file_convert_from_raw
+
+ default: 0
 
  - boot_wait
 
@@ -79,6 +110,10 @@ More details soon.
  - boot_cmd_sequence
 
  default: ("")
+
+ - boot_seq_wait
+
+ default: 1
 
  - kickstart_port
 
@@ -96,6 +131,10 @@ More details soon.
  default: 1
 
  - ssh_user
+
+ default: "vbkick"
+
+ - ssh_password
 
  default: "vbkick"
 
@@ -121,7 +160,7 @@ More details soon.
 
  - ssh_options
 
- default: "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+ default: "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=1"
 
 
 ## POSTINSTALL
@@ -155,10 +194,6 @@ More details soon.
  - update_launch
  
  default: ("")
-
- - manuall_update_guest_additions
-
- default: "sudo mount /dev/sr1 /mnt && sudo sh /mnt/VBoxLinuxAdditions.run && sudo umount /mnt"
 
 
 ## CLEAN

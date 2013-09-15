@@ -19,3 +19,6 @@
 [submodule "templates/Fedora19"]
 	path = templates/Fedora19
 	url = git@github.com:wilas/vbkick-template-fedora19.git
+[submodule "templates/SmartOS"]
+	path = templates/SmartOS
+	url = git@github.com:wilas/vbkick-template-smartos.git

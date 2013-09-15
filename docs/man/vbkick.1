@@ -24,31 +24,45 @@ DDEESSCCRRIIPPTTIIOONN
        key-strokes into a VirtualBox guest programmatically from the host.
 
 AACCTTIIOONNSS
-       bbuuiilldd  Builds a new Virtualbox Guest from given _d_e_f_i_n_i_t_i_o_n_._c_f_g. defini-
-              tion.cfg file must exist in directory where command is run.
+       bbuuiilldd  Builds  a  new  Virtualbox  Guest from given _d_e_f_i_n_i_t_i_o_n_._c_f_g. The
+              definition.cfg file must exist in  directory  where  command  is
+              run.
 
        ppoossttiinnssttaallll
-              Run defined postinstall scripts via  SSH  on  Virtualbox  Guest.
+              Run defined postinstall scripts via SSH on the Virtualbox Guest.
+              The _d_e_f_i_n_i_t_i_o_n_._c_f_g file is required in directory  where  command
+              is run.
+
+       vvaalliiddaattee
+              Run  defined  features  scripts via SSH on the Virtualbox Guest.
+              Check whether new VM Guest has expected behaviour.  The  _d_e_f_i_n_i_-
+              _t_i_o_n_._c_f_g file is required in directory where command is run.
+
+       eexxppoorrtt Exports  the  Virtualbox Guest as a Vagrant base box (base image
+              for a future VMs) - _V_M___N_A_M_E_._b_o_x gzipped  file  is  created.  The
               _d_e_f_i_n_i_t_i_o_n_._c_f_g  file  is  required in directory where command is
               run.
 
-       vvaalliiddaattee
-              Run defined features scripts via SSH on Virtualbox Guest.  Check
-              whether new VM Guest has expected behaviour. _d_e_f_i_n_i_t_i_o_n_._c_f_g file
+       uuppddaattee Updates attached VBoxGuestAdditions iso and runs defined  update
+              scripts via SSH on the Virtualbox Guest. The _d_e_f_i_n_i_t_i_o_n_._c_f_g file
               is required in directory where command is run.
 
-       eexxppoorrtt Exports Virtualbox Guest as a Vagrant base box (base image for a
-              future  VMs)  -  _V_M___N_A_M_E_._b_o_x  gzipped  file  is created. _d_e_f_i_n_i_-
-              _t_i_o_n_._c_f_g file is required in directory where command is run.
-
-       uuppddaattee Updates Virtualbox  Guest  Additions  and  runs  defined  update
-              scripts  via  SSH  on  Virtualbox  Guest. _d_e_f_i_n_i_t_i_o_n_._c_f_g file is
-              required in directory where command is run.
-
        ddeessttrrooyy
-              Remove virtual machine from Virtualbox.  Doing  this  will  also
+              Remove the guest machine from Virtualbox. Doing this  will  also
               remove  the files containing the machine’s virtual hard disks if
               they are not in use by another machine.
+
+       sssshh    SSH to the guest machine with  same  ssh  options  like  postin-
+              stall/validate/update.  The  _d_e_f_i_n_i_t_i_o_n_._c_f_g  file is required in
+              directory where command is run.
+
+       oonn     Turn on the guest machine.
+
+       sshhuuttddoowwnn
+              Turn off the guest machine using shutdown command  via  ssh.  If
+              this fail then the acpipower button is used and if necessery the
+              poweroff button. The _d_e_f_i_n_i_t_i_o_n_._c_f_g file is required  in  direc-
+              tory where command is run.
 
 
        FFIILLEESS
@@ -62,7 +76,7 @@ AAUUTTHHOORR
        Kamil Wilas (wilas.pl)
 
 CCOOPPYYRRIIGGHHTT
-       vbkick is distributed under  the  MIT  License.  See  LICENSE  file  in
+       vbkick  is  distributed  under  the  MIT  License.  See LICENSE file in
        https://github.com/wilas/vbkick for details.
 
        The site includes also usage examples and other docs which are not cov-
@@ -70,4 +84,4 @@ CCOOPPYYRRIIGGHHTT
 
 
 
-0.4.0                           10 August 2013                          man(1)
+0.5.0                          15 September 2013                        man(1)

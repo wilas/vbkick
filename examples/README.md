@@ -37,15 +37,17 @@
 ```
     cpu_count=1
     memory_size=512
-    disk_size=10140
+    disk_size=(10140)
     disk_format="vdi"
     video_memory_size=10
     hostiocache="on"
     vm_options=("ioapic:on")
     os_type_id="RedHat_64"
-    iso_file="SL-64-x86_64-2013-03-18-boot.iso"
-    iso_src="http://ftp1.scientificlinux.org/linux/scientific/6.4/x86_64/iso/SL-64-x86_64-2013-03-18-boot.iso"
-    iso_sha256="f0ccbd8cb802b489ab6a606c90f05f5d249db1cb1e0e931dbb703240b4d97d8c"
+    boot_file="%SRCPATH%/SL-64-x86_64-2013-03-18-boot.iso"
+    boot_file_src="http://ftp1.scientificlinux.org/linux/scientific/6.4/x86_64/iso/SL-64-x86_64-2013-03-18-boot.iso"
+    boot_file_src_path="iso"
+    boot_file_src_sha256="f0ccbd8cb802b489ab6a606c90f05f5d249db1cb1e0e931dbb703240b4d97d8c"
+    guest_additions_attach=1
     boot_wait=10
     boot_cmd_sequence=(
         "<Tab> text ks=http://%IP%:%PORT%/kickstart/scientificlinux-6.4-x86_64-lazy_noX.cfg<Enter>"
@@ -60,8 +62,11 @@
     postinstall_transport=("postinstall")
     validate_launch=("cd validate && bash adm_features.sh")
     validate_transport=("validate")
-    update_launch=("sudo bash -c 'yum -y update && yum -y clean all'")
-    update_transport=("")
+    update_launch=(
+        "sudo bash postinstall/virtualbox.sh"
+        "sudo bash -c 'yum -y update && yum -y clean all'"
+    )
+    update_transport=("postinstall")
     clean_transported=1
     shutdown_cmd="sudo /sbin/halt -h -p"
     shutdown_timeout=20

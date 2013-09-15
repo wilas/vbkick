@@ -1,29 +1,6 @@
 # Description
 
-vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes (replacement to Veewee).
-
-## Why ?
-
-After vagrant 1.1 release, veewee stop working in nice way (veewee conflicts with vagrant 1.1+, dependency issues and other blablabla) - there are of course some workaround available, but mixing installed vagrant package, gem, rvm, bundle in not pleasant in use (read: it is f*** madness):
- - https://github.com/jedi4ever/veewee/issues/607
- - https://github.com/jedi4ever/veewee/issues/611
- - https://github.com/mitchellh/vagrant/blob/v1.2.0/CHANGELOG.md#110-march-14-2013
-
-
-I've decided write something light, what do one thing well, a tool that I can rely on.
-
-
-## Model and Philosophy (base on Unix)
-
-Model:
- - lots of small tools that can be combined in lots of useful ways
-
-Philosophy:
- - do one thing well,
- - small is beautiful, easy to write and easy to maintain,
- - gracefully handle errors and signals,
- - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
-
+vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes (replacement to [Veewee](https://github.com/jedi4ever/veewee)). [Why ?](docs/WHY.md)
 
 # Getting Started
 
@@ -90,9 +67,12 @@ Tested currently only in bash 4 (use POSIX mode). If you have trouble using scri
     vbkick  build        VM_NAME        # build VM
     vbkick  postinstall  VM_NAME        # run postinstall scripts via ssh
     vbkick  validate     VM_NAME        # run validate/feature scripts via ssh
-    vbkick  export       VM_NAME        # export VM and create Vagrant VM_NAME.box
-    vbkick  update       VM_NAME        # update VBoxGuestAdditions and run update scripts via ssh
+    vbkick  export       VM_NAME        # export VM and creates Vagrant VM_NAME.box
+    vbkick  update       VM_NAME        # run update scripts via ssh
     vbkick  destroy      VM_NAME        # destroy VM
+    vbkick  ssh          VM_NAME        # ssh to VM
+    vbkick  on           VM_NAME        # turn on VM
+    vbkick  shutdown     VM_NAME        # shutdown VM
     vbkick  help                        # display help and exit
 ```
 
@@ -133,6 +113,18 @@ Special keys:
 `<Multiply(what, N)>` - repeat "what" N times
 
 
+# Model and Philosophy (base on Unix)
+
+Model:
+ - lots of small tools that can be combined in lots of useful ways
+
+Philosophy:
+ - do one thing well,
+ - small is beautiful, easy to write and easy to maintain,
+ - gracefully handle errors and signals,
+ - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
+
+
 # Bibliography
 
  - !! veewee: https://github.com/jedi4ever/veewee
@@ -144,3 +136,4 @@ Special keys:
  - well-behave Python cmd line app: http://www.slideshare.net/gjcross/tutorial1-14045370
  - manpage creation: http://www.linuxhowtos.org/System/creatingman.htm (http://www.cyberciti.biz/faq/linux-unix-creating-a-manpage/)
  - BDD with shell scripts: http://chrismdp.com/2013/03/bdd-with-shell-script/
+ - expect + passwd: http://www.linuxquestions.org/questions/linux-newbie-8/ssh-with-password-533684/
