@@ -1,4 +1,4 @@
-## Not released
+## 0.5 (15-09-2013)
 
 FEATURES
  - list of disks (given as list of disks sizes) instead of one disk
