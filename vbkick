@@ -246,11 +246,11 @@ function prepare_path {
     # Process special variables in path definition e.g. path="%VBOXFOLDER%/%NAME%"
     local location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^ *//g')
     local home_dir=$(getent passwd `id -u` | cut -d: -f6)
-    local path=$(echo "${path}" | sed -r "s:%SRCPATH%:${boot_file_src_path}:g")
-    local path=$(echo "${path}" | sed -r "s:%VBOXFOLDER%:${location}:g")
-    local path=$(echo "${path}" | sed -r "s:%PWD%:`pwd`:g")
-    local path=$(echo "${path}" | sed -r "s:%HOME%:${home_dir}:g")
-    local path=$(echo "${path}" | sed -r "s:%NAME%:${VM}:g")
+    local path=${path//%SRCPATH%/${boot_file_src_path}}
+    local path=${path//%VBOXFOLDER%/${location}}
+    local path=${path//%PWD%/`pwd`}
+    local path=${path//%HOME%/${home_dir}}
+    local path=${path//%NAME%/${VM}}
     # Creates dir if necessary
     if [ $mkdir_path -eq 1 ] && [ ! -z "${path}" ] && [ ! -d "${path}" ]; then
         mkdir -p "${path}"
@@ -418,9 +418,9 @@ function build_vm {
         if [ -z "${boot_cmd}" ]; then 
             continue
         fi
-        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%IP%/$host_ip/g")
-        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%PORT%/$kickstart_port/g")
-        boot_cmd=$(echo "${boot_cmd}" | sed -r "s/%NAME%/${VM}/g")
+        boot_cmd=${boot_cmd//%IP%/$host_ip}
+        boot_cmd=${boot_cmd//%PORT%/$kickstart_port}
+        boot_cmd=${boot_cmd//%NAME%/${VM}}
         printf "${boot_cmd}\n"
         # converts string to scancode via external python script
         local boot_cmd_code=$(printf "${boot_cmd}" | convert_2_scancode.py)
