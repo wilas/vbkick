@@ -78,6 +78,9 @@ boot_file_unpack_cmd=""
 boot_file_unpack_name=""
 # is boot_file_src raw image and need to be converted
 boot_file_convert_from_raw=0
+# whether use cp or mv when boot_file is created form boot_file_src_file; 
+# mv mean don't keep boot_file_src_file; keep only boot_file; by default 0 - use mv
+keep_boot_src_file=0
 # default time before boot_cmd_sequence start
 boot_wait=10
 # list of boot_cmd: ("cmd1" "cmd2" "cmd3")
@@ -363,9 +366,18 @@ function download_boot_media {
     # process convert from raw
     if [ $boot_file_convert_from_raw -eq 1 ]; then
         VBoxManage convertfromraw "${boot_file_src_file}" "${boot_file}" --format "${disk_format}"
+        if [ $keep_boot_src_file -eq 0 ]; then
+            rm -f "${boot_file_src_file}"
+        fi
     else
         # check whether full path to boot_file_src_file is same as boot_file and boot_file was already created
-        if [ ! -f "${boot_file}" ]; then
+        if [ -f "${boot_file}" ]; then
+            return
+        fi
+        # check whether cp or mv; mv mean don't keep boot_file_src_file; keep only boot_file
+        if [ $keep_boot_src_file -eq 0 ]; then
+            mv -f "${boot_file_src_file}" "${boot_file}"
+        else
             cp "${boot_file_src_file}" "${boot_file}"
         fi
     fi

@@ -103,6 +103,10 @@ More details soon.
 
  default: 0
 
+ - keep_boot_src_file
+ 
+ default: 0
+
  - boot_wait
 
  default: 10

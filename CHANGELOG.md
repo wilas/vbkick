@@ -1,3 +1,11 @@
+## Not released
+
+FEATURES
+ - added option: keep_boot_src_file - keep or not boot_file_src_file when boot_file is created (use mv or cp); by default 0 - mean do not keep.
+
+IMPROVEMENTS
+ - the Installer allow specify install location and shebang - more #1 and #2
+
 ## 0.5 (15-09-2013)
 
 FEATURES
