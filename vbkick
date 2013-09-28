@@ -400,7 +400,7 @@ function get_priv_ssh_key {
 
 function build_vm {
     # check whether VM already exist
-    if [[ `VBoxManage list vms | grep -w "${VM}"` ]]; then
+    if VBoxManage list vms | grep -w "${VM}"; then
         red "${VM} already exist\n"
         exit 1
     fi
