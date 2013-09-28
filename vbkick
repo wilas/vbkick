@@ -989,7 +989,7 @@ function auto_passwd_scp {
 
 function start_web_server {
     # check whether port is not used by other proc
-    if [[ `nc -z localhost $kickstart_port` ]]; then
+    if nc -z localhost $kickstart_port; then
         red "$kickstart_port port is already in use\n"
         # TODO [LOW]: choose next webserver port if present is in use from kickstart_port list, 
         # and update current_kickstart_port - this not working with injection method (list of files to update ?)
@@ -1012,7 +1012,7 @@ function start_web_server {
     fi
     sleep 2
     # check whether web server was really started
-    if [[ ! `nc -z localhost $kickstart_port` ]]; then
+    if ! nc -z localhost $kickstart_port; then
         red "webserver was not started\n"
         exit 1
     fi
