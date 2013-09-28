@@ -53,7 +53,7 @@ video_memory_size=10
 vm_options=("ioapic:on")
 # by default gui enabled unless the VirtualBox GUI is missing
 gui_enabled=1
-if [[ ! `command -v VirtualBox 2>/dev/null` ]]; then
+if ! command -v VirtualBox 2>/dev/null; then
     gui_enabled=0
 fi
 # by default add shared folder - to disable: shared_folder=""
@@ -551,8 +551,8 @@ function kickstart_monitoring {
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
         printf "\nWaiting for ssh login with user ${ssh_user} to localhost:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec\n"
         # wait until ssh start working (communication chanel with VM) or kickstart_timeout was reached
-        while [[ ! `ssh "${ssh_user}@localhost" -q -t -i ${key_path} -p $ssh_host_port $ssh_options $extra_ssh_options -C "echo"`\
-            && $kickstart_counter -le $kickstart_timeout ]]; do
+        while ! ssh "${ssh_user}@localhost" -q -t -i ${key_path} -p $ssh_host_port $ssh_options $extra_ssh_options -C "echo"\
+            && [[ $kickstart_counter -le $kickstart_timeout ]]; do
             kickstart_counter=$((kickstart_counter+1))
             printf "."
             sleep 1
@@ -567,7 +567,7 @@ function kickstart_monitoring {
 
 function destroy_vm {
     # check whether VM already exist
-    if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
+    if ! VBoxManage list vms | grep -qw "${VM}"; then
         red "${VM} doesn't exist\n"
         exit 1
     fi
@@ -580,7 +580,7 @@ function destroy_vm {
     fi
 
     # check whether VM is running
-    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+    if VBoxManage list runningvms | grep -qw "${VM}"; then
         printf "Poweroff ${VM}\n"
         VBoxManage controlvm "${VM}" poweroff
         sleep 1
@@ -605,7 +605,7 @@ function export_vm {
         exit 1
     fi
     # check whether VM exist
-    if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
+    if ! VBoxManage list vms | grep -qw "${VM}"; then
         red "${VM} doesn't exist\n"
         exit 1
     fi
@@ -613,13 +613,13 @@ function export_vm {
     shutdown
 
     # clearing previously set port forwarding rules (only if exist)
-    if [[ `VBoxManage showvminfo "${VM}" | grep -w "vbkickSSH"` ]]; then
+    if VBoxManage showvminfo "${VM}" | grep -qw "vbkickSSH"; then
         VBoxManage modifyvm "${VM}" --natpf1 delete "vbkickSSH"
         natmapping_was_removed=1
     fi
     
     # rm shared folder (only if exist)
-    if [[ `VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -w "Name: '${shared_folder}'"` ]]; then
+    if VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${shared_folder}'"; then
         VBoxManage sharedfolder remove  "${VM}" --name "${shared_folder}"
         sharedfolder_was_removed=1
     fi
@@ -670,14 +670,14 @@ function recover_vm_state {
 
 function turn_on {
     # check whether VM is already running
-    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+    if VBoxManage list runningvms | grep -qw "${VM}"; then
         # nothing to do
         green "${VM} is already running...\n"
         exit 0
     fi
     
     # check whether VM already exist
-    if [[ ! `VBoxManage list vms | grep -w "${VM}"` ]]; then
+    if ! VBoxManage list vms | grep -qw "${VM}"; then
         red "${VM} doese not exist. Use \"vbkick build\" to create the new VM.\n"
         exit 1
     fi
@@ -687,7 +687,8 @@ function turn_on {
 
 function turn_off {
     # check whether VM is running 
-    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+    # check whether VM is running
+    if ! VBoxManage list runningvms | grep -qw "${VM}"; then
         green "${VM} is already turn off.\n"
         exit 0
     fi
@@ -702,7 +703,7 @@ function turn_off {
 function shutdown {
 
     # check whether VM is running and exec shutdown_cmd via SSH
-    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+    if VBoxManage list runningvms | grep -qw "${VM}"; then
         printf "Shutting down ${VM} "
         if [ $ssh_keys_enabled -eq 1 ]; then        
             # ssh key authentication enabled
@@ -716,7 +717,7 @@ function shutdown {
         fi
         # wait until VM is down or shutdown_timeout was reached
         local shutdown_counter=0
-        while [[ `VBoxManage list runningvms | grep -w "${VM}"` && $shutdown_counter -le $shutdown_timeout ]]; do
+        while VBoxManage list runningvms | grep -qw "${VM}" && [[ $shutdown_counter -le $shutdown_timeout ]]; do
             shutdown_counter=$((shutdown_counter+1))
             printf "."
             sleep 1
@@ -724,7 +725,7 @@ function shutdown {
     fi
 
     # check whether VM is still running, if so use acpipowerbutton
-    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+    if VBoxManage list runningvms | grep -qw "${VM}"; then
         VBoxManage controlvm "${VM}" acpipowerbutton
         printf "\n${VM} - acpipowerbutton was used. Waiting $shutdown_timeout seconds...\n"
         sleep $shutdown_timeout
@@ -735,7 +736,7 @@ function shutdown {
     fi
 
     # check whether VM is still running, if so poweroff it using hard way.
-    if [[ `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+    if VBoxManage list runningvms | grep -qw "${VM}"; then
         VBoxManage controlvm "${VM}" poweroff
         printf "\n${VM} was powered off.\n"
         sleep 3
@@ -747,7 +748,7 @@ function shutdown {
 
 function update_guest_additions_media {
     # get current guest version
-    if [[ `VBoxManage guestproperty enumerate "${VM}" | grep "GuestAdd/Version"` ]]; then
+    if VBoxManage guestproperty enumerate "${VM}" | grep -q "GuestAdd/Version"; then
         # guest already exist, get current version
         local guest_version=$(VBoxManage guestproperty get "${VM}" "/VirtualBox/GuestAdd/Version" | cut -f 2 -d " ")
     else
@@ -759,7 +760,7 @@ function update_guest_additions_media {
     if [ "${vb_version}" != "${guest_version}" ]; then
         # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
         # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
-        if [[ ! `VBoxManage showvminfo "${VM}" | grep -w "SATA Controller (1, 0)"` ]]; then
+        if ! VBoxManage showvminfo "${VM}" | grep -qw "SATA Controller (1, 0)"; then
             red "\"SATA Controller (1, 0)\" for \"${VM}\" doesn't exist.\n"
             red "\"SATA Controller\" is sata controller name used by vbkick.\n"
             red "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
@@ -835,14 +836,15 @@ function ssh_exec {
     local launch=("${@}")
 
     # check whether VM is running 
-    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+    # check whether VM is running
+    if ! VBoxManage list runningvms | grep -qw "${VM}"; then
         red "${VM} is not running...\n"
         exit 1
     fi
 
     # checking port forwarding (if no proper rules, try add new one for NAT mapping)
-    if [[ ! `VBoxManage showvminfo "${VM}" | grep "NIC 1" | grep "host port = ${ssh_host_port}"\
-        | grep "guest port = ${ssh_guest_port}"` ]]; then
+    if ! VBoxManage showvminfo "${VM}" | grep "NIC 1" | grep "host port = ${ssh_host_port}"\
+        | grep -q "guest port = ${ssh_guest_port}"; then
         printf "NAT mapping - enable ssh port forwarding\n"
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
@@ -928,8 +930,8 @@ function ssh_exec {
 }
 
 function lazy_ssh {
-    # check whether VM is running 
-    if [[ ! `VBoxManage list runningvms | grep -w "${VM}"` ]]; then
+    # check whether VM is running
+    if ! VBoxManage list runningvms | grep -qw "${VM}"; then
         red "${VM} is not running...\n"
         exit 1
     fi
