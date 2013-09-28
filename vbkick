@@ -72,9 +72,11 @@ guest_additions_path=""
 boot_file_type="dvddrive"
 # default path for src media needed to create destination boot_file
 boot_file_src_path="iso"
-# by default sha256sum is empty
-# WARNING is given during processing if sha256 sum is wrong (use: sha256sum --help)
-boot_file_src_sha256=""
+# by default checksum is empty
+# WARNING is given during processing if checksum is wrong
+boot_file_src_checksum=""
+# default cheksum command is md5sum
+boot_file_checksum_cmd="md5sum"
 # by default unpacke is not needed
 boot_file_unpack_cmd=""
 # where is the path and the filename after unpack
@@ -334,16 +336,17 @@ function download_boot_media {
         curl -L "${boot_file_src}" -o "${boot_file_src_file}"
     fi
 
-    # verify boot_file_src sha256sum
-    local get_sha256=$(sha256sum "${boot_file_src_file}" | cut -d" " -f 1)
-    if [[ "${boot_file_src_sha256}" != "${get_sha256}" ]]; then
-        yellow "WARNING: SHA256SUM is different then expected !\n"
+    # verify boot_file_src checksum
+    #boot_file_checksum_cmd=${boot_file_checksum_cmd//%SRCFILE%/${boot_file_src_file}}
+    local get_checksum=$(eval "${boot_file_checksum_cmd}" "${boot_file_src_file}" | cut -d" " -f 1)
+    if [[ "${boot_file_src_checksum}" != "${get_checksum}" ]]; then
+        yellow "WARNING: CHECKSUM is different then expected !\n"
         read -r -p "Do you want continue? [y/N]" ans
         if [[ ! $ans =~ ^[Yy]$ ]]; then
             exit 1
         fi
     else
-        printf "INFO: SHA256SUM:${boot_file_src_sha256} is valid.\n"
+        printf "INFO: CHECKSUM:${boot_file_src_checksum} is valid.\n"
     fi
 
     # process unpack
