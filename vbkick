@@ -528,7 +528,7 @@ function create_box {
     # ssh NAT mapping
     # TODO [MEDIUM]: allow mapping more ports (nat_mapping_array)
     # list may be empty (check whether is empty or not..); ssh is special port
-    if [[ ! `VBoxManage showvminfo "${VM}" | grep "vbkickSSH"` ]]; then
+    if ! VBoxManage showvminfo "${VM}" | grep -q "vbkickSSH"; then
         # TODO [LOW]: check whether ssh_host_port is already in use and take other (random from list/range)
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
