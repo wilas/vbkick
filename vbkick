@@ -272,7 +272,7 @@ function download_guest_additions_media {
     # check whether VBoxGuestAdditions exist
     if [ ! -f "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
         local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
-        wget --no-check-certificate "${additions_url}" -P "${guest_additions_path}"
+        curl -o "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" "${additions_url}"
     fi
     # rm useless images
     remove_guest_additions_media
@@ -329,7 +329,7 @@ function download_boot_media {
     local boot_file_src_file="${boot_file_src_path}/${tmp_name}"
     # check whether boot_file_src exist
     if [ ! -f "${boot_file_src_file}" ]; then
-        wget --no-check-certificate "${boot_file_src}" -O "${boot_file_src_file}"
+        curl "${boot_file_src}" -o "${boot_file_src_file}"
     fi
 
     # verify boot_file_src sha256sum
@@ -392,7 +392,7 @@ function get_priv_ssh_key {
     fi
     # check whether private key exist
     if [ ! -f "${ssh_keys_path}/${ssh_priv_key}" ]; then
-        wget --no-check-certificate "${ssh_priv_key_src}" -O "${ssh_keys_path}/${ssh_priv_key}"
+        curl "${ssh_priv_key_src}" -o "${ssh_keys_path}/${ssh_priv_key}"
     fi
     # change ssh key permissions - too open private key will be ignored
     chmod 600 "${ssh_keys_path}/${ssh_priv_key}"
