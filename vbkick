@@ -53,7 +53,7 @@ video_memory_size=10
 vm_options=("ioapic:on")
 # by default gui enabled unless the VirtualBox GUI is missing
 gui_enabled=1
-if ! command -v VirtualBox; then
+if [[ ! `command -v VirtualBox 2>/dev/null` ]]; then
     gui_enabled=0
 fi
 # by default add shared folder - to disable: shared_folder=""
