@@ -8,7 +8,9 @@ PREFIX := $(shell echo $(PREFIX))
 
 # custom shebang
 BASH_SHEBANG := $(shell echo $(BASH_SHEBANG))
+BASH_DEFAULT := $(shell command -v bash 2>&1)
 PY_SHEBANG := $(shell echo $(PY_SHEBANG))
+PY_DEFAULT := $(shell command -v python 2>&1)
 
 # install command
 INSTALL := install
@@ -47,8 +49,14 @@ ifndef PREFIX
   PREFIX := "/usr/local/bin"
 endif
 ifndef BASH_SHEBANG
-  BASH_SHEBANG := "/bin/bash"
+  ifndef BASH_DEFAULT
+    $(error "bash command not available")
+  endif
+  BASH_SHEBANG := $(BASH_DEFAULT)
 endif
 ifndef PY_SHEBANG
-  PY_SHEBANG := "/usr/bin/python"
+  ifndef PY_DEFAULT
+    $(error "python command not available")
+  endif
+  PY_SHEBANG := $(PY_DEFAULT)
 endif

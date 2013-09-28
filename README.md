@@ -21,9 +21,8 @@ vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
 
     or advance:
 
-    sudo BASH_SHEBANG="/usr/bin/env bash" PY_SHEBANG="/usr/bin/env python" PREFIX="/tmp/testme/bin" make install
-    # sudo BASH_SHEBANG=`which bash` PY_SHEBANG=`which python` PREFIX="/tmp/testme/bin" make install
     sudo PREFIX="/tmp/testme/bin" make uninstall
+    sudo BASH_SHEBANG="/usr/bin/env bash" PY_SHEBANG="/usr/bin/env python" PREFIX="/tmp/testme/bin" make install
 ```
 
 ## Create own box definition
