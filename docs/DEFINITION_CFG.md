@@ -80,8 +80,6 @@ More details soon.
  - boot_file_src
 
  no default - REQUIRED! 
-
- Note: may be equal "" if boot_file exist - downloaded manually
  
  - boot_file_src_path
 

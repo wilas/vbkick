@@ -172,7 +172,7 @@ function green {
     printf "$GREEN$*$NORMAL"
 }
 function red {
-    printf "$RED$*$NORMAL"
+    printf "$RED$*$NORMAL" >&2
 }
 function yellow {
     printf "$YELLOW$*$NORMAL"
@@ -226,6 +226,19 @@ function autoupdate_files_with_vbox_version {
     done
 }
 
+function check_required_options {
+    if [ -z "${boot_file+x}" ]; then
+        red "Required boot_file option is not defined\n"
+        exit 1
+    elif [ -z "${boot_file_src+x}" ]; then
+        red "Required boot_file_src option is not defined\n"
+        exit 1
+    elif [ -z "${os_type_id+x}" ]; then
+        red "Required os_type_id option is not defined\n"
+        exit 1
+    fi
+}
+
 # Load definition.cfg config file; it overwrite default settings
 function load_definition {
     if [ -s "definition.cfg" ]; then
@@ -233,10 +246,11 @@ function load_definition {
         # for the filename argument if it is not found by searching PATH.
         . "./definition.cfg"
     else 
-        printf "Not existing or empty definition.cfg file in `pwd`\n"
-        printf "Terminating...\n" >&2
+        red "Not existing or empty definition.cfg file in `pwd`\n"
+        red "Terminating...\n"
         exit 1
     fi
+    check_required_options
     autoupdate_files_with_vbox_version
 }
 
