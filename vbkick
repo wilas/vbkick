@@ -996,20 +996,18 @@ function start_web_server {
         exit 1
     fi
     # start simple webserver serving files in background
-    # get the pid already spawned process, to kill it later
     py_version=$(python -V 2>&1 | cut -d' ' -f 2 | cut -d'.' -f 1)
     if [[ $py_version -eq 2 ]]; then
-        python -m SimpleHTTPServer $kickstart_port &
-        web_pid=$!
-        py_grep="python -m SimpleHTTPServer $kickstart_port"
+        webserver_module="SimpleHTTPServer"
     elif [[ $py_version -eq 3 ]]; then
-        python -m http.server $kickstart_port &
-        web_pid=$!
-        py_grep="python -m http.server $kickstart_port"
+        webserver_module="http.server"
     else
         red "Unknown python version\n"
         exit 1
     fi
+    python -m $webserver_module $kickstart_port &
+    # get the pid already spawned process, to kill it later
+    web_pid=$!
     sleep 2
     # check whether web server was really started
     if [[ ! `nc -z localhost $kickstart_port` ]]; then
@@ -1031,11 +1029,11 @@ function stop_web_server {
         webserver_kill_status=0
         # kill command is sucessfull when SIGTERM is sent to running process
         # not when child process was really killed
-        if [[ ! `ps -ef | grep "${py_grep}" | grep -v grep` ]]; then
+        if [[ ! `ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -v grep` ]]; then
             printf "INFO: webserver was stopped\n"
         else
             yellow "WARNING: problem with stopping webserver. Kill proces manually\n"
-            ps -ef | grep "${py_grep}" | grep -v grep
+            ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -v grep
         fi
         # update webserver_status variable
         webserver_status=0
