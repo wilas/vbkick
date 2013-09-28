@@ -91,9 +91,9 @@ More details soon.
 
  default: ""
 
- - boot_file_checksum_cmd
+ - boot_file_checksum_type
 
- default: "md5sum"
+ default: "sha256"
 
  - boot_file_unpack_cmd
 

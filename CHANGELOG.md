@@ -2,7 +2,7 @@
 
 FEATURES
  - added option: keep_boot_src_file - keep or not boot_file_src_file when boot_file is created (use mv or cp); by default 0 - mean do not keep.
- - replace boot_file_src_sha256 option by boot_file_src_checksum + boot_file_checksum_cmd, it allow use different hashing algorithms
+ - replace boot_file_src_sha256 option by boot_file_src_checksum + boot_file_checksum_type, it allow use different hashing algorithms
 
 IMPROVEMENTS
  - the Installer allow specify install location and shebang - more #1 and #2
