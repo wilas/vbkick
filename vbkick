@@ -51,8 +51,11 @@ disk_format="vdi"
 video_memory_size=10
 # list of VM options: ("option1:value" "option2:value")
 vm_options=("ioapic:on")
-# by default gui enabled
+# by default gui enabled unless the VirtualBox GUI is missing
 gui_enabled=1
+if ! command -v VirtualBox; then
+    gui_enabled=0
+fi
 # by default add shared folder - to disable: shared_folder=""
 shared_folder="vbkick"
 
