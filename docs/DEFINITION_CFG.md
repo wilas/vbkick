@@ -87,9 +87,13 @@ More details soon.
 
  default: "iso"
 
- - boot_file_src_sha256
+ - boot_file_src_checksum
 
  default: ""
+
+ - boot_file_checksum_cmd
+
+ default: "md5sum"
 
  - boot_file_unpack_cmd
 
