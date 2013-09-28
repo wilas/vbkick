@@ -957,7 +957,7 @@ function auto_passwd_ssh {
         fi
         expect -c "spawn $_expect_cmd; expect password ; send \"$ssh_password\n\" ; interact"
     else
-        yellow "WARNING: 'expect' command not exist - install 'expect' to automate ssh authentication without ssh_key.\n"
+        yellow "WARNING: 'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key.\n"
         yellow "To use ssh_key authentication setup ssh_keys_enabled=1 in your definition.cfg\n"
         # Process without expect
         if [ -z "$_cmd" ]; then
@@ -981,7 +981,7 @@ function auto_passwd_scp {
         fi
         expect -c "spawn $_expect_cmd; expect password ; send \"$ssh_password\n\" ; interact"
     else
-        yellow "WARNING: 'expect' command not exist - install 'expect' to automate ssh authentication without ssh_key.\n"
+        yellow "WARNING: 'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key.\n"
         yellow "To use ssh_key authentication setup ssh_keys_enabled=1 in your definition.cfg\n"
         # Process without expect
         if [ $_recursive -eq 1 ]; then
