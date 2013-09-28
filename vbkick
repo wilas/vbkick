@@ -1061,6 +1061,26 @@ function clean_up {
     exit 1
 }
 
+function depend_check {
+    local dep_cmd="${1}"
+    local dep_name="${2}"
+    # check whether dep_name is installed - dep_cmd command exist
+    if [[ ! `which $dep_cmd 2>/dev/null` ]]; then
+        red "$dep_cmd command not exist - install $dep_name to continue\n"
+        exit 1
+    fi
+}
+
+function dependencies_check {
+    depend_check "VBoxManage" "Virtualbox"
+    depend_check "curl" "curl"
+    depend_check "ssh" "ssh-client (e.g. openssh-client)"
+    depend_check "scp" "scp-client (e.g. openssh-client)"
+    depend_check "python" "python"
+    depend_check "nc" "netcat"
+    depend_check "python" "python"
+}
+
 ## MAIN ##
 # exactly 2 Args required - ACTION VM_NAME
 if [ $# -ne 2 ]; then
@@ -1068,11 +1088,9 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
-# check whether Virtualbox is installed - VBoxManage command exist
-if [[ ! `which VBoxManage 2>/dev/null` ]]; then
-    red "VBoxManage command not exist - install Virtualbox to continue\n"
-    exit 1
-fi
+# check whether we have everything to start with vbkick
+dependencies_check
+
 vb_version=$(get_vb_version)
 # signals and error handler
 trap clean_up SIGHUP SIGINT SIGTERM ERR
