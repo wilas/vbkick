@@ -89,6 +89,6 @@ Description:
  - SmartOS
  - Ubuntu12.04 LTS "Precise Pangolin"
  - CoreOS ?
- - FreeBSD/PC-BSD ?
+ - FreeBSD/PC-BSD/OpenBSD ?
  - OmniOS ?
  - OpenIndiana ?
