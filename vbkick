@@ -1052,7 +1052,7 @@ function stop_web_server {
         if [[ ! `ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -v grep` ]]; then
             printf "INFO: webserver was stopped\n"
         else
-            yellow "WARNING: problem with stopping webserver. Kill proces manually\n"
+            yellow "WARNING: problem with stopping webserver. Kill process manually\n"
             ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -v grep
         fi
         # update webserver_status variable
@@ -1068,7 +1068,7 @@ function clean_up {
         stop_web_server
     else
         # previuosly executed stop_web_server function fail in killing $web_pid
-        yellow "WARNING: problem with killing webserver (proc ${web_pid}). Kill proces manually\n"
+        yellow "WARNING: problem with killing webserver (proc ${web_pid}). Kill process manually\n"
     fi
     # help recover some changes made on VM during exporting
     recover_vm_state
