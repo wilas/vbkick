@@ -430,10 +430,12 @@ function build_vm {
     # download boot/iso files
     download_boot_media
     download_guest_additions_media
-    # create VM box with given settings
-    create_box
+    # check SSH port usage
+    check_port_usage $ssh_host_port "SSH host"
     # start simple webserver (in background)
     start_web_server
+    # create VM box with given settings
+    create_box
     # host ip to connect from guest
     local host_ip=10.0.2.2
     # start VM
@@ -1006,14 +1008,20 @@ function auto_passwd_scp {
     fi
 }
 
-function start_web_server {
-    # check whether port is not used by other proc
-    if nc -z localhost $kickstart_port 2>/dev/null; then
-        red "$kickstart_port port is already in use\n"
-        # TODO [LOW]: choose next webserver port if present is in use from kickstart_port list, 
-        # and update current_kickstart_port - this not working with injection method (list of files to update ?)
+# checks whether port is not used by other proc
+function check_port_usage {
+    local port_nr=$1
+    local port_message="${2}"
+    if nc -z localhost $port_nr >/dev/null 2>&1; then
+        red "$port_nr port (${port_message}) is already in use.\n"
         exit 1
     fi
+}
+
+function start_web_server {
+    # TODO [LOW]: choose next webserver port if present is in use from kickstart_port list, 
+    # check whether port is not used by other proc
+    check_port_usage $kickstart_port "kickstart"
     # start simple webserver serving files in background
     py_version=$(python -V 2>&1 | cut -d' ' -f 2 | cut -d'.' -f 1)
     if [[ $py_version -eq 2 ]]; then

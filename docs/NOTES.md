@@ -9,9 +9,10 @@ Links:
  - some bash options (set -e; set -o pipefail): http://stackoverflow.com/questions/11231937/bash-ignoring-error-for-a-particular-command
  - Debian + kde + usb stick: http://www.debian.org/releases/stable/i386/apbs02.html.en
  - Centos + gnome + usb stick: http://wiki.centos.org/HowTos/InstallFromUSBkey
+ - kickstart/preseed - usb stick:  http://www.cyberciti.biz/faq/linux-create-a-bootable-usb-pen/
 
 General TODO
- - creates curl installer
+ - creates curl installer: curl -ks "url" | sudo bash #(http://calibre-ebook.com/download_linux)
  - contribute
     - to_do priority:
         - LOW - (cosmetic problem, nothing important but nice to have) [COULD, WOULD]
