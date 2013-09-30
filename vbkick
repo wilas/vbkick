@@ -96,7 +96,6 @@ boot_seq_wait=1
 kickstart_port=7122
 # default max webserver live time
 kickstart_timeout=7200
-#TODO [LOW]: update_boot_media=1 replace boot (usb, iso) media during update action, usefull for smartOS, host must be shutdown
 
 # SSH default settings (veeded to run vbkick validate and/or lazy_posinstall)
 # by default use ssh keys

@@ -5,7 +5,17 @@ FEATURES
  - replace boot_file_src_sha256 option by boot_file_src_checksum + boot_file_checksum_type, it allow use different hashing algorithms
 
 IMPROVEMENTS
- - the Installer allow specify install location and shebang - more #1 and #2
+ - the Installer allow specify the install location and the shebang - more #1, #2 and #14
+ - automatically disable GUI if VirtualBox does not exist, you can still try enable GUI via definition.cfg
+ - checks required options in definition.cfg
+ - checks required dependencies at the start of the script
+ - ```curl``` instead of ```wget``` as downloader
+ - ```command -v``` instead of ```which```
+ - removed getent dependency
+ - "if statement" compatibility
+
+BUG FIXES
+ - vbkick works on systems where python 3 is the default one - #5
 
 ## 0.5 (15-09-2013)
 

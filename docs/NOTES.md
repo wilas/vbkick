@@ -11,7 +11,7 @@ Links:
  - Centos + gnome + usb stick: http://wiki.centos.org/HowTos/InstallFromUSBkey
 
 General TODO
- - wget/curl installer
+ - creates curl installer
  - contribute
     - to_do priority:
         - LOW - (cosmetic problem, nothing important but nice to have) [COULD, WOULD]
@@ -19,18 +19,5 @@ General TODO
         - HIGH - (major loss of function, critical/serious bugs affected the operation of the program) [MUST]
         - Info: http://en.wikipedia.org/wiki/MoSCoW_Method
         - Info: https://confluence.atlassian.com/display/JIRA/Defining+'Priority'+Field+Values
- - Ideas.md (arena + garden + levels/priority) and/or (create issue)
  - describe options in definition.cfg (possibility and consequences)(OS influence)
  - extra_post_build_cmds/extra_pre_build_cmds (crazy tuning on given %NAME%)
- - Future: other networking than NAT, forward ports from zone to host (not GlobalZone)(build cluster?)
-
-Idea:
- - concurrent VM build (arg: list of VM) - CPU waste - better create one and use clone
-
-Troubleshooting:
-```
-  $ vbkick build example
-  7130 port is already in use
-  $ ps -ef | grep python
-  $ kill PID 
-```
