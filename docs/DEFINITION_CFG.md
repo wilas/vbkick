@@ -80,16 +80,18 @@ More details soon.
  - boot_file_src
 
  no default - REQUIRED! 
-
- Note: may be equal "" if boot_file exist - downloaded manually
  
  - boot_file_src_path
 
  default: "iso"
 
- - boot_file_src_sha256
+ - boot_file_src_checksum
 
  default: ""
+
+ - boot_file_checksum_type
+
+ default: "sha256"
 
  - boot_file_unpack_cmd
 
@@ -101,6 +103,10 @@ More details soon.
  
  - boot_file_convert_from_raw
 
+ default: 0
+
+ - keep_boot_src_file
+ 
  default: 0
 
  - boot_wait

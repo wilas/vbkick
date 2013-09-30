@@ -1,3 +1,23 @@
+## 0.5.1 (30-09-2013)
+
+FEATURES
+ - added option: keep_boot_src_file - keep or not boot_file_src_file when boot_file is created (use mv or cp); by default 0 - mean do not keep.
+ - replace boot_file_src_sha256 option by boot_file_src_checksum + boot_file_checksum_type, it allow use different hashing algorithms
+
+IMPROVEMENTS
+ - the Installer allow specify the install location and the shebang - more #1, #2 and #14
+ - automatically disable GUI if VirtualBox does not exist, you can still try enable GUI via definition.cfg
+ - checks SSH port usage before creating VM
+ - checks required options in definition.cfg
+ - checks required dependencies at the start of the script
+ - ```curl``` instead of ```wget``` as downloader
+ - ```command -v``` instead of ```which```
+ - removed ```getent``` dependency
+ - "if statement" compatibility
+
+BUG FIXES
+ - vbkick works on systems where python 3 is the default one - #5
+
 ## 0.5 (15-09-2013)
 
 FEATURES

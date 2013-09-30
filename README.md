@@ -18,6 +18,12 @@ vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
 ```
     sudo make install
     sudo make uninstall
+
+    or advance:
+
+    # sudo BASH_SHEBANG="/usr/bin/env bash" PY_SHEBANG="/usr/bin/env python" PREFIX="/tmp/testme/bin" make install
+    sudo PREFIX="/tmp/testme/bin" make install
+    sudo PREFIX="/tmp/testme/bin" make uninstall
 ```
 
 ## Create own box definition
@@ -56,7 +62,7 @@ vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
 
 ## vbkick
 
-Tested currently only in bash 4 (use POSIX mode). If you have trouble using script in bash 3, let me know.
+Works in both bash 3 and bash 4 (use POSIX mode). If you have trouble using script, let me know.
 
 ```
     cd to_directory_with definition.cfg
