@@ -1037,10 +1037,11 @@ function start_web_server {
     web_pid=$!
     sleep 2
     # check whether web server was really started
-    if ! nc -z localhost $kickstart_port 2>/dev/null; then
+    if ! nc -z localhost $kickstart_port >/dev/null 2>&1; then
         red "webserver was not started\n"
         exit 1
     fi
+    printf "webserver has been started (pid=$web_pid)\n"
     # update webserver_status variable
     webserver_status=1
 }
@@ -1048,7 +1049,7 @@ function start_web_server {
 function stop_web_server {
     # check whether webserver is running
     if [ $webserver_status -ne 0 ]; then
-        printf "Stopping webserver...\n"
+        printf "Stopping webserver (pid=$web_pid)...\n"
         # with "set -e -E" if kill command fail then ERR trap is processing 
         # simply execution of function is not continued
         webserver_kill_status=1
