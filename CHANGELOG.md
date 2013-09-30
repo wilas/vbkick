@@ -1,4 +1,4 @@
-## Not released
+## 0.5.1 (30-09-2013)
 
 FEATURES
  - added option: keep_boot_src_file - keep or not boot_file_src_file when boot_file is created (use mv or cp); by default 0 - mean do not keep.
@@ -12,7 +12,7 @@ IMPROVEMENTS
  - checks required dependencies at the start of the script
  - ```curl``` instead of ```wget``` as downloader
  - ```command -v``` instead of ```which```
- - removed getent dependency
+ - removed ```getent``` dependency
  - "if statement" compatibility
 
 BUG FIXES
