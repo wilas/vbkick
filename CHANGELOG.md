@@ -7,6 +7,7 @@ FEATURES
 IMPROVEMENTS
  - the Installer allow specify the install location and the shebang - more #1, #2 and #14
  - automatically disable GUI if VirtualBox does not exist, you can still try enable GUI via definition.cfg
+ - checks SSH port usage before creating VM
  - checks required options in definition.cfg
  - checks required dependencies at the start of the script
  - ```curl``` instead of ```wget``` as downloader

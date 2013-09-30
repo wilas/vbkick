@@ -964,7 +964,7 @@ function lazy_ssh {
 
 function auto_passwd_ssh {
     local _cmd="${1}"
-    if [[ `command -v expect 2>/dev/null` ]]; then
+    if command -v expect >/dev/null 2>&1; then
         if [ -z "${_cmd}" ]; then
             # No cmd to exec, interactive shell
             local _expect_cmd="ssh -q \"${ssh_user}@localhost\" -t -p $ssh_host_port $ssh_options"
@@ -989,7 +989,7 @@ function auto_passwd_scp {
     #echo "Not implemented yet !"
     local _src="${1}"
     local _recursive="${2}"
-    if [[ `command -v expect 2>/dev/null` ]]; then
+    if command -v expect >/dev/null 2>&1; then
         if [ $_recursive -eq 1 ]; then
             local _expect_cmd="scp -q -P $ssh_host_port $ssh_options -r \"${_src}\" \"${ssh_user}@localhost:~${ssh_user}\""
         else
@@ -1090,7 +1090,7 @@ function depend_check {
     local dep_cmd="${1}"
     local dep_name="${2}"
     # check whether dep_name is installed - dep_cmd command exist
-    if [[ ! `command -v $dep_cmd 2>/dev/null` ]]; then
+    if ! command -v $dep_cmd >/dev/null 2>&1; then
         red "$dep_cmd command not exist - install $dep_name to continue\n"
         exit 1
     fi
