@@ -5,7 +5,7 @@ FEATURES
  - replace ```boot_file_src_sha256``` option by ```boot_file_src_checksum``` + ```boot_file_checksum_type```, it allow use different hashing algorithms
 
 IMPROVEMENTS
- - the Installer allow specify the install location and the shebang - more [#1](issues/1), [#2](issues/2) and [#14](issues/14)
+ - the Installer allow specify the install location and the shebang - more [#1](../../issues/1), [#2](issues/2) and [#14](issues/14)
  - automatically disable GUI if VirtualBox does not exist, you can still force enable GUI in ```definition.cfg```
  - checks SSH port usage before creating VM
  - checks required options in ```definition.cfg```
