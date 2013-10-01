@@ -427,13 +427,13 @@ function build_vm {
     if [ $ssh_keys_enabled -eq 1 ]; then
         get_priv_ssh_key
     fi
-    # download boot/iso files
-    download_boot_media
-    download_guest_additions_media
     # check SSH port usage
     check_port_usage $ssh_host_port "SSH host"
     # start simple webserver (in background)
     start_web_server
+    # download boot/iso files
+    download_boot_media
+    download_guest_additions_media
     # create VM box with given settings
     create_box
     # host ip to connect from guest

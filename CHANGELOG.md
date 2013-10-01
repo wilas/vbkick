@@ -1,14 +1,14 @@
 ## 0.5.1 (30-09-2013)
 
 FEATURES
- - added option: keep_boot_src_file - keep or not boot_file_src_file when boot_file is created (use mv or cp); by default 0 - mean do not keep.
- - replace boot_file_src_sha256 option by boot_file_src_checksum + boot_file_checksum_type, it allow use different hashing algorithms
+ - added option: ```keep_boot_src_file``` - keep or not source of ```boot_file``` when boot file is created (use mv or cp); by default 0 - mean do not keep.
+ - replace ```boot_file_src_sha256``` option by ```boot_file_src_checksum``` + ```boot_file_checksum_type```, it allow use different hashing algorithms
 
 IMPROVEMENTS
- - the Installer allow specify the install location and the shebang - more #1, #2 and #14
- - automatically disable GUI if VirtualBox does not exist, you can still try enable GUI via definition.cfg
+ - the Installer allow specify the install location and the shebang - more [#1](issues/1), [#2](issues/2) and [#14](issues/14)
+ - automatically disable GUI if VirtualBox does not exist, you can still force enable GUI in ```definition.cfg```
  - checks SSH port usage before creating VM
- - checks required options in definition.cfg
+ - checks required options in ```definition.cfg```
  - checks required dependencies at the start of the script
  - ```curl``` instead of ```wget``` as downloader
  - ```command -v``` instead of ```which```
@@ -16,33 +16,33 @@ IMPROVEMENTS
  - "if statement" compatibility
 
 BUG FIXES
- - vbkick works on systems where python 3 is the default one - #5
+ - vbkick works on systems where python 3 is the default one - [#5](issues/5)
 
 ## 0.5 (15-09-2013)
 
 FEATURES
  - list of disks (given as list of disks sizes) instead of one disk
- - ssh ACTION was added - ssh to VM with same as postinstall/validate/update options
- - on ACTION was added - turn on given VM
- - shutdown ACTION was added - turn off given VM
+ - ```ssh``` ACTION was added - ssh to VM with same as postinstall/validate/update options
+ - ```on``` ACTION was added - turn on given VM
+ - ```shutdown``` ACTION was added - turn off given VM
  - ssh_password authentication was added, "expect" installed on host machine is needed to use this feature, otherwise it prompt you for a password
- - disbale/enable autoupdate VBoxGuestAdditions iso attached to guest machine (guest_additions_attach)
+ - disbale/enable autoupdate VBoxGuestAdditions iso attached to guest machine (```guest_additions_attach```)
  - boot from other than dvddrive file (e.g. hdd) (usefull for SmartOS)
- - added options: boot_file, boot_file_type, boot_file_src, boot_file_src_sha256, boot_file_src_path, boot_file_unpack_name, boot_file_unpack_cmd, boot_file_convert_from_raw, guest_additions_path
- - removed options: iso_file, iso_path, iso_src, iso_sha256, guest_additions_download
- - extra variables %VBOXFOLDER%, %NAME%, %HOME%, %PWD% and %SRCPATH% in boot_file, boot_file_unpack_name, boot_file_unpack_cmd
- - extra variables %VBOXFOLDER%, %NAME%, %HOME% and %PWD% in boot_file_src_path
- - %HOST% in postinstall/validate/update lauch definition to execute given cmd on host not guest machine (e.g.: %HOST% sleep 20)
+ - added options: ```boot_file```, ```boot_file_type```, ```boot_file_src```, ```boot_file_src_sha256```, ```boot_file_src_path```, ```boot_file_unpack_name```, ```boot_file_unpack_cmd```, ```boot_file_convert_from_raw```, ```guest_additions_path```
+ - removed options: ```iso_file```, ```iso_path```, ```iso_src```, ```iso_sha256```, ```guest_additions_download```
+ - extra variables ```%VBOXFOLDER%```, ```%NAME%```, ```%HOME%```, ```%PWD%``` and ```%SRCPATH%``` in ```boot_file```, ```boot_file_unpack_name```, ```boot_file_unpack_cmd```
+ - extra variables ```%VBOXFOLDER%```, ```%NAME%```, ```%HOME%``` and ```%PWD%``` in ```boot_file_src_path```
+ - ```%HOST%``` in postinstall/validate/update lauch definition to execute given cmd on host not guest machine (e.g.: %HOST% sleep 20)
  - unpack boot_file_src media if necessary
  - convert from raw boot_file_src media if necessary
  - SmartOS template was added
 
 IMPROVEMENTS
- - hdd disks are added to SATA Controller, ports 2-30 instead of ports 0-30; port 0 is reserve for boot disk, port 1 is reserve for guest additions
  - SATA for boot iso and guest additions instead of IDE
- - manuall_guest_install option was removed; update VBoxGuestAdditions should be a part of update_lauch (if required); it is easier to find a proper block device with additions on the guest machine: /dev/sr0 or /dev/sr1
+ - hdd disks are added to SATA Controller, ports 2-30 instead of ports 0-30; port 0 is reserve for boot disk, port 1 is reserve for guest additions
+ - ```manuall_guest_install``` option was removed; update VBoxGuestAdditions should be a part of update_lauch (if required); it is easier to find a proper block device with additions on the guest machine: /dev/sr0 or /dev/sr1
  - "acpipowerbutton + shutdown_timeout seconds" to shutdown VM before poweroff will be used (both are used if normal shutdwon fail)
- - allow use disk_size=("") to not add hdd disks to VM
+ - allow use ```disk_size=("")``` to not add hdd disks to VM
 
 BUG FIXES
  - process lauch and transport arrays in ssh_exec
@@ -50,13 +50,13 @@ BUG FIXES
 ## 0.4 (28-08-2013)
 
 FEATURES
- - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts (manuall_update_guest_additions option)
+ - vbkick was taught how to auto update VBoxGuestAdditions on Guest machine and "lazy" run other update scripts (```manuall_update_guest_additions``` option)
  - auto update value of VBOX_VERSION="version" in the given files list with current vbox version
  - rm other (older) VBoxGuestAdditions isos from media directory (before remove ask about confirmation)
  - Fedora19 template was added
 
 IMPROVEMENTS
- - guest_additions_download option is disbaled by default
+ - ```guest_additions_download``` option is disbaled by default
  - instead downloading custom VBoxGuestAdditions image use default already existing on Host machine: "VBoxManage storageattach --medium additions" (it save space on disk and time)
 
 ## 0.3.1 (22-06-2013)

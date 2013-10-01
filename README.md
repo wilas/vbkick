@@ -2,6 +2,8 @@
 
 vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes (replacement to [Veewee](https://github.com/jedi4ever/veewee)). [Why ?](docs/WHY.md)
 
+vbkick works on Linux, FreeBSD, MacOSX.
+
 # Getting Started
 
 ## Prelude

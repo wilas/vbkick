@@ -25,6 +25,7 @@ postinstall_transport=("postinstall")
  - allow run postinstall commands many times (e.g puppet repo is unavailalble, then try later again)
  - works with all Unix/Linux systems
  - allow upgrade already exisiting VM, e.g. install new GuestAdditions, new KDE version, etc. (build new VM is not needed)
+ - easy way to play with already existing vanilla machine and test postinstall scripts before release to production
 
 
 #### Use Case flow:
