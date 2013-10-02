@@ -96,6 +96,8 @@ boot_seq_wait=1
 kickstart_port=7122
 # default max webserver live time
 kickstart_timeout=7200
+# do not start local webserver, by default 0 - mean start webserver to serve files from current dir.
+webserver_disabled=0
 
 # SSH default settings (veeded to run vbkick validate and/or lazy_posinstall)
 # by default use ssh keys
@@ -181,7 +183,7 @@ function yellow {
 function usage {
     printf "Desc: the automatic Virtualbox Guests and Vagrant Base Boxes builder\n"
     printf "\n"
-    printf "Usage: vbkick ACTION VM_NAME\n"
+    printf "Usage: $0 ACTION VM_NAME\n"
     printf "\n"
     printf "Available actions:\n"
     printf "\tbuild                 build VM\n"
@@ -881,7 +883,7 @@ function ssh_exec {
 
     # transport scripts to guest
     for pkt in "${transport[@]}"; do
-        if [ -z "${pkt}" ]; then 
+        if [[ -z "${pkt}" ]]; then 
             continue
         fi
         printf "Scp: ${pkt}\n"
@@ -908,7 +910,7 @@ function ssh_exec {
 
     # run commands via ssh
     for cmd in "${launch[@]}"; do
-        if [ -z "${cmd}" ]; then 
+        if [[ -z "${cmd}" ]]; then 
             continue
         fi
         # %HOST% tag - check whether command should be executed on host (not guest)
@@ -1023,7 +1025,10 @@ function check_port_usage {
 }
 
 function start_web_server {
-    # TODO [LOW]: do not start webserver - remote server is used instead to serve kickstart files, etc.
+    # Do not start webserver - remote server is used instead to serve kickstart files.
+    if [[ $webserver_disabled -eq 1 ]]; then
+        return
+    fi
     # TODO [LOW]: choose next webserver port if present is in use from kickstart_port list, 
     # check whether port is not used by other proc
     check_port_usage $kickstart_port "kickstart"
