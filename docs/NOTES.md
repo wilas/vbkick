@@ -22,7 +22,5 @@ General TODO
         - Info: https://confluence.atlassian.com/display/JIRA/Defining+'Priority'+Field+Values
  - describe options in definition.cfg (possibility and consequences)(OS influence)(what each option mean, what I can do, what format is accepted + describe special variables in doc/definition.md)
  - benefits of having definition.cfg in bash format (simple func inside, read context from the central repo, include other definitions, e.g common)
- - extra_post_build_cmds/extra_pre_build_cmds (tuning on given %NAME%) - it should be part of postinstall, process after %HOST% (PWD, NAME, etc.)
  - more screens
- - 3rd optional arg (definition_file_name.cfg otherwise use definition.cfg)
  - usecase/workflow: (test kickstart files, test postinstall scripts, discover new things on vanilla boxes)(build vanilla, clone, play with clone, automate steps done on clone)(this is my cheap personal lab/garage)(sandbox env.)

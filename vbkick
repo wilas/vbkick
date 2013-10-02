@@ -919,6 +919,8 @@ function ssh_exec {
         if [[ "${cmd}" =~ ^\ *%HOST% ]]; then
             # extract command
             cmd=${cmd//%HOST%/}
+            # process defined/template variables
+            cmd=$(prepare_path "${cmd}" 0)
             printf "Exec (on host): ${cmd}\n"
             eval "${cmd}"
             continue

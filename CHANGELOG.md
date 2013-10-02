@@ -5,7 +5,11 @@ FEATURES
  - definition_file_name as 3rd (optional) argument - [#26](../../issues/26)
 
 IMPROVEMENTS
- - 
+ - all files which should be transported to VM guest are checked before transport process of any will start
+ - extra variables ```%VBOXFOLDER%```, ```%NAME%```, ```%HOME%``` and ```%PWD%``` in ```{postinstall/update/validate}_launch``` are acceptable after %HOST% (to run commands on local host not guest)
+
+BUG FIXES
+ - better cleaning already scp files
 
 ## 0.5.1 (30-09-2013)
 
