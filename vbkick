@@ -701,7 +701,6 @@ function turn_on {
 }
 
 function turn_off {
-    # check whether VM is running 
     # check whether VM is running
     if ! VBoxManage list runningvms | grep -qw "${VM}"; then
         green "${VM} is already turn off.\n"
@@ -716,7 +715,6 @@ function turn_off {
 }
 
 function shutdown {
-
     # check whether VM is running and exec shutdown_cmd via SSH
     if VBoxManage list runningvms | grep -qw "${VM}"; then
         printf "Shutting down ${VM} "
@@ -762,6 +760,11 @@ function shutdown {
 }
 
 function update_guest_additions_media {
+    # check whether VM exist
+    if ! VBoxManage list vms | grep -qw "${VM}"; then
+        red "${VM} doese not exist. Use \"vbkick build\" to create the new VM.\n"
+        exit 1
+    fi
     # get current guest version
     if VBoxManage guestproperty enumerate "${VM}" | grep -q "GuestAdd/Version"; then
         # guest already exist, get current version
@@ -851,7 +854,6 @@ function ssh_exec {
     local launch=("${@}")
 
     # check whether VM is running 
-    # check whether VM is running
     if ! VBoxManage list runningvms | grep -qw "${VM}"; then
         red "${VM} is not running...\n"
         exit 1
