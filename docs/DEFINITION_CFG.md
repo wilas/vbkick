@@ -129,6 +129,9 @@ More details soon.
 
  default: 7200
 
+ - webserver_disabled
+
+ default: 0
 
 ## SSH
 

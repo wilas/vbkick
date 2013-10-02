@@ -544,7 +544,6 @@ function create_box {
     # TODO [MEDIUM]: allow mapping more ports (nat_mapping_array)
     # list may be empty (check whether is empty or not..); ssh is special port
     if ! VBoxManage showvminfo "${VM}" | grep -q "vbkickSSH"; then
-        # TODO [LOW]: check whether ssh_host_port is already in use and take other (random from list/range)
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
@@ -1035,7 +1034,6 @@ function start_web_server {
     if [[ $webserver_disabled -eq 1 ]]; then
         return
     fi
-    # TODO [LOW]: choose next webserver port if present is in use from kickstart_port list, 
     # check whether port is not used by other proc
     check_port_usage $kickstart_port "kickstart"
     # start simple webserver serving files in background

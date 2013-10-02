@@ -1,11 +1,11 @@
 ## Not released
 
 FEATURES
- - added option ```webserver_disabled``` to not start local webserver when remote host is prefered to serve files
+ - added option ```webserver_disabled``` to not start local webserver when remote host is prefered to serve files (or files from webserver are not need)
  - definition_file_name as 3rd (optional) argument - [#26](../../issues/26)
 
 IMPROVEMENTS
- - all files which should be transported to VM guest are checked before transport process of any will start
+ - all files which should be transported to VM guest are checked before transport start processing any of them
  - extra variables ```%VBOXFOLDER%```, ```%NAME%```, ```%HOME%``` and ```%PWD%``` in ```{postinstall/update/validate}_launch``` are acceptable after %HOST% (to run commands on local host not guest)
 
 BUG FIXES
