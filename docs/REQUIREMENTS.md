@@ -1,4 +1,4 @@
-Req. (standard tools on most linux/freebsd/osx boxes):
+Requirements (standard tools on most linux/freebsd/osx boxes):
  - bash
  - python
  - ssh
