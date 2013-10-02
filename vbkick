@@ -923,17 +923,17 @@ function ssh_exec {
     done
     
     # clean after scp by rm transported media/scripts
-    # TODO [MEDIUM]: better cleaning - scp dir1/dir2/file creates file not full structure
     if [ $clean_transported -eq 1 ]; then
         for pkt in "${transport[@]}"; do
             if [ -z "${pkt}" ]; then 
                 continue
             fi
             printf "Clean transported: ${pkt}\n"
+            local pkt_to_clean=$(basename "${pkt}")
             if [ $ssh_keys_enabled -eq 1 ]; then        
-                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt}" || true
+                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt_to_clean}" || true
             else
-                auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt}"
+                auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
             fi
             sleep 1
         done
