@@ -1,11 +1,11 @@
-.TH man 1 "15 September 2013" "0.5.0" "vbkick man page"
+.TH man 1 "1 October 2013" "0.5.2" "vbkick man page"
 .SH NAME
 vbkick - the automatic Virtualbox Guests and/or Vagrant base boxes builder.
 .SH SYNOPSIS
-.BI vbkick " ACTION VM_NAME "
+.BI vbkick " ACTION VM_NAME (DEFINITION_FILE_NAME)"
 .SH DESCRIPTION
 .PP
-vbkick is easy in use and free bash script (with enabled POSIX mode). It automate/simplify Virtualbox Guest and Vagrant base box build process (only 1-2 actions are needed). New Virtual machine is describe as a code in \fIdefinition.cfg\fP file.
+vbkick is easy in use and free bash script (with enabled POSIX mode). It automate/simplify Virtualbox Guest and Vagrant base box build process (only 1-2 actions are needed). New Virtual machine is describe as a code in \fIdefinition.cfg\fP (DEFINITION_FILE_NAME) file.
 Task is mostly about running VBoxManage command in proper order with proper options. Uses also ssh and scp commands to complete the job.
 .PP
 Kickstart and postinstall files are serve to VM via local webserver started in background.

@@ -1,3 +1,12 @@
+## Not released
+
+FEATURES
+ - added option ```webserver_disabled``` to not start local webserver when remote host is prefered to serve files
+ - definition_file_name as 3rd (optional) argument - [#26](../../issues/26)
+
+IMPROVEMENTS
+ - 
+
 ## 0.5.1 (30-09-2013)
 
 FEATURES
