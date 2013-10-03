@@ -1072,6 +1072,8 @@ function stop_web_server {
             kill $web_pid
         fi
         webserver_kill_cmd_status=0
+        # update webserver_status variable
+        webserver_status=0
         # kill command is sucessfull when SIGTERM is sent to running process
         # not when child process was really killed
         if ! ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -qv grep; then
@@ -1080,8 +1082,6 @@ function stop_web_server {
             yellow "WARNING: problem with stopping webserver. Kill process manually\n"
             ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -v grep
         fi
-        # update webserver_status variable
-        webserver_status=0
     fi
 }
 
