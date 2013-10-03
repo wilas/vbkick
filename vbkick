@@ -157,7 +157,7 @@ VM=""
 # 0 - webserver is not running or kill isn't able to stop it
 webserver_status=0
 # 0 - webserver was killed cleanly or we didn't try kill it yet
-webserver_kill_status=0
+webserver_kill_cmd_status=0
 # during exporting tmp directory is created
 tmp_dir=""
 # during exporting NAT mapping is removed (temporary) - help recover state before exporting
@@ -1066,9 +1066,12 @@ function stop_web_server {
         printf "Stopping webserver (pid $web_pid)\n"
         # with "set -e -E" if kill command fail then ERR trap is processing 
         # simply execution of function is not continued
-        webserver_kill_status=1
-        kill $web_pid
-        webserver_kill_status=0
+        webserver_kill_cmd_status=1
+        # check whether process exist and accept signals before sending SIGTERM
+        if kill -s 0 $web_pid 2>/dev/null; then
+            kill $web_pid
+        fi
+        webserver_kill_cmd_status=0
         # kill command is sucessfull when SIGTERM is sent to running process
         # not when child process was really killed
         if [[ ! `ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -v grep` ]]; then
@@ -1085,7 +1088,7 @@ function stop_web_server {
 # (signals and error handler) - cleaning after ctr-c, etc.
 function clean_up {
     printf "INFO: Signal/Error handler - cleanup before exiting...\n"
-    if [ $webserver_kill_status -eq 0 ]; then
+    if [ $webserver_kill_cmd_status -eq 0 ]; then
         # stop webserver (only if stop_web_server function didn't fail previuosly)
         stop_web_server
     else
