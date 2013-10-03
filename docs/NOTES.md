@@ -1,5 +1,4 @@
 Dirty notes:
- - ! kickstart_port is setup in 2 places for injection postinstall: kickstart_file, definition.cfg
  - Create bootable usb stick from definition.cfg (os_type is a key)
  - natdnshostresolver1:on (when host is ubuntu12.10)
 
@@ -10,6 +9,7 @@ Links:
  - Debian + kde + usb stick: http://www.debian.org/releases/stable/i386/apbs02.html.en
  - Centos + gnome + usb stick: http://wiki.centos.org/HowTos/InstallFromUSBkey
  - kickstart/preseed - usb stick:  http://www.cyberciti.biz/faq/linux-create-a-bootable-usb-pen/
+ - 1 is true and 0 is false in the usual boolean sense because of the arithmetic evaluation context: http://stackoverflow.com/questions/8579399/why-is-true-false-in-bash
 
 General TODO
  - creates curl installer: curl -ks "url" | sudo bash #(http://calibre-ebook.com/download_linux)

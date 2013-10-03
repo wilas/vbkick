@@ -10,6 +10,7 @@ IMPROVEMENTS
 
 BUG FIXES
  - better cleaning already scp files
+ - vbkick exit and report error when ssh command fail in ```posinstall/update/validate``` action - [#28](../../issues/28)
 
 ## 0.5.1 (30-09-2013)
 

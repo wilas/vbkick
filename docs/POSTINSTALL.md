@@ -2,10 +2,11 @@
 
 There are 2 main postinstall methods:
  - lazy - run postinstall scripts "later" - after installing the OS.
- - injection - run postinstall scripts during kickstarting process in chroot environment (implemented inside the kickstart file),
+ - injection - run postinstall scripts during kickstarting process in chroot environment (implemented inside the kickstart file).
 
 Of course you can also mix these methods.
 
+Note: If something fail in your postinstall script/command then postinstall process should be terminated - more [#28](../../issues/28)
 
 ### lazy postinstall method
 
@@ -24,7 +25,7 @@ postinstall_transport=("postinstall")
  - easy way for tuning box/PC after installation (tuning.sh as an example)
  - allow run postinstall commands many times (e.g puppet repo is unavailalble, then try later again)
  - works with all Unix/Linux systems
- - allow upgrade already exisiting VM, e.g. install new GuestAdditions, new KDE version, etc. (build new VM is not needed)
+ - allow upgrade already exisiting VM, e.g. install new GuestAdditions, new KDE version, etc. (building the new VM is not needed)
  - easy way to play with already existing vanilla machine and test postinstall scripts before release to production
 
 
@@ -55,11 +56,9 @@ It is ok to remove these options from definition as well, default value from vbk
  - no extra users and SSH keys needed to run postinstall scripts (more secure, useful for production env. e.g. with PXE)
  - help creates bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and shell scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier)
  - cons: may not work for every OS
- - cons: postinstall commands are exec only once
-
-#### Good to know
-
-If something fail during installation, e.g puppet was not installed (maybe puppet repo was temporary unavailable) then anyway postinstall process is continued and completed (mean: all shell scripts exec). After runing `vbkick validate VM_NAME` you should realize that puppet was not installed. Next step should be login into box, go into postinstall dir (e.g. cd /var/tmp/postinstall)(dir was already created by kickstart) and run: bash puppet.sh (there is no objection to run that scrip also via SSH).
+ - cons: postinstall commands are exec only once, if something fail then you need to build your machine again (may be slow)
+ - cons: debugging in chroot env.
+ - cons: kickstart_port is setup in 2 places for injection postinstall method: kickstart/kickstart_file.cfg, definition.cfg
 
 
 #### Use Case flow:

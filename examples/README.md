@@ -5,11 +5,11 @@
 ```
     .
     └─ SL6
-       ├── definition.cfg -> definition-6.4-x86_64.cfg
-       ├── definition-6.3-i386.cfg
-       ├── definition-6.3-x86_64.cfg
-       ├── definition-6.4-i386.cfg
-       ├── definition-6.4-x86_64.cfg
+       ├── definition.cfg -> definition-6.4-x86_64-noX.cfg
+       ├── definition-6.3-i386-noX.cfg
+       ├── definition-6.3-x86_64-noX.cfg
+       ├── definition-6.4-i386-noX.cfg
+       ├── definition-6.4-x86_64-noX.cfg
        ├── kickstart
        │   └── <scientificlinux-6.4-x86_64-noX.cfg, scientificlinux-6.4-x86_64-GNOME.cfg, ...>
        ├── validate
@@ -87,7 +87,7 @@ Building - `vbkick build VM_NAME`
  - wait until machine is ready or a timeout is reached
 
 Tuning - `vbkick postinstall VM_NAME`
- - [postinstall VM configuration](POSTINSTALL.md) - transport posinstall scripts via SCP and exec launch commands via SSH
+ - [postinstall VM configuration](../docs/POSTINSTALL.md) - transport posinstall scripts via SCP and exec launch commands via SSH
 
 Testing - `vbkick validate VM_NAME`
  - validate the new VM
