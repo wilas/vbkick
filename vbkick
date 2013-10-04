@@ -221,7 +221,7 @@ function process_args {
 function autoupdate_files_with_vbox_version {
     for file in "${files_to_autoupdate_vbox_version[@]}"; do
         # check whether file exist
-        if [ -s "${file}" ]; then
+        if [[ -s "${file}" ]]; then
             # example value to update: VBOX_VERSION="4.2.12", but ignore comments
             sed -r -i "/^#/!s/(VBOX_VERSION)=\"([0-9\.]+)\"/\1=\"$vb_version\"/g" "${file}"
         fi
@@ -231,7 +231,7 @@ function autoupdate_files_with_vbox_version {
 function check_required_options {
     local opts=("boot_file" "boot_file_src" "os_type_id")
     for opt in "${opts[@]}"; do
-        if [ -z "${!opt+x}" ]; then
+        if [[ -z "${!opt+x}" ]]; then
             red "Required $opt option is not defined.\n"
             exit 1
         fi
@@ -240,7 +240,7 @@ function check_required_options {
 
 # Load definition.cfg config file; it overwrite default settings
 function load_definition {
-    if [ -s "${definition_fname}" ]; then
+    if [[ -s "${definition_fname}" ]]; then
         # In POSIX mode the '.' and 'source' builtins do not search the current directory
         # for the filename argument if it is not found by searching PATH.
         printf "INFO: Loading \"${definition_fname}\" definition...\n"
@@ -273,7 +273,7 @@ function prepare_path {
     local path=${path//%HOME%/~}
     local path=${path//%NAME%/${VM}}
     # Creates dir if necessary
-    if [ $mkdir_path -eq 1 ] && [ ! -z "${path}" ] && [ ! -d "${path}" ]; then
+    if [[ $mkdir_path -eq 1 ]] && [[ ! -z "${path}" ]] && [[ ! -d "${path}" ]]; then
         mkdir -p "${path}"
     fi
     # Return path
@@ -282,13 +282,13 @@ function prepare_path {
 
 # Downloads custom VBoxGuestAdditions if required
 function download_guest_additions_media {
-    if [ -z "${guest_additions_path}" ]; then
+    if [[ -z "${guest_additions_path}" ]]; then
         # nothing to do
         return
     fi
     guest_additions_path=$(prepare_path "${guest_additions_path}" 1)
     # check whether VBoxGuestAdditions exist
-    if [ ! -f "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" ]; then
+    if [[ ! -f "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" ]]; then
         local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
         curl -Lo "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" "${additions_url}"
     fi
@@ -298,7 +298,7 @@ function download_guest_additions_media {
 
 # Remove other (not needed) VBoxGuestAdditions from media directory
 function remove_guest_additions_media {
-    if [ -z "${guest_additions_path}" ]; then
+    if [[ -z "${guest_additions_path}" ]]; then
         # nothing to do
         return
     fi
@@ -306,7 +306,7 @@ function remove_guest_additions_media {
     # true is use to not fail whole cmd, and return empty string 
     local file_list=$(ls "${guest_additions_path}" | grep "GuestAdditions" | grep -v "${vb_version}" || true)
     # continue only if we have some files to remove
-    if [ -n "${file_list}" ]; then
+    if [[ -n "${file_list}" ]]; then
         printf "List of VBoxGuestAdditions files to remove:\n"
         for file in ${file_list}; do
             printf "${file}\n"
@@ -330,13 +330,13 @@ function download_boot_media {
     boot_file="${boot_file_path}/${boot_file_name}"
      
     # check whether boot file exist
-    if [ -f "${boot_file}" ]; then
+    if [[ -f "${boot_file}" ]]; then
         # file exist, nothing to do
         return
     fi
 
     # boot_file_src is empty (not defined)
-    if [ -z "${boot_file_src}" ]; then 
+    if [[ -z "${boot_file_src}" ]]; then 
         red "${boot_file} not exist and boot_file_src is empty\n"
         exit 1
     fi
@@ -346,7 +346,7 @@ function download_boot_media {
     boot_file_src_path=$(prepare_path "${boot_file_src_path}" 1)
     local boot_file_src_file="${boot_file_src_path}/${tmp_name}"
     # check whether boot_file_src exist
-    if [ ! -f "${boot_file_src_file}" ]; then
+    if [[ ! -f "${boot_file_src_file}" ]]; then
         curl -L "${boot_file_src}" -o "${boot_file_src_file}"
     fi
 
@@ -363,16 +363,16 @@ function download_boot_media {
     fi
 
     # process unpack
-    if [ ! -z "${boot_file_unpack_cmd}" ]; then
+    if [[ ! -z "${boot_file_unpack_cmd}" ]]; then
         # check whether boot_file_unpack_name is empty if so then error
-        if [ -z "${boot_file_unpack_name}" ]; then
+        if [[ -z "${boot_file_unpack_name}" ]]; then
             red "boot_file_unpack_name is empty, but boot_file_unpack_cmd is specify\n"
             exit 1
         fi
         # prepare path - this is full path, must already exist in filesystem
         boot_file_unpack_name=$(prepare_path "${boot_file_unpack_name}" 0)
         # check whether boot_file_unpack_name exist - if not then run unpack cmd
-        if [ ! -f "${boot_file_unpack_name}" ]; then
+        if [[ ! -f "${boot_file_unpack_name}" ]]; then
             # prepare and run unpack cmd
             boot_file_unpack_cmd=$(prepare_path "${boot_file_unpack_cmd}" 0)
             printf "${boot_file_unpack_cmd}\n"
@@ -382,18 +382,18 @@ function download_boot_media {
     fi
 
     # process convert from raw
-    if [ $boot_file_convert_from_raw -eq 1 ]; then
+    if [[ $boot_file_convert_from_raw -eq 1 ]]; then
         VBoxManage convertfromraw "${boot_file_src_file}" "${boot_file}" --format "${disk_format}"
-        if [ $keep_boot_src_file -eq 0 ]; then
+        if [[ $keep_boot_src_file -eq 0 ]]; then
             rm -f "${boot_file_src_file}"
         fi
     else
         # check whether full path to boot_file_src_file is same as boot_file and boot_file was already created
-        if [ -f "${boot_file}" ]; then
+        if [[ -f "${boot_file}" ]]; then
             return
         fi
         # check whether cp or mv; mv mean don't keep boot_file_src_file; keep only boot_file
-        if [ $keep_boot_src_file -eq 0 ]; then
+        if [[ $keep_boot_src_file -eq 0 ]]; then
             mv -f "${boot_file_src_file}" "${boot_file}"
         else
             cp "${boot_file_src_file}" "${boot_file}"
@@ -404,12 +404,12 @@ function download_boot_media {
 # Prepare ssh keys
 function get_priv_ssh_key {
     # check whether keys dir exist
-    if [ ! -d "${ssh_keys_path}" ]; then
+    if [[ ! -d "${ssh_keys_path}" ]]; then
         printf "Creates vbkick ssh keys directory\n"
         mkdir "${ssh_keys_path}"
     fi
     # check whether private key exist
-    if [ ! -f "${ssh_keys_path}/${ssh_priv_key}" ]; then
+    if [[ ! -f "${ssh_keys_path}/${ssh_priv_key}" ]]; then
         curl -L "${ssh_priv_key_src}" -o "${ssh_keys_path}/${ssh_priv_key}"
     fi
     # change ssh key permissions - too open private key will be ignored
@@ -425,7 +425,7 @@ function build_vm {
     # load vm description/definition
     load_definition 
     # get ssh private key
-    if [ $ssh_keys_enabled -eq 1 ]; then
+    if [[ $ssh_keys_enabled -eq 1 ]]; then
         get_priv_ssh_key
     fi
     # check SSH port usage
@@ -440,14 +440,14 @@ function build_vm {
     # host ip to connect from guest
     local host_ip=10.0.2.2
     # start VM
-    if [ $gui_enabled -eq 1 ]; then
+    if [[ $gui_enabled -eq 1 ]]; then
         VBoxManage startvm --type gui "${VM}"  && sleep $boot_wait
     else
         VBoxManage startvm --type headless "${VM}" && sleep $boot_wait
     fi
     # boot VM machine
     for boot_cmd in "${boot_cmd_sequence[@]}"; do
-        if [ -z "${boot_cmd}" ]; then 
+        if [[ -z "${boot_cmd}" ]]; then 
             continue
         fi
         boot_cmd=${boot_cmd//%IP%/$host_ip}
@@ -458,7 +458,7 @@ function build_vm {
         local boot_cmd_code=$(printf "${boot_cmd}" | convert_2_scancode.py)
         # sends code to VM
         for code in $boot_cmd_code; do
-            if [ "${code}" == "wait" ]; then
+            if [[ "${code}" == "wait" ]]; then
                 sleep 1
             else
                 VBoxManage controlvm "${VM}" keyboardputscancode $code
@@ -488,7 +488,7 @@ function create_box {
     # SATA controller - place for hdd and iso files
     # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media and port 1 for guest additions
     # check disk_size lenght
-    if [ ${#disk_size[@]} -gt 28 ]; then
+    if [[ ${#disk_size[@]} -gt 28 ]]; then
         red "Too many disks in disk_size (limited to 28 disks)\n"
         exit 1; 
     fi
@@ -500,7 +500,7 @@ function create_box {
     # SATA controller - create and add hdd disks
     local port_nr=2
     for disk in "${disk_size[@]}"; do
-        if [ -z "${disk}" ]; then 
+        if [[ -z "${disk}" ]]; then 
             continue
         fi
         VBoxManage createhd --filename "${location}/${VM}/${VM}-${port_nr}.${disk_format}"\
@@ -510,8 +510,8 @@ function create_box {
         local port_nr=$((port_nr+1))
     done
     # SATA controller - add VBoxGuestAdditions iso
-    if [ $guest_additions_attach -eq 1 ]; then
-        if [ ! -z "${guest_additions_path}" ]; then
+    if [[ $guest_additions_attach -eq 1 ]]; then
+        if [[ ! -z "${guest_additions_path}" ]]; then
             # custom VBoxGuestAdditions
             VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso"
@@ -549,7 +549,7 @@ function create_box {
 
     # add shared folders
     # TODO [MEDIUM]: allow share more folders (shared_folders_array) %PWD%, etc
-    if [ -n "${shared_folder}" ]; then 
+    if [[ -n "${shared_folder}" ]]; then 
         VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
     fi
     # natmapping_was_removed+1; sharedfolder_was_removed+1 - retore one by one after export. (Note: remove or not during export ?)
@@ -560,7 +560,7 @@ function kickstart_monitoring {
     local kickstart_counter=0
     local extra_ssh_options="-o ConnectionAttempts=1 -o ConnectTimeout=1"
     # ssh key authentication enabled
-    if [ $ssh_keys_enabled -eq 1 ]; then        
+    if [[ $ssh_keys_enabled -eq 1 ]]; then        
         # create path to ssh private key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
         printf "\nWaiting for ssh login with user ${ssh_user} to localhost:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec\n"
@@ -614,7 +614,7 @@ function export_vm {
     # load vm description/definition
     load_definition
     # check whether VM_NAME.box exist in current dir
-    if [ -f "${VM}.box" ]; then
+    if [[ -f "${VM}.box" ]]; then
         red "${VM}.box already exist in `pwd`\n"
         exit 1
     fi
@@ -671,12 +671,12 @@ function export_vm {
 
 function recover_vm_state {
     # add NAT mapping after exporting - only if exist prev.
-    if [ $natmapping_was_removed -eq 1 ]; then
+    if [[ $natmapping_was_removed -eq 1 ]]; then
         VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
         natmapping_was_removed=0
     fi
     # add shared folder after exporting - only if exist prev.
-    if [ $sharedfolder_was_removed -eq 1 ]; then
+    if [[ $sharedfolder_was_removed -eq 1 ]]; then
         VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
         sharedfolder_was_removed=0
     fi
@@ -717,7 +717,7 @@ function shutdown {
     # check whether VM is running and exec shutdown_cmd via SSH
     if VBoxManage list runningvms | grep -qw "${VM}"; then
         printf "Shutting down ${VM} "
-        if [ $ssh_keys_enabled -eq 1 ]; then        
+        if [[ $ssh_keys_enabled -eq 1 ]]; then        
             # ssh key authentication enabled
             # if key not exist then get it
             get_priv_ssh_key
@@ -774,7 +774,7 @@ function update_guest_additions_media {
     fi
     
     # check whether we need update or install VBoxGuestAdditions
-    if [ "${vb_version}" != "${guest_version}" ]; then
+    if [[ "${vb_version}" != "${guest_version}" ]]; then
         # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
         # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
         if ! VBoxManage showvminfo "${VM}" | grep -qw "SATA Controller (1, 0)"; then
@@ -789,7 +789,7 @@ function update_guest_additions_media {
         fi
         # Attach new VBoxGuestAdditions to install
         # vbkick creates VM with SATA Controller port 1 available for VBoxGuestAdditions iso.
-        if [ ! -z "${guest_additions_path}" ]; then
+        if [[ ! -z "${guest_additions_path}" ]]; then
             # custom VBoxGuestAdditions
             download_guest_additions_media
             VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
@@ -831,7 +831,7 @@ function lazy_update {
     # load vm description/definition
     load_definition
     # Check whether VBoxGuestAdditions should be installed. If not then not update additions.
-    if [ $guest_additions_attach -eq 1 ]; then
+    if [[ $guest_additions_attach -eq 1 ]]; then
         update_guest_additions_media
     fi
     # Run other update scripts on VM Guest via ssh
@@ -866,7 +866,7 @@ function ssh_exec {
     fi
 
     # ssh key authentication enabled
-    if [ $ssh_keys_enabled -eq 1 ]; then        
+    if [[ $ssh_keys_enabled -eq 1 ]]; then        
         # if key not exist then get it
         get_priv_ssh_key
         # create path to ssh private key
@@ -893,7 +893,7 @@ function ssh_exec {
         # check whether pkt is file or dir
         if [[ -d "${pkt}" ]]; then
             # pkt is directory
-            if [ $ssh_keys_enabled -eq 1 ]; then        
+            if [[ $ssh_keys_enabled -eq 1 ]]; then        
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
             else
                 # 1 mean scp directory (recursive)
@@ -901,7 +901,7 @@ function ssh_exec {
             fi
         elif [[ -f "${pkt}" ]]; then
             # pkt is file
-            if [ $ssh_keys_enabled -eq 1 ]; then        
+            if [[ $ssh_keys_enabled -eq 1 ]]; then        
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
             else
                 # 0 mean scp file
@@ -927,7 +927,7 @@ function ssh_exec {
             continue
         fi
         printf "Exec: ${cmd}\n"
-        if [ $ssh_keys_enabled -eq 1 ]; then
+        if [[ $ssh_keys_enabled -eq 1 ]]; then
             ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
         else
             auto_passwd_ssh "${cmd}"
@@ -936,14 +936,14 @@ function ssh_exec {
     done
     
     # clean after scp by rm transported media/scripts
-    if [ $clean_transported -eq 1 ]; then
+    if [[ $clean_transported -eq 1 ]]; then
         for pkt in "${transport[@]}"; do
-            if [ -z "${pkt}" ]; then 
+            if [[ -z "${pkt}" ]]; then 
                 continue
             fi
             printf "Clean transported: ${pkt}\n"
             local pkt_to_clean=$(basename "${pkt}")
-            if [ $ssh_keys_enabled -eq 1 ]; then        
+            if [[ $ssh_keys_enabled -eq 1 ]]; then        
                 ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
             else
                 auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
@@ -961,7 +961,7 @@ function lazy_ssh {
     fi
     # load vm description/definition
     load_definition
-    if [ $ssh_keys_enabled -eq 1 ]; then        
+    if [[ $ssh_keys_enabled -eq 1 ]]; then
         # if key not exist then get it
         get_priv_ssh_key
         # create path to ssh private key
@@ -975,7 +975,7 @@ function lazy_ssh {
 function auto_passwd_ssh {
     local _cmd="${1}"
     if command -v expect >/dev/null 2>&1; then
-        if [ -z "${_cmd}" ]; then
+        if [[ -z "${_cmd}" ]]; then
             # No cmd to exec, interactive shell
             local _expect_cmd="ssh -q \"${ssh_user}@localhost\" -t -p $ssh_host_port $ssh_options"
         else
@@ -986,7 +986,7 @@ function auto_passwd_ssh {
         yellow "WARNING: 'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key.\n"
         yellow "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}\n"
         # Process without expect
-        if [ -z "$_cmd" ]; then
+        if [[ -z "$_cmd" ]]; then
             # No cmd to exec, interactive shell
             ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options
         else
@@ -1000,7 +1000,7 @@ function auto_passwd_scp {
     local _src="${1}"
     local _recursive="${2}"
     if command -v expect >/dev/null 2>&1; then
-        if [ $_recursive -eq 1 ]; then
+        if [[ $_recursive -eq 1 ]]; then
             local _expect_cmd="scp -q -P $ssh_host_port $ssh_options -r \"${_src}\" \"${ssh_user}@localhost:~${ssh_user}\""
         else
             local _expect_cmd="scp -q -P $ssh_host_port $ssh_options \"${_src}\" \"${ssh_user}@localhost:~${ssh_user}\""
@@ -1010,7 +1010,7 @@ function auto_passwd_scp {
         yellow "WARNING: 'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key.\n"
         yellow "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}\n"
         # Process without expect
-        if [ $_recursive -eq 1 ]; then
+        if [[ $_recursive -eq 1 ]]; then
             scp -q -P $ssh_host_port $ssh_options -r "${_src}" "${ssh_user}@localhost:~${ssh_user}"
         else
             scp -q -P $ssh_host_port $ssh_options "${_src}" "${ssh_user}@localhost:~${ssh_user}"
@@ -1061,7 +1061,7 @@ function start_web_server {
 
 function stop_web_server {
     # check whether webserver is running
-    if [ $webserver_status -ne 0 ]; then
+    if [[ $webserver_status -ne 0 ]]; then
         printf "Stopping webserver (pid $web_pid)\n"
         # with "set -e -E" if kill command fail then ERR trap is processing 
         # simply execution of function is not continued
@@ -1087,7 +1087,7 @@ function stop_web_server {
 # (signals and error handler) - cleaning after ctr-c, etc.
 function clean_up {
     printf "INFO: Signal/Error handler - cleanup before exiting...\n"
-    if [ $webserver_kill_cmd_status -eq 0 ]; then
+    if [[ $webserver_kill_cmd_status -eq 0 ]]; then
         # stop webserver (only if stop_web_server function didn't fail previuosly)
         stop_web_server
     else
@@ -1097,7 +1097,7 @@ function clean_up {
     # help recover some changes made on VM during exporting
     recover_vm_state
     # clean tmp_dir if exist
-    if [ -d $tmp_dir ]; then
+    if [[ -d $tmp_dir ]]; then
         rm -rf $tmp_dir
     fi
     exit 1
