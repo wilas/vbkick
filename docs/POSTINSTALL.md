@@ -6,7 +6,7 @@ There are 2 main postinstall methods:
 
 Of course you can also mix these methods.
 
-Note: If something fail in your postinstall script/command then postinstall process should be terminated - more [#28](../../issues/28)
+Note: If something fail in your postinstall script/command then postinstall process should be terminated - more [#28](../../../issues/28)
 
 ### lazy postinstall method
 
