@@ -306,19 +306,20 @@ function remove_guest_additions_media {
     # true is use to not fail whole cmd, and return empty string 
     local file_list=$(ls "${guest_additions_path}" | grep "GuestAdditions" | grep -v "${vb_version}" || true)
     # continue only if we have some files to remove
-    if [[ -n "${file_list}" ]]; then
-        printf "List of VBoxGuestAdditions files to remove:\n"
+    if [[ -z "${file_list}" ]]; then
+        return
+    fi
+    printf "List of VBoxGuestAdditions files to remove:\n"
+    for file in ${file_list}; do
+        printf "${file}\n"
+    done
+    # to remove files ask about confirmation
+    read -r -p "Do you want remove above VBoxGuestAdditions files? [y/N]" ans
+    if [[ $ans =~ ^[Yy]$ ]]; then
         for file in ${file_list}; do
             printf "${file}\n"
+            rm -f "${guest_additions_path}/${file}"
         done
-        # to remove files ask about confirmation
-        read -r -p "Do you want remove above VBoxGuestAdditions files? [y/N]" ans
-        if [[ $ans =~ ^[Yy]$ ]]; then
-            for file in ${file_list}; do
-                printf "${file}\n"
-                rm -f "${guest_additions_path}/${file}"
-            done
-        fi
     fi
 }
 
@@ -774,37 +775,37 @@ function update_guest_additions_media {
     fi
     
     # check whether we need update or install VBoxGuestAdditions
-    if [[ "${vb_version}" != "${guest_version}" ]]; then
-        # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
-        # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
-        if ! VBoxManage showvminfo "${VM}" | grep -qw "SATA Controller (1, 0)"; then
-            red "\"SATA Controller (1, 0)\" for \"${VM}\" doesn't exist.\n"
-            red "\"SATA Controller\" is sata controller name used by vbkick.\n"
-            red "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
-            red "\nTo create proper controller use:\n"
-            red "'VBoxManage storagectl \"${VM}\" --name \"SATA Controller\" --add sata --hostiocache $hostiocache --sataportcount $((${#disk_size[@]}+2))'\n"
-            red "'VBoxManage storageattach \"${VM}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
-            red "\nTo do this \"${VM}\" must be shutdown !!! \nRemember - VM Guest may have only one sata controller.\n"
-            exit 1
-        fi
-        # Attach new VBoxGuestAdditions to install
-        # vbkick creates VM with SATA Controller port 1 available for VBoxGuestAdditions iso.
-        if [[ ! -z "${guest_additions_path}" ]]; then
-            # custom VBoxGuestAdditions
-            download_guest_additions_media
-            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
-            --type dvddrive --port 1 --device 0 --medium "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" --forceunmount
-        else
-            # default VBoxGuestAdditions
-            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
-            --type dvddrive --port 1 --device 0 --medium additions --forceunmount
-        fi
-        # Note: Guest OS (Linux) does not support automatic Guest Additions updating: 
-        # VBoxManage guestcontrol <vmname>|<uuid> updateadditions
-        # Manuall Guest Additions update/installation is required (via lazy_update cmd).
-    else
-        green "VBoxGuestAdditions on ${VM} is up-to-date - update media iso is not needed\n"
+    if [[ "${vb_version}" == "${guest_version}" ]]; then
+        green "VBoxGuestAdditions on ${VM} is up-to-date - update media iso is not needed.\n"
+        return
     fi
+    # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
+    # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
+    if ! VBoxManage showvminfo "${VM}" | grep -qw "SATA Controller (1, 0)"; then
+        red "\"SATA Controller (1, 0)\" for \"${VM}\" doesn't exist.\n"
+        red "\"SATA Controller\" is sata controller name used by vbkick.\n"
+        red "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
+        red "\nTo create proper controller use:\n"
+        red "'VBoxManage storagectl \"${VM}\" --name \"SATA Controller\" --add sata --hostiocache $hostiocache --sataportcount $((${#disk_size[@]}+2))'\n"
+        red "'VBoxManage storageattach \"${VM}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
+        red "\nTo do this \"${VM}\" must be shutdown !!! \nRemember - VM Guest may have only one sata controller.\n"
+        exit 1
+    fi
+    # Attach new VBoxGuestAdditions to install
+    # vbkick creates VM with SATA Controller port 1 available for VBoxGuestAdditions iso.
+    if [[ ! -z "${guest_additions_path}" ]]; then
+        # custom VBoxGuestAdditions
+        download_guest_additions_media
+        VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+        --type dvddrive --port 1 --device 0 --medium "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" --forceunmount
+    else
+        # default VBoxGuestAdditions
+        VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+        --type dvddrive --port 1 --device 0 --medium additions --forceunmount
+    fi
+    # Note: Guest OS (Linux) does not support automatic Guest Additions updating: 
+    # VBoxManage guestcontrol <vmname>|<uuid> updateadditions
+    # Manuall Guest Additions update/installation is required (via lazy_update cmd).
 }
 
 function validate_vm {
@@ -1054,6 +1055,9 @@ function start_web_server {
     # check whether web server was really started
     if ! nc -z localhost $kickstart_port >/dev/null 2>&1; then
         red "webserver was not started\n"
+        if kill -s 0 $web_pid 2>/dev/null; then
+            kill $web_pid
+        fi
         exit 1
     fi
     printf "webserver has been started (pid $web_pid)\n"
@@ -1061,26 +1065,27 @@ function start_web_server {
 
 function stop_web_server {
     # check whether webserver is running
-    if [[ $webserver_status -ne 0 ]]; then
-        printf "Stopping webserver (pid $web_pid)\n"
-        # with "set -e -E" if kill command fail then ERR trap is processing 
-        # simply execution of function is not continued
-        webserver_kill_cmd_status=1
-        # check whether process exist and accept signals before sending SIGTERM
-        if kill -s 0 $web_pid 2>/dev/null; then
-            kill $web_pid
-        fi
-        webserver_kill_cmd_status=0
-        # update webserver_status variable
-        webserver_status=0
-        # kill command is sucessfull when SIGTERM is sent to running process
-        # not when child process was really killed
-        if ! ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -qv grep; then
-            printf "INFO: webserver was stopped\n"
-        else
-            yellow "WARNING: problem with stopping webserver. Kill process manually\n"
-            ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -v grep
-        fi
+    if [[ $webserver_status -eq 0 ]]; then
+        return
+    fi
+    printf "Stopping webserver (pid $web_pid)\n"
+    # with "set -e -E" if kill command fail then ERR trap is processing 
+    # simply execution of function is not continued
+    webserver_kill_cmd_status=1
+    # check whether process exist and accept signals before sending SIGTERM
+    if kill -s 0 $web_pid 2>/dev/null; then
+        kill $web_pid
+    fi
+    webserver_kill_cmd_status=0
+    # update webserver_status variable
+    webserver_status=0
+    # kill command is sucessfull when SIGTERM is sent to running process
+    # not when child process was really killed
+    if ! ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -qv grep; then
+        printf "INFO: webserver was stopped\n"
+    else
+        yellow "WARNING: problem with stopping webserver. Kill process manually\n"
+        ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -v grep
     fi
 }
 
