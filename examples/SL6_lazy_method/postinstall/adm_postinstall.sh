@@ -1,7 +1,10 @@
+#!/bin/bash
+set -eEu
+
 # set environment variables if available
 [[ -s "adm_envrc" ]] && . "./adm_envrc"
 
-if [ $# -ge 1 ]; then
+if [[ $# -ge 1 ]]; then
     context_file="${1}"
 else
     context_file="adm_context.txt"

@@ -1,3 +1,6 @@
+#!/bin/bash
+set -eEu
+
 # Add vbkick user and group
 /usr/sbin/groupadd vbkick
 /usr/sbin/useradd vbkick -g vbkick -G wheel -c "vbkick box user"

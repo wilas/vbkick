@@ -1,3 +1,6 @@
+#!/bin/bash
+set -eEu
+
 # Vagrant specific
 # Create vagrant user and group
 /usr/sbin/groupadd vagrant

@@ -1,3 +1,6 @@
+#!/bin/bash
+set -eEu
+
 # Base install
 yum -y update
 

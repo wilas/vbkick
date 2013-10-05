@@ -1,2 +1,5 @@
+#!/bin/bash
+set -eEu
+
 # Install Ruby
 yum -y install ruby ruby-devel rubygems
