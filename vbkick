@@ -1006,7 +1006,7 @@ function auto_passwd_scp {
         else
             local _expect_cmd="scp -q -P $ssh_host_port $ssh_options \"${_src}\" \"${ssh_user}@localhost:~${ssh_user}\""
         fi
-        expect -c "log_user 0; spawn $_expect_cmd; expect password; send \"$ssh_password\r\"; interact; catch wait reason; exit [lindex \$reason 3]"
+        expect -c "log_user 0; spawn $_expect_cmd; expect password; send \"$ssh_password\r\"; expect eof; catch wait reason; exit [lindex \$reason 3]"
     else
         yellow "WARNING: 'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key.\n"
         yellow "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}\n"
