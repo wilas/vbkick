@@ -697,7 +697,11 @@ function turn_on {
         exit 1
     fi
 
-    VBoxManage startvm --type gui "${VM}"
+    if [[ $gui_enabled -eq 1 ]]; then
+        VBoxManage startvm --type gui "${VM}"
+    else
+        VBoxManage startvm --type headless "${VM}"
+    fi
 }
 
 function turn_off {
