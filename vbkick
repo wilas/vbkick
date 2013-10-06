@@ -640,7 +640,7 @@ function export_vm {
     fi
 
     # create tmp_dir for export data
-    tmp_dir=$(mktemp -d --tmpdir=.)
+    tmp_dir=$(TMPDIR=. mktemp -d)
     # export VM to tmp_dir
     VBoxManage export "${VM}" --output "${tmp_dir}/box.ovf"
     # get VM MAC Address
