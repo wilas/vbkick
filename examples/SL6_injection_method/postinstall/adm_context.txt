@@ -11,6 +11,5 @@ ansible.sh
 puppet.sh
 chef.sh
 nfs.sh
-tuning.sh
 cleanup.sh
 zerodisk.sh
