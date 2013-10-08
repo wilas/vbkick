@@ -612,6 +612,8 @@ function export_vm {
     # vagrant package --base "${VM}" --output "${VM}.box"
     # if more customisation required use: vagrant package (--help)
     #
+    # tar command is required, check whether is installed
+    depend_check "tar" "tar"
     # load vm description/definition
     load_definition
     # check whether VM_NAME.box exist in current dir
