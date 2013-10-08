@@ -2,4 +2,4 @@
 set -eEu
 
 # Installing chef
-gem install --no-ri --no-rdoc chef
+sh -c "curl -Lk https://www.opscode.com/chef/install.sh | bash"
