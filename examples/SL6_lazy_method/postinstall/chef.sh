@@ -2,4 +2,4 @@
 set -eEu
 
 # Installing chef
-sh -c "curl -Lk https://www.opscode.com/chef/install.sh | bash"
+curl -Lk https://www.opscode.com/chef/install.sh | bash
