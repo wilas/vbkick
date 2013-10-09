@@ -290,7 +290,7 @@ function download_guest_additions_media {
     # check whether VBoxGuestAdditions exist
     if [[ ! -f "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" ]]; then
         local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
-        curl -Lo "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" "${additions_url}"
+        curl -Lok "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" "${additions_url}"
     fi
     # rm useless images
     remove_guest_additions_media
@@ -339,7 +339,7 @@ function download_boot_media {
     # boot_file_src is empty (not defined)
     if [[ -z "${boot_file_src}" ]]; then 
         red "${boot_file} not exist and boot_file_src is empty\n"
-        exit 1
+        return 1
     fi
 
     # the temporary name for boot_file is last part from boot_file_src
@@ -348,7 +348,7 @@ function download_boot_media {
     local boot_file_src_file="${boot_file_src_path}/${tmp_name}"
     # check whether boot_file_src exist
     if [[ ! -f "${boot_file_src_file}" ]]; then
-        curl -L "${boot_file_src}" -o "${boot_file_src_file}"
+        curl -Lk "${boot_file_src}" -o "${boot_file_src_file}"
     fi
 
     # verify boot_file_src checksum
@@ -357,7 +357,7 @@ function download_boot_media {
         yellow "WARNING: CHECKSUM is different then expected !\n"
         read -r -p "Do you want continue? [y/N]" ans
         if [[ ! $ans =~ ^[Yy]$ ]]; then
-            exit 1
+            return 1
         fi
     else
         printf "INFO: CHECKSUM:${boot_file_src_checksum} is valid.\n"
@@ -368,7 +368,7 @@ function download_boot_media {
         # check whether boot_file_unpack_name is empty if so then error
         if [[ -z "${boot_file_unpack_name}" ]]; then
             red "boot_file_unpack_name is empty, but boot_file_unpack_cmd is specify\n"
-            exit 1
+            return 1
         fi
         # prepare path - this is full path, must already exist in filesystem
         boot_file_unpack_name=$(prepare_path "${boot_file_unpack_name}" 0)
@@ -411,7 +411,7 @@ function get_priv_ssh_key {
     fi
     # check whether private key exist
     if [[ ! -f "${ssh_keys_path}/${ssh_priv_key}" ]]; then
-        curl -L "${ssh_priv_key_src}" -o "${ssh_keys_path}/${ssh_priv_key}"
+        curl -Lk "${ssh_priv_key_src}" -o "${ssh_keys_path}/${ssh_priv_key}"
     fi
     # change ssh key permissions - too open private key will be ignored
     chmod 600 "${ssh_keys_path}/${ssh_priv_key}"
@@ -434,10 +434,16 @@ function build_vm {
     # start simple webserver (in background)
     start_web_server
     # download boot/iso files
-    download_boot_media
+    if ! download_boot_media; then 
+        stop_web_server
+        exit 1
+    fi
     download_guest_additions_media
     # create VM box with given settings
-    create_box
+    if ! create_box; then 
+        stop_web_server
+        exit 1
+    fi
     # host ip to connect from guest
     local host_ip=10.0.2.2
     # start VM
@@ -491,7 +497,7 @@ function create_box {
     # check disk_size lenght
     if [[ ${#disk_size[@]} -gt 28 ]]; then
         red "Too many disks in disk_size (limited to 28 disks)\n"
-        exit 1; 
+        return 1; 
     fi
     VBoxManage storagectl "${VM}" --name "SATA Controller"\
     --add sata --hostiocache $hostiocache --sataportcount $((${#disk_size[@]}+2))
@@ -662,7 +668,9 @@ function export_vm {
     # add metadata.json
     printf "{\"provider\":\"virtualbox\"}\n" > "${tmp_dir}/metadata.json"
     # create VM_NAME.box (gzip) file
-    cd $tmp_dir && tar -cvzf "${VM}.box" * && cd ..
+    cd $tmp_dir
+    tar -cvzf "${VM}.box" *
+    cd ..
     mv "${tmp_dir}/${VM}.box" .
     # remove tmp_dir
     rm -rf $tmp_dir
