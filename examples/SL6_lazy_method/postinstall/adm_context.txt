@@ -4,7 +4,6 @@ base.sh
 repos.sh
 sudo.sh
 #vagrant.sh
-#vbkick_user.sh
 virtualbox.sh
 ruby.sh
 ansible.sh
