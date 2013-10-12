@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eEu
+set -e -E -u -o pipefail; shopt -s failglob;
 
 # Installing the virtualbox guest additions
 # VBoxGuestAdditions iso is attached (by vbkick) to SATA Controller port 1 device 0

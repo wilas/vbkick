@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eEu
+set -e -E -u -o pipefail; shopt -s failglob;
 
 # List 3rd party repositories: http://wiki.centos.org/AdditionalResources/Repositories
 arch=$(uname -m)

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eEu
+set -e -E -u -o pipefail; shopt -s failglob;
 
 # Puppet Labs repositories
 arch=$(uname -m)
