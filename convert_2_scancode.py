@@ -90,10 +90,9 @@ def get_multi_char_codes():
     # F1..F10
     for idx in range(1,10):
         scancodes['<F%s>' % idx] = '%02x' % (idx + 0x3a)
-    # TODO [MEDIUM]: different host keys
-    # VT1..VT12 (Switch to Virtual Terminal) RightCtrl is the host key
+    # VT1..VT12 (Switch to Virtual Terminal)
     for idx in range(1,12):
-        # LeftAlt + Host (RightCtrl) + F1-12
+        # LeftAlt + RightCtrl + F1-12
         scancodes['<VT%s>' % idx] = '38 e0 1d %02x b8 e0 9d %02x' % (idx + 0x3a, idx +0xba)
     return scancodes
 
