@@ -31,8 +31,10 @@
 # When scancode not exist for given char 
 # then script exit with code 1 and an error is write to stderr.
 
-# Helpful links:
-# - http://humbledown.org/files/scancodes.l
+# Helpful links - scancodes:
+# - basic: http://humbledown.org/files/scancodes.l (http://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html)
+# - make and break codes (c+0x80): http://www.win.tue.nl/~aeb/linux/kbd/scancodes-10.html
+# - make and break codes table: http://stanislavs.org/helppc/make_codes.html
 # - https://github.com/jedi4ever/veewee/blob/master/lib/veewee/provider/core/helper/scancode.rb
 
 import sys
@@ -88,9 +90,11 @@ def get_multi_char_codes():
     # F1..F10
     for idx in range(1,10):
         scancodes['<F%s>' % idx] = '%02x' % (idx + 0x3a)
-    # VT1..VT12 (Switch to Virtual Terminal)
+    # TODO [MEDIUM]: different host keys
+    # VT1..VT12 (Switch to Virtual Terminal) RightCtrl is the host key
     for idx in range(1,12):
-        scancodes['<VT%s>' % idx] = '38 %02x b8 %02x' % (idx + 0x3a, idx +0xba)
+        # LeftAlt + Host (RightCtrl) + F1-12
+        scancodes['<VT%s>' % idx] = '38 e0 1d %02x b8 e0 9d %02x' % (idx + 0x3a, idx +0xba)
     return scancodes
 
 def process_multiply(input):
