@@ -57,6 +57,8 @@ if ! command -v VirtualBox >/dev/null 2>&1; then
 fi
 # by default add one shared folder - to disable: shared_folders=("")
 shared_folders=("vbkick:%PWD%:automount")
+# by default no extra ports is mapping
+extra_ports=("")
 
 # Guest Additions default settings
 # set to 0 to not attach VBoxGuestAdditions iso to guest
@@ -164,8 +166,10 @@ webserver_kill_cmd_status=0
 tmp_dir=""
 # during exporting NAT mapping is removed (temporary) - help recover state before exporting
 natmapping_was_removed=0
-# during exporting Shared folder is removed (temporary) - help recover state before exporting
+# during exporting shared folders are removed (temporary) - help recover state before exporting
 sharedfolders_removed_ptr=0
+# during exporting extra ports are removed (temporary) - help recover state before exporting
+extraports_removed_ptr=0
 
 # For nice printing
 GREEN="\e[1;32m"
@@ -548,18 +552,58 @@ function create_box {
         local value="${option##*:}"
         VBoxManage modifyvm "${VM}" --"${key}" "${value}"
     done
+    # TODO [MEDIUM]: setextradata 
 
-    # ssh NAT mapping
-    # TODO [MEDIUM]: allow mapping more ports (nat_mapping_array)
-    # list may be empty (check whether is empty or not..); ssh is special port
+    # ssh port NAT mapping; ssh port is a special one
     if ! VBoxManage showvminfo "${VM}" | grep -q "${ssh_port_name}"; then
         VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
+    # extra ports NAT mapping
+    add_extra_ports_mapping
+
     # add shared folders
     add_shared_folders
-    
-    # TODO: natmapping_was_removed+1; retore one by one after export.
+}
+
+function add_extra_ports_mapping {
+    for port in "${extra_ports[@]}"; do
+        if [[ -z "${port}" ]]; then
+            continue
+        fi
+        
+        OIFS=$IFS
+        IFS=':'
+        local port_info=($port)
+        if [[ ${#port_info[@]} -ne 3 ]]; then
+            red "ERROR - one of the ports in extra_ports has invalid format.\n"
+            exit 1
+        fi
+        local port_name="${port_info[0]}"
+        local port_host="${port_info[1]}"
+        local port_guest="${port_info[2]}"
+        # add only if port doesn't exist
+        if ! VBoxManage showvminfo "${VM}" | grep -q "${port_name}"; then
+            VBoxManage controlvm "${VM}" natpf1 "${port_name},tcp,,${port_host},,${port_guest}"
+        fi
+        IFS=$OIFS
+    done
+}
+
+function remove_extra_ports_mapping {
+    for port in "${extra_ports[@]}"; do
+        if [[ -z "${port}" ]]; then
+            # note which extra ports were removed by moving extraports_removed_ptr
+            extraports_removed_ptr=$((extraports_removed_ptr+1))
+            continue
+        fi
+        local port_name=${port%%:*}
+        if VBoxManage showvminfo "${VM}" | grep -qw "${port_name}"; then
+            VBoxManage modifyvm "${VM}" --natpf1 delete "${port_name}"
+            # note which extra ports were removed by moving extraports_removed_ptr
+            extraports_removed_ptr=$((extraports_removed_ptr+1))
+        fi
+    done
 }
 
 function add_shared_folders {
@@ -567,6 +611,7 @@ function add_shared_folders {
         if [[ -z "${folder}" ]]; then
             continue
         fi
+
         OIFS=$IFS
         IFS=':'
         local folder_info=($folder)
@@ -576,6 +621,12 @@ function add_shared_folders {
         fi
         local folder_name="${folder_info[0]}"
         local folder_path=$(prepare_path "${folder_info[1]}" 1)
+        
+        # check whether shared_folder already exist
+        if VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"; then
+            IFS=$OIFS
+            continue
+        fi
 
         if [[ ${#folder_info[@]} -eq 2 ]]; then
             printf "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\"\n"
@@ -689,6 +740,9 @@ function export_vm {
         natmapping_was_removed=1
     fi
     
+    # rm extra ports (only if exist)
+    remove_extra_ports_mapping
+    
     # rm shared folder (only if exist)
     remove_shared_folders
 
@@ -730,6 +784,13 @@ function recover_vm_state {
     if [[ $natmapping_was_removed -eq 1 ]]; then
         VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
         natmapping_was_removed=0
+    fi
+    # add extra ports after exporting - only if exist prev.
+    if [[ $extraports_removed_ptr -gt 0 ]]; then
+        # add only folders which were removed, skip others (useful when SIGINT)
+        extra_ports=("${extra_ports[@]:0:$extraports_removed_ptr}")
+        add_extra_ports_mapping
+        extraports_removed_ptr=0
     fi
     # add shared folder after exporting - only if exist prev.
     if [[ $sharedfolders_removed_ptr -gt 0 ]]; then
