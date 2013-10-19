@@ -55,8 +55,8 @@ gui_enabled=1
 if ! command -v VirtualBox >/dev/null 2>&1; then
     gui_enabled=0
 fi
-# by default add shared folder - to disable: shared_folder=""
-shared_folder="vbkick"
+# by default add one shared folder - to disable: shared_folders=("")
+shared_folders=("vbkick:%PWD%:automount")
 
 # Guest Additions default settings
 # set to 0 to not attach VBoxGuestAdditions iso to guest
@@ -165,7 +165,7 @@ tmp_dir=""
 # during exporting NAT mapping is removed (temporary) - help recover state before exporting
 natmapping_was_removed=0
 # during exporting Shared folder is removed (temporary) - help recover state before exporting
-sharedfolder_was_removed=0
+sharedfolders_removed_ptr=0
 
 # For nice printing
 GREEN="\e[1;32m"
@@ -557,11 +557,57 @@ function create_box {
     fi
 
     # add shared folders
-    # TODO [MEDIUM]: allow share more folders (shared_folders_array) %PWD%, etc
-    if [[ -n "${shared_folder}" ]]; then 
-        VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
-    fi
-    # natmapping_was_removed+1; sharedfolder_was_removed+1 - retore one by one after export. (Note: remove or not during export ?)
+    add_shared_folders
+    
+    # TODO: natmapping_was_removed+1; retore one by one after export.
+}
+
+function add_shared_folders {
+    for folder in "${shared_folders[@]}"; do
+        if [[ -z "${folder}" ]]; then
+            continue
+        fi
+        OIFS=$IFS
+        IFS=':'
+        local folder_info=($folder)
+        if [[ ${#folder_info[@]} -lt 2 ]]; then
+            red "ERROR - one of the folders in shared_folders has no info about path.\n"
+            exit 1
+        fi
+        local folder_name="${folder_info[0]}"
+        local folder_path=$(prepare_path "${folder_info[1]}" 1)
+
+        if [[ ${#folder_info[@]} -eq 2 ]]; then
+            printf "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\"\n"
+            VBoxManage sharedfolder add  "${VM}" --name "${folder_name}" --hostpath "${folder_path}"
+        elif [[ ${#folder_info[@]} -eq 3 ]]; then
+            printf "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]}\n"
+            VBoxManage sharedfolder add  "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}"
+        elif [[ ${#folder_info[@]} -eq 4 ]]; then
+            printf "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]} --${folder_info[3]}\n"
+            VBoxManage sharedfolder add  "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
+        else
+            red "ERROR - too much options in one of the shared_folders.\n"
+            exit 1
+        fi
+        IFS=$OIFS
+    done
+}
+
+function remove_shared_folders {
+    for folder in "${shared_folders[@]}"; do
+        if [[ -z "${folder}" ]]; then
+            # note which shared folders were removed by moving sharedfolders_removed_ptr
+            sharedfolders_removed_ptr=$((sharedfolders_removed_ptr+1))
+            continue
+        fi
+        local folder_name=${folder%%:*}
+        if VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"; then
+            VBoxManage sharedfolder remove  "${VM}" --name "${folder_name}"
+            # note which shared folders were removed by moving sharedfolders_removed_ptr
+            sharedfolders_removed_ptr=$((sharedfolders_removed_ptr+1))
+        fi
+    done
 }
 
 # Check whether machine was kickstarted before timeout
@@ -569,7 +615,7 @@ function kickstart_monitoring {
     local kickstart_counter=0
     local extra_ssh_options="-o ConnectionAttempts=1 -o ConnectTimeout=1"
     # ssh key authentication enabled
-    if [[ $ssh_keys_enabled -eq 1 ]]; then        
+    if [[ $ssh_keys_enabled -eq 1 ]]; then
         # create path to ssh private key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
         printf "\nWaiting for ssh login with user ${ssh_user} to localhost:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec\n"
@@ -644,10 +690,7 @@ function export_vm {
     fi
     
     # rm shared folder (only if exist)
-    if VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${shared_folder}'"; then
-        VBoxManage sharedfolder remove  "${VM}" --name "${shared_folder}"
-        sharedfolder_was_removed=1
-    fi
+    remove_shared_folders
 
     # create tmp_dir for export data
     tmp_dir=$(TMPDIR=. mktemp -d)
@@ -689,9 +732,11 @@ function recover_vm_state {
         natmapping_was_removed=0
     fi
     # add shared folder after exporting - only if exist prev.
-    if [[ $sharedfolder_was_removed -eq 1 ]]; then
-        VBoxManage sharedfolder add  "${VM}" --name "${shared_folder}" --hostpath "`pwd`" --automount
-        sharedfolder_was_removed=0
+    if [[ $sharedfolders_removed_ptr -gt 0 ]]; then
+        # add only folders which were removed, skip others (useful when SIGINT)
+        shared_folders=("${shared_folders[@]:0:$sharedfolders_removed_ptr}")
+        add_shared_folders
+        sharedfolders_removed_ptr=0
     fi
 }
 
