@@ -165,7 +165,7 @@ webserver_kill_cmd_status=0
 # during exporting tmp directory is created
 tmp_dir=""
 # during exporting NAT mapping is removed (temporary) - help recover state before exporting
-natmapping_was_removed=0
+ssh_natmapping_was_removed=0
 # during exporting shared folders are removed (temporary) - help recover state before exporting
 sharedfolders_removed_ptr=0
 # during exporting extra ports are removed (temporary) - help recover state before exporting
@@ -737,7 +737,7 @@ function export_vm {
     # clearing previously set port forwarding rules (only if exist)
     if VBoxManage showvminfo "${VM}" | grep -qw "${ssh_port_name}"; then
         VBoxManage modifyvm "${VM}" --natpf1 delete "${ssh_port_name}"
-        natmapping_was_removed=1
+        ssh_natmapping_was_removed=1
     fi
     
     # rm extra ports (only if exist)
@@ -781,9 +781,9 @@ function export_vm {
 
 function recover_vm_state {
     # add NAT mapping after exporting - only if exist prev.
-    if [[ $natmapping_was_removed -eq 1 ]]; then
+    if [[ $ssh_natmapping_was_removed -eq 1 ]]; then
         VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
-        natmapping_was_removed=0
+        ssh_natmapping_was_removed=0
     fi
     # add extra ports after exporting - only if exist prev.
     if [[ $extraports_removed_ptr -gt 0 ]]; then
