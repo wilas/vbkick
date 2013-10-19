@@ -115,6 +115,8 @@ ssh_priv_key_src="https://raw.github.com/wilas/vbkick/master/keys/vbkick_key"
 ssh_host_port=2222
 # default (22) ssh guest port to forwarding
 ssh_guest_port=22
+# default "vbkickSSH"
+ssh_port_name="vbkickSSH"
 # default extra ssh and scp options
 # UserKnownHostsFile - database file to use for storing the user host keys
 # StrictHostKeyChecking - if "no" then automatically add new host keys to the host key database file
@@ -550,8 +552,8 @@ function create_box {
     # ssh NAT mapping
     # TODO [MEDIUM]: allow mapping more ports (nat_mapping_array)
     # list may be empty (check whether is empty or not..); ssh is special port
-    if ! VBoxManage showvminfo "${VM}" | grep -q "vbkickSSH"; then
-        VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
+    if ! VBoxManage showvminfo "${VM}" | grep -q "${ssh_port_name}"; then
+        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
     # add shared folders
@@ -636,8 +638,8 @@ function export_vm {
     shutdown
 
     # clearing previously set port forwarding rules (only if exist)
-    if VBoxManage showvminfo "${VM}" | grep -qw "vbkickSSH"; then
-        VBoxManage modifyvm "${VM}" --natpf1 delete "vbkickSSH"
+    if VBoxManage showvminfo "${VM}" | grep -qw "${ssh_port_name}"; then
+        VBoxManage modifyvm "${VM}" --natpf1 delete "${ssh_port_name}"
         natmapping_was_removed=1
     fi
     
@@ -683,7 +685,7 @@ function export_vm {
 function recover_vm_state {
     # add NAT mapping after exporting - only if exist prev.
     if [[ $natmapping_was_removed -eq 1 ]]; then
-        VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
+        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
         natmapping_was_removed=0
     fi
     # add shared folder after exporting - only if exist prev.
@@ -877,7 +879,7 @@ function ssh_exec {
     if ! VBoxManage showvminfo "${VM}" | grep "NIC 1" | grep "host port = ${ssh_host_port}"\
         | grep -q "guest port = ${ssh_guest_port}"; then
         printf "NAT mapping - enable ssh port forwarding\n"
-        VBoxManage controlvm "${VM}" natpf1 "vbkickSSH,tcp,,${ssh_host_port},,${ssh_guest_port}"
+        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
     # ssh key authentication enabled
