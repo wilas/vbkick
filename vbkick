@@ -50,6 +50,8 @@ disk_format="vdi"
 video_memory_size=10
 # list of VM options: ("option1:value" "option2:value")
 vm_options=("ioapic:on")
+# list of VM extradata to set: ("extradata:value" "extradata:value")
+vm_extradata=("")
 # by default gui enabled unless the VirtualBox GUI is missing
 gui_enabled=1
 if ! command -v VirtualBox >/dev/null 2>&1; then
@@ -548,11 +550,22 @@ function create_box {
     VBoxManage modifyvm "${VM}" --boot1 disk --boot2 dvd --boot3 none --boot4 none
     # other settings
     for option in "${vm_options[@]}"; do
+        if [[ -z "${option}" ]]; then
+            continue
+        fi
         local key="${option%%:*}"
         local value="${option##*:}"
         VBoxManage modifyvm "${VM}" --"${key}" "${value}"
     done
-    # TODO [MEDIUM]: setextradata 
+    # set extradata 
+    for extradata in "${vm_extradata[@]}"; do
+        if [[ -z "${extradata}" ]]; then
+            continue
+        fi
+        local key="${extradata%%:*}"
+        local value="${extradata##*:}"
+        VBoxManage setextradata "${VM}" "${key}" "${value}"
+    done
 
     # ssh port NAT mapping; ssh port is a special one
     if ! VBoxManage showvminfo "${VM}" | grep -q "${ssh_port_name}"; then
