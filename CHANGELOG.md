@@ -2,15 +2,22 @@
 
 FEATURES
  - added option ```webserver_disabled``` to not start local webserver when remote host is prefered to serve files (or files from webserver are not need)
- - definition_file_name as 3rd (optional) argument - [#26](../../issues/26)
+ - ```definition_file_name``` as 3rd (optional) argument - [#26](../../issues/26)
+ - added ```ssh_port_name``` to allow change ssh port forwarding name (was hardcoded "vbkickSSH")
+ - ```shared_folders``` as an array, to allow share more than one folder
+ - added ```extra_ports``` mapping, to allow map other than ssh port
+ - added ```vm_extradata``` option, to allow set extra data ("VBoxManage setextradata")
 
 IMPROVEMENTS
  - all files which should be transported to VM guest are checked before transport start processing any of them
  - extra variables ```%VBOXFOLDER%```, ```%NAME%```, ```%HOME%``` and ```%PWD%``` in ```{postinstall/update/validate}_launch``` are acceptable after %HOST% (to run commands on local host not guest)
+ - removed ```netcat``` dependency
+ - check whether process exist and accept signals before sending SIGTERM
 
 BUG FIXES
  - better cleaning already scp files
- - vbkick exit and report error when ssh command fail in ```posinstall/update/validate``` action - [#28](../../issues/28)
+ - vbkick exit and report error when ssh command fail in ```posinstall/update/validate``` actions - [#28](../../issues/28)
+ - proper processes VT keys (```LeftAlt + RightCtrl + F1-12```)
 
 ## 0.5.1 (30-09-2013)
 
