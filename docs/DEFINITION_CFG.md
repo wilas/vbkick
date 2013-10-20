@@ -43,13 +43,21 @@ More details soon.
 
  default: ("ioapic:on")
 
+ - vm_extradata
+
+ default: ("")
+
  - gui_enabled
 
  default: 1 - mean gui enabled
 
- - shared_folder
+ - shared_folders
 
- default: "vbkick"
+ default: ("vbkick:%PWD%:automount")
+
+ - extra_ports
+
+ default: ("")
 
  - os_type_id
 
@@ -166,6 +174,10 @@ More details soon.
  - ssh_guest_port
 
  default: 22
+
+ - ssh_port_name
+
+ default: "vbkickSSH"
 
  - ssh_options
 
