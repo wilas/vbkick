@@ -5,3 +5,11 @@
  - Create and Share a new template
  - Submit a pull request to the master branch
 
+# How to submit a pull request
+
+ - Fork vbkick
+ - Create feature branch (```git checkout -b new-feature```)
+ - Commit changes (```git add -A && git commit -m 'New feature'```)
+ - Push to the branch (```git push origin new-feature```)
+ - Create a new pull request
+
