@@ -7,6 +7,7 @@ FEATURES
  - ```shared_folders``` as an array, to allow share more than one folder
  - added ```extra_ports``` mapping, to allow map other than ssh port
  - added ```vm_extradata``` option, to allow set extra data ("VBoxManage setextradata")
+ - Mer, NemoMobile, PlasmaActive templates were added
 
 IMPROVEMENTS
  - all files which should be transported to VM guest are checked before transport start processing any of them
