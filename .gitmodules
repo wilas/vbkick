@@ -22,3 +22,12 @@
 [submodule "templates/SmartOS"]
 	path = templates/SmartOS
 	url = git@github.com:wilas/vbkick-template-smartos.git
+[submodule "templates/NemoMobile"]
+	path = templates/NemoMobile
+	url = git@github.com:wilas/vbkick-template-nemomobile.git
+[submodule "templates/Mer"]
+	path = templates/Mer
+	url = git@github.com:wilas/vbkick-template-mer.git
+[submodule "templates/PlasmaActive"]
+	path = templates/PlasmaActive
+	url = git@github.com:wilas/vbkick-template-plasmaactive.git

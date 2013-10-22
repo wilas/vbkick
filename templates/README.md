@@ -85,6 +85,9 @@ Description:
  - Debian7 "Wheezy"
  - Fedora18 (End of life - Early 2014)
  - Fedora19
+ - Mer
+ - NemoMobile
+ - PlasmaActive
  - ScientificLinux6
  - SmartOS
  - Ubuntu12.04 LTS "Precise Pangolin"
