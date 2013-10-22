@@ -1,4 +1,4 @@
-## Not released
+## 0.6 (22-10-2013)
 
 FEATURES
  - added option ```webserver_disabled``` to not start local webserver when remote host is prefered to serve files (or files from webserver are not need)
