@@ -507,8 +507,13 @@ function create_box {
         red "Too many disks in disk_size (limited to 28 disks)\n"
         return 1; 
     fi
-    VBoxManage storagectl "${VM}" --name "SATA Controller"\
-    --add sata --hostiocache $hostiocache --sataportcount $((${#disk_size[@]}+2))
+    if [[ "${vb_version}" > "4.3.0" ]] || [[ "${vb_version}" == "4.3.0" ]]; then
+        VBoxManage storagectl "${VM}" --name "SATA Controller"\
+        --add sata --hostiocache $hostiocache --portcount $((${#disk_size[@]}+2))
+    else
+        VBoxManage storagectl "${VM}" --name "SATA Controller"\
+        --add sata --hostiocache $hostiocache --sataportcount $((${#disk_size[@]}+2))
+    fi
     # SATA controller - add boot media
     VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
     --type "${boot_file_type}" --port 0 --device 0 --medium "${boot_file}"
@@ -921,7 +926,7 @@ function update_guest_additions_media {
         red "\"SATA Controller\" is sata controller name used by vbkick.\n"
         red "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
         red "\nTo create proper controller use:\n"
-        red "'VBoxManage storagectl \"${VM}\" --name \"SATA Controller\" --add sata --hostiocache $hostiocache --sataportcount $((${#disk_size[@]}+2))'\n"
+        red "'VBoxManage storagectl \"${VM}\" --name \"SATA Controller\" --add sata --hostiocache $hostiocache --portcount $((${#disk_size[@]}+2))'\n"
         red "'VBoxManage storageattach \"${VM}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
         red "\nTo do this \"${VM}\" must be shutdown !!! \nRemember - VM Guest may have only one sata controller.\n"
         exit 1

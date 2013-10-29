@@ -1,3 +1,8 @@
+## Not released
+
+IMPROVEMENTS
+ - works with Virtualbox 4.3 - [#32](../../issues/32)
+
 ## 0.6 (22-10-2013)
 
 FEATURES
