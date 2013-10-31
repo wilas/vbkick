@@ -1,0 +1,6 @@
+# this is comment
+# Note: scripts are exec in order defined here
+test_virtualbox.sh
+test_sudo.sh
+test_vagrant.sh
+test_ansible.sh
