@@ -1,0 +1,4 @@
+---
+classes :
+    - 'motd'
+motd::location : 'Helsinki'

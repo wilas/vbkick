@@ -1,0 +1,11 @@
+# this is comment
+# Note: scripts are exec in order defined here
+base.sh
+repos.sh
+sudo.sh
+virtualbox.sh
+ruby.sh
+puppet.sh
+nfs.sh
+cleanup.sh
+zerodisk.sh
