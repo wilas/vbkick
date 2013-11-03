@@ -1,5 +1,8 @@
 ## Not released
 
+FEATURES
+ - ansible and puppet provisioners examples were added
+
 IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)
 

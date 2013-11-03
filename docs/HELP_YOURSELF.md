@@ -2,7 +2,9 @@
 
 add to ~/.bashrc
 ```
-complete -W "$(vbkick --help | awk '/^\t/{print $1}')" vbkick
+if command -v vbkick >/dev/null 2>&1; then
+    complete -W "$(vbkick --help | awk '/^\t/{print $1}')" vbkick
+fi
 ```
 
 # git todo

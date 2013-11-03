@@ -9,7 +9,7 @@
 
  - Fork vbkick
  - Create feature branch (```git checkout -b new-feature```)
- - Commit changes (```git add -A && git commit -m 'New feature'```)
+ - Commit changes (```git commit -am 'New feature'```)
  - Push to the branch (```git push origin new-feature```)
  - Create a new pull request
 

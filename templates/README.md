@@ -91,6 +91,8 @@ Description:
  - ScientificLinux6
  - SmartOS
  - Ubuntu12.04 LTS "Precise Pangolin"
+
+## templates todo
  - CoreOS (todo ?)
  - FreeBSD/PC-BSD/OpenBSD (todo ?)
  - OmniOS (todo ?)
