@@ -35,9 +35,9 @@ postinstall_transport=(
 
  Full ansible and puppet examples are available [here](../examples/SL6_provisioner). In examples motd is configured via CMs, results below:
 
-![provisioner-ansible](screens/provisioner-ansible.png)
+![provisioners-ansible](screens/provisioners-ansible.png)
 
-![provisioner-puppet](screens/provisioner-puppet.png)
+![provisioners-puppet](screens/provisioners-puppet.png)
 
 # Tips
  - do not overdesigne special for small jobs (save time and resources)
