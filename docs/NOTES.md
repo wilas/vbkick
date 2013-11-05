@@ -1,5 +1,5 @@
 Dirty notes:
- - Create bootable usb stick from definition.cfg (os_type is a key)
+ - Create bootable usb stick from definition.cfg (os_type is a key) - help creates bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and shell scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier);
  - natdnshostresolver1:on (when host is ubuntu12.10)
 
 Links: 

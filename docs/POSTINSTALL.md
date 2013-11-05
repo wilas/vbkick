@@ -22,12 +22,11 @@ postinstall_transport=("postinstall")
 
 #### Why?
 
- - easy way for tuning box/PC after installation (tuning.sh as an example)
  - allow run postinstall commands many times (e.g puppet repo is unavailalble, then try later again)
  - works with all Unix/Linux systems
- - allow upgrade already exisiting VM, e.g. install new GuestAdditions, new KDE version, etc. (building the new VM is not needed)
- - easy way to play with already existing vanilla machine and test postinstall scripts before release to production
-
+ - allow upgrade already exisiting VM, e.g. install new GuestAdditions, new KDE version, etc. (building the new VM is not needed - time saves)
+ - postinstall and kickstart are two separate processes what give you time to make snapshot or clone VM before scripts will be executed (kickstart vanilla machine, clone it, test postinstall scripts on clone before release to production, destroy clone)
+ - postinstall script after basic boot, useful for building desktops/laptops in case of unexpected errors (as long you have webbrowser you can ask for a help or find solution)
 
 #### Use Case flow:
 ```
@@ -54,11 +53,15 @@ It is ok to remove these options from definition as well, default value from vbk
 #### Why?
 
  - no extra users and SSH keys needed to run postinstall scripts (more secure, useful for production env. e.g. with PXE)
- - help creates bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and shell scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier)
+ - machine is ready to use after kickstarting process as it contain postinstall scripts (e.g install CM, no more steps needed) - full hands off, rest is done via CM software which power your infrastructure (puppet, ansible, chef, etc.)
+
+
+ - help creates bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and shell scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier); lazy may be better if you build desktop
+
  - cons: may not work for every OS
  - cons: postinstall commands are exec only once, if something fail then you need to build your machine again (may be slow)
  - cons: debugging in chroot env.
- - cons: kickstart_port is setup in 2 places for injection postinstall method: kickstart/kickstart_file.cfg, definition.cfg
+ - cons: kickstart_port is setup in 2 places for injection postinstall method: kickstart/kickstart_file.cfg, definition.cfg (not true if you use external webserver, git clone, etc.)
 
 
 #### Use Case flow:
