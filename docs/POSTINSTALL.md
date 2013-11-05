@@ -54,10 +54,6 @@ It is ok to remove these options from definition as well, default value from vbk
 
  - no extra users and SSH keys needed to run postinstall scripts (more secure, useful for production env. e.g. with PXE)
  - machine is ready to use after kickstarting process as it contain postinstall scripts (e.g install CM, no more steps needed) - full hands off, rest is done via CM software which power your infrastructure (puppet, ansible, chef, etc.)
-
-
- - help creates bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and shell scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier); lazy may be better if you build desktop
-
  - cons: may not work for every OS
  - cons: postinstall commands are exec only once, if something fail then you need to build your machine again (may be slow)
  - cons: debugging in chroot env.
