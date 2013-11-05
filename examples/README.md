@@ -88,6 +88,7 @@ Building - `vbkick build VM_NAME`
 
 Tuning - `vbkick postinstall VM_NAME`
  - [postinstall VM configuration](../docs/POSTINSTALL.md) - transport posinstall scripts via SCP and exec launch commands via SSH
+ - consider use configuration management [provisioners](../docs/PROVISIONERS.md)
 
 Testing - `vbkick validate VM_NAME`
  - validate the new VM
