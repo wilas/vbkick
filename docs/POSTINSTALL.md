@@ -1,4 +1,4 @@
-## Postinstall
+# Postinstall
 
 There are 2 main postinstall methods:
  - lazy - run postinstall scripts "later" - after installing the OS.
@@ -8,7 +8,7 @@ Of course you can also mix these methods.
 
 Note: If something fail in your postinstall script/command then postinstall process should be terminated - more [#28](../../../issues/28)
 
-### lazy postinstall method
+## lazy postinstall method
 
 This method is already used by *Veewee* and *Vagrant*.
 Kickstart process creates a base machine and configure SSH connection (creates user, copy SSH keys, configure sudo, etc.).
@@ -20,7 +20,7 @@ postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh")
 postinstall_transport=("postinstall")
 ```
 
-#### Why?
+### Why?
 
  - allow run postinstall commands many times (e.g puppet repo is unavailalble, then try later again)
  - works with all Unix/Linux systems
@@ -28,7 +28,7 @@ postinstall_transport=("postinstall")
  - postinstall and kickstart are two separate processes what give you time to make snapshot or clone VM before scripts will be executed (kickstart vanilla machine, clone it, test postinstall scripts on clone before release to production, destroy clone)
  - postinstall script after basic boot, useful for building desktops/laptops in case of unexpected errors (as long you have webbrowser you can ask for a help or find solution)
 
-#### Use Case flow:
+### Use Case flow:
 ```
 vbkick build SL6_lazy
 vbkick postinstall SL6_lazy
@@ -39,7 +39,7 @@ vagrant box add 'SL64_lazy' SL6_lazy.box
 vagrant box list
 ```
 
-### injection postinstall method
+## injection postinstall method
 
 Run postinstall scripts during kickstarting process in chroot environment.
 
@@ -50,7 +50,7 @@ postinstall_transport=("")
 ```
 It is ok to remove these options from definition as well, default value from vbkick is exactly the same.
 
-#### Why?
+### Why?
 
  - no extra users and SSH keys needed to run postinstall scripts (more secure, useful for production env. e.g. with PXE)
  - machine is ready to use after kickstarting process as it contain postinstall scripts (e.g install CM, no more steps needed) - full hands off, rest is done via CM software which power your infrastructure (puppet, ansible, chef, etc.)
@@ -60,7 +60,7 @@ It is ok to remove these options from definition as well, default value from vbk
  - cons: kickstart_port is setup in 2 places for injection postinstall method: kickstart/kickstart_file.cfg, definition.cfg (not true if you use external webserver, git clone, etc.)
 
 
-#### Use Case flow:
+### Use Case flow:
 ```
 vbkick build SL6_inject
 vbkick validate SL6_inject
@@ -70,7 +70,7 @@ vagrant box add 'SL64_inject' SL6_inject.box
 vagrant box list
 ```
 
-### adm_postinstall.sh
+## adm_postinstall.sh
 
 Easy way to administer postinstall scripts.
 ```
