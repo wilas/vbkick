@@ -36,7 +36,7 @@ vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
 
 ## Child steps
 
-### create new vagrant box
+### create a new vagrant box
 ```
     vbkick build newVM
     vbkick postinstall newVM
@@ -47,7 +47,7 @@ vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
     vagrant box list
 ```
 
-### update existing vagrant box
+### update an existing vagrant box
 ```
     vbkick update existingVM
     vbkick validate existingVM
