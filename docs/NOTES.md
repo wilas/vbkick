@@ -1,14 +1,10 @@
 Dirty notes:
- - Create bootable usb stick from definition.cfg (os_type is a key) - help creates bootable (auto install) usb stick or os_img.iso with almost same kickstart.cfg and shell scripts as already tested in virtual env. (your PC crash and you need quickly new one with same apps as earlier);
  - natdnshostresolver1:on (when host is ubuntu12.10)
 
 Links: 
  - good to know about set -e: http://stackoverflow.com/questions/6930295/set-e-and-short-tests
  - bash script prelude: http://gfxmonk.net/2012/06/17/my-new-bash-script-prelude.html
  - some bash options (set -e; set -o pipefail): http://stackoverflow.com/questions/11231937/bash-ignoring-error-for-a-particular-command
- - Debian + kde + usb stick: http://www.debian.org/releases/stable/i386/apbs02.html.en
- - Centos + gnome + usb stick: http://wiki.centos.org/HowTos/InstallFromUSBkey
- - kickstart/preseed - usb stick:  http://www.cyberciti.biz/faq/linux-create-a-bootable-usb-pen/
  - 1 is true and 0 is false in the usual boolean sense because of the arithmetic evaluation context: http://stackoverflow.com/questions/8579399/why-is-true-false-in-bash
 
 General TODO
