@@ -9,6 +9,7 @@ ruby.sh
 ansible.sh
 puppet.sh
 chef.sh
+cfengine.sh
 nfs.sh
 cleanup.sh
 zerodisk.sh
