@@ -7,3 +7,4 @@ test_ruby.sh
 test_ansible.sh
 test_puppet.sh
 test_chef.sh
+test_cfengine.sh
