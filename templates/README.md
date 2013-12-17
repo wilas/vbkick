@@ -2,8 +2,6 @@
 
 ## Overview
 
-Each template is stored in a separate git submodule with person taking care about it.
-
 By default template defines Vagrant Base Box, so in each template vagrant user is created.
 
 ## templates structure (good practice)
@@ -78,22 +76,7 @@ Description:
  - README.md and LICENSE files are required
  - Note (good practice): If you create Vagrant base box then use vagrant user and vagrant ssh keys, not create thousands other accounts (like vbkick, veewee...)
 
-## vbkick templates hall of fame
+## End of life
 
- - CentOS6
- - Debian6 "Squeeze" (End of life - May 2014)
- - Debian7 "Wheezy"
- - Fedora18 (End of life - Early 2014)
- - Fedora19
- - Mer
- - NemoMobile
- - PlasmaActive
- - ScientificLinux6
- - SmartOS
- - Ubuntu12.04 LTS "Precise Pangolin"
-
-## templates todo
- - CoreOS (todo ?)
- - FreeBSD/PC-BSD/OpenBSD (todo ?)
- - OmniOS (todo ?)
- - OpenIndiana (todo ?)
+ - Debian6 "Squeeze" (May 2014)
+ - Fedora18 (Early 2014)
