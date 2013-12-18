@@ -31,3 +31,6 @@
 [submodule "templates/PlasmaActive"]
 	path = templates/PlasmaActive
 	url = git@github.com:wilas/vbkick-template-plasmaactive.git
+[submodule "templates/Fedora20"]
+	path = templates/Fedora20
+	url = git://github.com/wilas/vbkick-template-fedora20
