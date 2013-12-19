@@ -1268,21 +1268,25 @@ function dependencies_check {
     depend_check "openssl" "openssl"
 }
 
+function main {
+    # 2 Args required, 3rd is optional - ACTION VM_NAME (DEFINITION_FILE_NAME)
+    args_num=$#
+    if [[ $args_num -lt 2 ]] || [[ $args_num -gt 3 ]]; then
+        usage
+        exit 1
+    fi
+    if [[ $args_num -eq 3 ]]; then
+        definition_fname="${3}"
+    fi
+
+    # check whether we have everything to start with vbkick
+    dependencies_check
+    vb_version=$(get_vb_version)
+
+    process_args "${1}" "${2}"
+}
+
 ## MAIN ##
-# 2 Args required, 3rd is optional - ACTION VM_NAME (DEFINITION_FILE_NAME)
-args_num=$#
-if [[ $args_num -lt 2 ]] || [[ $args_num -gt 3 ]]; then
-    usage
-    exit 1
-fi
-if [[ $args_num -eq 3 ]]; then
-    definition_fname="${3}"
-fi
-
-# check whether we have everything to start with vbkick
-dependencies_check
-
-vb_version=$(get_vb_version)
 # signals and error handler
 trap clean_up SIGHUP SIGINT SIGTERM ERR
-process_args "${1}" "${2}"
+main "$@"
