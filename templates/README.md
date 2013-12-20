@@ -76,7 +76,7 @@ Description:
  - README.md and LICENSE files are required
  - Note (good practice): If you create Vagrant base box then use vagrant user and vagrant ssh keys, not create thousands other accounts (like vbkick, veewee...)
 
-## End of life
+## Maintenance info
 
- - Debian6 "Squeeze" (May 2014)
- - Fedora18 (Early 2014)
+ - Debian6 "Squeeze" (End of life - May 2014)
+ - Fedora18 (End of life - Early 2014)
