@@ -687,9 +687,9 @@ function kickstart_monitoring {
     if [[ $ssh_keys_enabled -eq 1 ]]; then
         # create path to ssh private key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
-        printf "\nWaiting for ssh login with user ${ssh_user} to localhost:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec\n"
+        printf "\nWaiting for ssh login with user ${ssh_user} to 127.0.0.1:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec\n"
         # wait until ssh start working (communication chanel with VM) or kickstart_timeout was reached
-        while ! ssh "${ssh_user}@localhost" -q -t -i ${key_path} -p $ssh_host_port $ssh_options $extra_ssh_options -C "echo"\
+        while ! ssh "${ssh_user}@127.0.0.1" -q -t -i ${key_path} -p $ssh_host_port $ssh_options $extra_ssh_options -C "echo"\
             && [[ $kickstart_counter -le $kickstart_timeout ]]; do
             kickstart_counter=$((kickstart_counter+1))
             printf "."
@@ -864,7 +864,7 @@ function shutdown {
             get_priv_ssh_key
             # create path to ssh private key
             local key_path="${ssh_keys_path}/${ssh_priv_key}"
-            ssh "${ssh_user}@localhost" -q -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${shutdown_cmd}" || true
+            ssh "${ssh_user}@127.0.0.1" -q -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${shutdown_cmd}" || true
         else
             auto_passwd_ssh "${shutdown_cmd}"
         fi
@@ -1035,7 +1035,7 @@ function ssh_exec {
         if [[ -d "${pkt}" ]]; then
             # pkt is directory
             if [[ $ssh_keys_enabled -eq 1 ]]; then        
-                scp -q -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
+                scp -q -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
                 # 1 mean scp directory (recursive)
                 auto_passwd_scp "${pkt}" 1
@@ -1043,7 +1043,7 @@ function ssh_exec {
         elif [[ -f "${pkt}" ]]; then
             # pkt is file
             if [[ $ssh_keys_enabled -eq 1 ]]; then        
-                scp -q -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@localhost:~${ssh_user}"
+                scp -q -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
                 # 0 mean scp file
                 auto_passwd_scp "${pkt}" 0
@@ -1069,7 +1069,7 @@ function ssh_exec {
         fi
         printf "Exec: ${cmd}\n"
         if [[ $ssh_keys_enabled -eq 1 ]]; then
-            ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
+            ssh -q "${ssh_user}@127.0.0.1" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
         else
             auto_passwd_ssh "${cmd}"
         fi
@@ -1085,7 +1085,7 @@ function ssh_exec {
             printf "Clean transported: ${pkt}\n"
             local pkt_to_clean=$(basename "${pkt}")
             if [[ $ssh_keys_enabled -eq 1 ]]; then        
-                ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
+                ssh -q "${ssh_user}@127.0.0.1" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
             else
                 auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
             fi
@@ -1107,7 +1107,7 @@ function lazy_ssh {
         get_priv_ssh_key
         # create path to ssh private key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
-        ssh -q "${ssh_user}@localhost" -t -i ${key_path} -p $ssh_host_port $ssh_options
+        ssh -q "${ssh_user}@127.0.0.1" -t -i ${key_path} -p $ssh_host_port $ssh_options
     else
         auto_passwd_ssh ""
     fi
@@ -1118,9 +1118,9 @@ function auto_passwd_ssh {
     if command -v expect >/dev/null 2>&1; then
         if [[ -z "${_cmd}" ]]; then
             # No cmd to exec, interactive shell
-            local _expect_cmd="ssh -q \"${ssh_user}@localhost\" -t -p $ssh_host_port $ssh_options"
+            local _expect_cmd="ssh -q \"${ssh_user}@127.0.0.1\" -t -p $ssh_host_port $ssh_options"
         else
-            local _expect_cmd="ssh -q \"${ssh_user}@localhost\" -t -p $ssh_host_port $ssh_options -C \"${_cmd}\""
+            local _expect_cmd="ssh -q \"${ssh_user}@127.0.0.1\" -t -p $ssh_host_port $ssh_options -C \"${_cmd}\""
         fi
         expect -c "log_user 0; spawn $_expect_cmd; expect password; send \"$ssh_password\r\"; interact; catch wait reason; exit [lindex \$reason 3]"
     else
@@ -1129,9 +1129,9 @@ function auto_passwd_ssh {
         # Process without expect
         if [[ -z "$_cmd" ]]; then
             # No cmd to exec, interactive shell
-            ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options
+            ssh -q "${ssh_user}@127.0.0.1" -t -p $ssh_host_port $ssh_options
         else
-            ssh -q "${ssh_user}@localhost" -t -p $ssh_host_port $ssh_options -C "${cmd}"
+            ssh -q "${ssh_user}@127.0.0.1" -t -p $ssh_host_port $ssh_options -C "${cmd}"
         fi
     fi
 }
@@ -1142,9 +1142,9 @@ function auto_passwd_scp {
     local _recursive="${2}"
     if command -v expect >/dev/null 2>&1; then
         if [[ $_recursive -eq 1 ]]; then
-            local _expect_cmd="scp -q -P $ssh_host_port $ssh_options -r \"${_src}\" \"${ssh_user}@localhost:~${ssh_user}\""
+            local _expect_cmd="scp -q -P $ssh_host_port $ssh_options -r \"${_src}\" \"${ssh_user}@127.0.0.1:~${ssh_user}\""
         else
-            local _expect_cmd="scp -q -P $ssh_host_port $ssh_options \"${_src}\" \"${ssh_user}@localhost:~${ssh_user}\""
+            local _expect_cmd="scp -q -P $ssh_host_port $ssh_options \"${_src}\" \"${ssh_user}@127.0.0.1:~${ssh_user}\""
         fi
         expect -c "log_user 0; spawn $_expect_cmd; expect password; send \"$ssh_password\r\"; expect eof; catch wait reason; exit [lindex \$reason 3]"
     else
@@ -1152,9 +1152,9 @@ function auto_passwd_scp {
         yellow "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}\n"
         # Process without expect
         if [[ $_recursive -eq 1 ]]; then
-            scp -q -P $ssh_host_port $ssh_options -r "${_src}" "${ssh_user}@localhost:~${ssh_user}"
+            scp -q -P $ssh_host_port $ssh_options -r "${_src}" "${ssh_user}@127.0.0.1:~${ssh_user}"
         else
-            scp -q -P $ssh_host_port $ssh_options "${_src}" "${ssh_user}@localhost:~${ssh_user}"
+            scp -q -P $ssh_host_port $ssh_options "${_src}" "${ssh_user}@127.0.0.1:~${ssh_user}"
         fi
     fi
 }
@@ -1163,7 +1163,7 @@ function auto_passwd_scp {
 function check_port_usage {
     local port_nr=$1
     local port_message="${2}"
-    if (printf "" > /dev/tcp/localhost/$port_nr) 2>/dev/null; then
+    if (printf "" > /dev/tcp/127.0.0.1/$port_nr) 2>/dev/null; then
         red "$port_nr port (${port_message}) is already in use.\n"
         exit 1
     fi
@@ -1193,7 +1193,7 @@ function start_web_server {
     webserver_status=1
     sleep 2
     # check whether web server was really started
-    if ! (printf "" > /dev/tcp/localhost/$kickstart_port) 2>/dev/null; then
+    if ! (printf "" > /dev/tcp/127.0.0.1/$kickstart_port) 2>/dev/null; then
         red "webserver was not started\n"
         if kill -s 0 $web_pid 2>/dev/null; then
             kill $web_pid
