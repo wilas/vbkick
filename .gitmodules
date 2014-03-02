@@ -1,36 +1,36 @@
 [submodule "templates/ScientificLinux6"]
 	path = templates/ScientificLinux6
-	url = git@github.com:wilas/vbkick-template-scientificlinux6.git
+	url = git://github.com/wilas/vbkick-template-scientificlinux6.git
 [submodule "templates/CentOS6"]
 	path = templates/CentOS6
-	url = git@github.com:wilas/vbkick-template-centos6.git
+	url = git://github.com/wilas/vbkick-template-centos6.git
 [submodule "templates/Debian7"]
 	path = templates/Debian7
-	url = git@github.com:wilas/vbkick-template-debian7.git
+	url = git://github.com/wilas/vbkick-template-debian7.git
 [submodule "templates/Debian6"]
 	path = templates/Debian6
-	url = git@github.com:wilas/vbkick-template-debian6.git
+	url = git://github.com/wilas/vbkick-template-debian6.git
 [submodule "templates/Fedora18"]
 	path = templates/Fedora18
-	url = git@github.com:wilas/vbkick-template-fedora18.git
+	url = git://github.com/wilas/vbkick-template-fedora18.git
 [submodule "templates/Ubuntu12.04"]
 	path = templates/Ubuntu12.04
-	url = git@github.com:wilas/vbkick-template-ubuntu12.04.git
+	url = git://github.com/wilas/vbkick-template-ubuntu12.04.git
 [submodule "templates/Fedora19"]
 	path = templates/Fedora19
-	url = git@github.com:wilas/vbkick-template-fedora19.git
+	url = git://github.com/wilas/vbkick-template-fedora19.git
 [submodule "templates/SmartOS"]
 	path = templates/SmartOS
-	url = git@github.com:wilas/vbkick-template-smartos.git
+	url = git://github.com/wilas/vbkick-template-smartos.git
 [submodule "templates/NemoMobile"]
 	path = templates/NemoMobile
-	url = git@github.com:wilas/vbkick-template-nemomobile.git
+	url = git://github.com/wilas/vbkick-template-nemomobile.git
 [submodule "templates/Mer"]
 	path = templates/Mer
-	url = git@github.com:wilas/vbkick-template-mer.git
+	url = git://github.com/wilas/vbkick-template-mer.git
 [submodule "templates/PlasmaActive"]
 	path = templates/PlasmaActive
-	url = git@github.com:wilas/vbkick-template-plasmaactive.git
+	url = git://github.com/wilas/vbkick-template-plasmaactive.git
 [submodule "templates/Fedora20"]
 	path = templates/Fedora20
 	url = git://github.com/wilas/vbkick-template-fedora20
