@@ -4,12 +4,10 @@
 
 # where place files
 MANDIR := /usr/local/man/man1
-PREFIX := $(shell echo $(PREFIX))
+PREFIX ?= /usr/local/bin
 
-# custom shebang
-BASH_SHEBANG := $(shell echo $(BASH_SHEBANG))
+# get info about env.
 BASH_DEFAULT := $(shell command -v bash 2>&1)
-PY_SHEBANG := $(shell echo $(PY_SHEBANG))
 PY_DEFAULT := $(shell command -v python 2>&1)
 
 # install command
@@ -34,10 +32,11 @@ install: check-install
 	$(INSTALL) -m 0755 -d $(PREFIX)
 	$(INSTALL) -m 0755 -p $(BUILD_DIR)/$(PY_TARGET).tmp $(PREFIX)/$(PY_TARGET)
 	$(INSTALL) -m 0755 -p $(BUILD_DIR)/$(BASH_TARGET).tmp $(PREFIX)/$(BASH_TARGET)
+	$(INSTALL) -m 0755 -d $(MANDIR)
 	$(INSTALL) -g 0 -o 0 -m 0644 -p docs/man/vbkick.1 $(MANDIR)
 	rm -rf $(BUILD_DIR)
 
-uninstall: check-uninstall
+uninstall:
 	cd $(PREFIX) && rm -f $(BASH_TARGET) && rm -f $(PY_TARGET)
 	cd $(MANDIR) && rm -f vbkick.1
 
@@ -45,9 +44,6 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 check-install:
-ifndef PREFIX
-  PREFIX := "/usr/local/bin"
-endif
 ifndef BASH_SHEBANG
   ifndef BASH_DEFAULT
     $(error "bash command not available")
@@ -59,9 +55,4 @@ ifndef PY_SHEBANG
     $(error "python command not available")
   endif
   PY_SHEBANG := $(PY_DEFAULT)
-endif
-
-check-uninstall:
-ifndef PREFIX
-  PREFIX := "/usr/local/bin"
 endif
