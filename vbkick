@@ -39,7 +39,7 @@ set -o pipefail;
 shopt -s failglob;
 # enable POSIX mode
 # http://www.gnu.org/software/bash/manual/html_node/Bash-POSIX-Mode.html
-set -o posix    
+set -o posix
 
 # VM default settings - basic
 hostiocache="on"
@@ -86,7 +86,7 @@ boot_file_unpack_cmd=""
 boot_file_unpack_name=""
 # is boot_file_src raw image and need to be converted
 boot_file_convert_from_raw=0
-# whether use cp or mv when boot_file is created form boot_file_src_file; 
+# whether use cp or mv when boot_file is created form boot_file_src_file;
 # mv mean don't keep boot_file_src_file; keep only boot_file; by default 0 - use mv
 keep_boot_src_file=0
 # default time before boot_cmd_sequence start
@@ -113,7 +113,7 @@ ssh_password="vbkick"
 ssh_keys_path="keys"
 # default private key name
 ssh_priv_key="vbkick_key"
-# default auto-download path 
+# default auto-download path
 ssh_priv_key_src="https://raw.github.com/wilas/vbkick/master/keys/vbkick_key"
 # default ssh host port
 ssh_host_port=2222
@@ -253,7 +253,7 @@ function load_definition {
         # for the filename argument if it is not found by searching PATH.
         printf "INFO: Loading \"${definition_fname}\" definition...\n"
         . "./${definition_fname}"
-    else 
+    else
         red "Not existing or empty \"${definition_fname}\" file in `pwd`\n"
         red "Terminating...\n"
         exit 1
@@ -288,6 +288,18 @@ function prepare_path {
     printf "${path}"
 }
 
+function curl_safe {
+    local src="${1}"
+    local dest="${2}"
+    echo $src
+    echo $dest
+    local STATUSCODE=$(curl -Lkfw "%{http_code}\n" "${src}" -o "${dest}")
+    if [[ $STATUSCODE -ne 200 ]]; then
+        red "${src} status code is ${STATUSCODE}. Terminating...\n"
+        clean_up
+    fi
+}
+
 # Downloads custom VBoxGuestAdditions if required
 function download_guest_additions_media {
     if [[ -z "${guest_additions_path}" ]]; then
@@ -298,7 +310,7 @@ function download_guest_additions_media {
     # check whether VBoxGuestAdditions exist
     if [[ ! -f "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" ]]; then
         local additions_url="http://download.virtualbox.org/virtualbox/${vb_version}/VBoxGuestAdditions_${vb_version}.iso"
-        curl -Lok "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso" "${additions_url}"
+        curl_safe "${additions_url}" "${guest_additions_path}/VBoxGuestAdditions_${vb_version}.iso"
     fi
     # rm useless images
     remove_guest_additions_media
@@ -311,7 +323,7 @@ function remove_guest_additions_media {
         return
     fi
     guest_additions_path=$(prepare_path "${guest_additions_path}" 0)
-    # true is use to not fail whole cmd, and return empty string 
+    # true is use to not fail whole cmd, and return empty string
     local file_list=$(ls "${guest_additions_path}" | grep "GuestAdditions" | grep -v "${vb_version}" || true)
     # continue only if we have some files to remove
     if [[ -z "${file_list}" ]]; then
@@ -337,7 +349,7 @@ function download_boot_media {
     local boot_file_name=$(basename "${boot_file}")
     local boot_file_path=$(prepare_path "${boot_file_path}" 1)
     boot_file="${boot_file_path}/${boot_file_name}"
-     
+
     # check whether boot file exist
     if [[ -f "${boot_file}" ]]; then
         # file exist, nothing to do
@@ -345,7 +357,7 @@ function download_boot_media {
     fi
 
     # boot_file_src is empty (not defined)
-    if [[ -z "${boot_file_src}" ]]; then 
+    if [[ -z "${boot_file_src}" ]]; then
         red "${boot_file} not exist and boot_file_src is empty\n"
         return 1
     fi
@@ -356,7 +368,7 @@ function download_boot_media {
     local boot_file_src_file="${boot_file_src_path}/${tmp_name}"
     # check whether boot_file_src exist
     if [[ ! -f "${boot_file_src_file}" ]]; then
-        curl -Lk "${boot_file_src}" -o "${boot_file_src_file}"
+        curl_safe "${boot_file_src}" "${boot_file_src_file}"
     fi
 
     # verify boot_file_src checksum
@@ -419,7 +431,7 @@ function get_priv_ssh_key {
     fi
     # check whether private key exist
     if [[ ! -f "${ssh_keys_path}/${ssh_priv_key}" ]]; then
-        curl -Lk "${ssh_priv_key_src}" -o "${ssh_keys_path}/${ssh_priv_key}"
+        curl_safe "${ssh_priv_key_src}" "${ssh_keys_path}/${ssh_priv_key}"
     fi
     # change ssh key permissions - too open private key will be ignored
     chmod 600 "${ssh_keys_path}/${ssh_priv_key}"
@@ -432,7 +444,7 @@ function build_vm {
         exit 1
     fi
     # load vm description/definition
-    load_definition 
+    load_definition
     # get ssh private key
     if [[ $ssh_keys_enabled -eq 1 ]]; then
         get_priv_ssh_key
@@ -442,13 +454,13 @@ function build_vm {
     # start simple webserver (in background)
     start_web_server
     # download boot/iso files
-    if ! download_boot_media; then 
+    if ! download_boot_media; then
         stop_web_server
         exit 1
     fi
     download_guest_additions_media
     # create VM box with given settings
-    if ! create_box; then 
+    if ! create_box; then
         stop_web_server
         exit 1
     fi
@@ -462,7 +474,7 @@ function build_vm {
     fi
     # boot VM machine
     for boot_cmd in "${boot_cmd_sequence[@]}"; do
-        if [[ -z "${boot_cmd}" ]]; then 
+        if [[ -z "${boot_cmd}" ]]; then
             continue
         fi
         boot_cmd=${boot_cmd//%IP%/$host_ip}
@@ -505,7 +517,7 @@ function create_box {
     # check disk_size lenght
     if [[ ${#disk_size[@]} -gt 28 ]]; then
         red "Too many disks in disk_size (limited to 28 disks)\n"
-        return 1; 
+        return 1;
     fi
     if [[ "${vb_version}" > "4.3.0" ]] || [[ "${vb_version}" == "4.3.0" ]]; then
         VBoxManage storagectl "${VM}" --name "SATA Controller"\
@@ -520,7 +532,7 @@ function create_box {
     # SATA controller - create and add hdd disks
     local port_nr=2
     for disk in "${disk_size[@]}"; do
-        if [[ -z "${disk}" ]]; then 
+        if [[ -z "${disk}" ]]; then
             continue
         fi
         VBoxManage createhd --filename "${location}/${VM}/${VM}-${port_nr}.${disk_format}"\
@@ -562,7 +574,7 @@ function create_box {
         local value="${option##*:}"
         VBoxManage modifyvm "${VM}" --"${key}" "${value}"
     done
-    # set extradata 
+    # set extradata
     for extradata in "${vm_extradata[@]}"; do
         if [[ -z "${extradata}" ]]; then
             continue
@@ -589,7 +601,7 @@ function add_extra_ports_mapping {
         if [[ -z "${port}" ]]; then
             continue
         fi
-        
+
         OIFS=$IFS
         IFS=':'
         local port_info=($port)
@@ -639,7 +651,7 @@ function add_shared_folders {
         fi
         local folder_name="${folder_info[0]}"
         local folder_path=$(prepare_path "${folder_info[1]}" 1)
-        
+
         # check whether shared_folder already exist
         if VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"; then
             IFS=$OIFS
@@ -749,7 +761,7 @@ function export_vm {
         red "${VM} doesn't exist\n"
         exit 1
     fi
-    # check whether VM is running and shutdown it 
+    # check whether VM is running and shutdown it
     shutdown
 
     # clearing previously set port forwarding rules (only if exist)
@@ -757,10 +769,10 @@ function export_vm {
         VBoxManage modifyvm "${VM}" --natpf1 delete "${ssh_port_name}"
         ssh_natmapping_was_removed=1
     fi
-    
+
     # rm extra ports (only if exist)
     remove_extra_ports_mapping
-    
+
     # rm shared folder (only if exist)
     remove_shared_folders
 
@@ -826,7 +838,7 @@ function turn_on {
         green "${VM} is already running...\n"
         exit 0
     fi
-    
+
     # check whether VM already exist
     if ! VBoxManage list vms | grep -qw "${VM}"; then
         red "${VM} doese not exist. Use \"vbkick build\" to create the new VM.\n"
@@ -848,7 +860,7 @@ function turn_off {
     fi
 
     # load vm description/definition
-    load_definition 
+    load_definition
 
     #exec shutdown
     shutdown
@@ -858,7 +870,7 @@ function shutdown {
     # check whether VM is running and exec shutdown_cmd via SSH
     if VBoxManage list runningvms | grep -qw "${VM}"; then
         printf "Shutting down ${VM} "
-        if [[ $ssh_keys_enabled -eq 1 ]]; then        
+        if [[ $ssh_keys_enabled -eq 1 ]]; then
             # ssh key authentication enabled
             # if key not exist then get it
             get_priv_ssh_key
@@ -913,7 +925,7 @@ function update_guest_additions_media {
         # guest doesn't exist
         local guest_version=""
     fi
-    
+
     # check whether we need update or install VBoxGuestAdditions
     if [[ "${vb_version}" == "${guest_version}" ]]; then
         green "VBoxGuestAdditions on ${VM} is up-to-date - update media iso is not needed.\n"
@@ -943,7 +955,7 @@ function update_guest_additions_media {
         VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
         --type dvddrive --port 1 --device 0 --medium additions --forceunmount
     fi
-    # Note: Guest OS (Linux) does not support automatic Guest Additions updating: 
+    # Note: Guest OS (Linux) does not support automatic Guest Additions updating:
     # VBoxManage guestcontrol <vmname>|<uuid> updateadditions
     # Manuall Guest Additions update/installation is required (via lazy_update cmd).
 }
@@ -993,7 +1005,7 @@ function ssh_exec {
     # get launch array;
     local launch=("${@}")
 
-    # check whether VM is running 
+    # check whether VM is running
     if ! VBoxManage list runningvms | grep -qw "${VM}"; then
         red "${VM} is not running...\n"
         exit 1
@@ -1007,7 +1019,7 @@ function ssh_exec {
     fi
 
     # ssh key authentication enabled
-    if [[ $ssh_keys_enabled -eq 1 ]]; then        
+    if [[ $ssh_keys_enabled -eq 1 ]]; then
         # if key not exist then get it
         get_priv_ssh_key
         # create path to ssh private key
@@ -1027,14 +1039,14 @@ function ssh_exec {
 
     # transport scripts to guest
     for pkt in "${transport[@]}"; do
-        if [[ -z "${pkt}" ]]; then 
+        if [[ -z "${pkt}" ]]; then
             continue
         fi
         printf "Scp: ${pkt}\n"
         # check whether pkt is file or dir
         if [[ -d "${pkt}" ]]; then
             # pkt is directory
-            if [[ $ssh_keys_enabled -eq 1 ]]; then        
+            if [[ $ssh_keys_enabled -eq 1 ]]; then
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
                 # 1 mean scp directory (recursive)
@@ -1042,7 +1054,7 @@ function ssh_exec {
             fi
         elif [[ -f "${pkt}" ]]; then
             # pkt is file
-            if [[ $ssh_keys_enabled -eq 1 ]]; then        
+            if [[ $ssh_keys_enabled -eq 1 ]]; then
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
                 # 0 mean scp file
@@ -1054,7 +1066,7 @@ function ssh_exec {
 
     # run commands via ssh
     for cmd in "${launch[@]}"; do
-        if [[ -z "${cmd}" ]]; then 
+        if [[ -z "${cmd}" ]]; then
             continue
         fi
         # %HOST% tag - check whether command should be executed on host (not guest)
@@ -1075,16 +1087,16 @@ function ssh_exec {
         fi
         sleep 1
     done
-    
+
     # clean after scp by rm transported media/scripts
     if [[ $clean_transported -eq 1 ]]; then
         for pkt in "${transport[@]}"; do
-            if [[ -z "${pkt}" ]]; then 
+            if [[ -z "${pkt}" ]]; then
                 continue
             fi
             printf "Clean transported: ${pkt}\n"
             local pkt_to_clean=$(basename "${pkt}")
-            if [[ $ssh_keys_enabled -eq 1 ]]; then        
+            if [[ $ssh_keys_enabled -eq 1 ]]; then
                 ssh -q "${ssh_user}@127.0.0.1" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
             else
                 auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
@@ -1209,7 +1221,7 @@ function stop_web_server {
         return
     fi
     printf "Stopping webserver (pid $web_pid)\n"
-    # with "set -e -E" if kill command fail then ERR trap is processing 
+    # with "set -e -E" if kill command fail then ERR trap is processing
     # simply execution of function is not continued
     webserver_kill_cmd_status=1
     # check whether process exist and accept signals before sending SIGTERM
