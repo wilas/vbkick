@@ -7,6 +7,7 @@ FEATURES
 IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)
  - works when IPV6 is enabled and ```::1     localhost``` appear in ```/etc/hosts``` - [#33](../../issues/33)
+ - checks curl status code
 
 ## 0.6 (22-10-2013)
 
