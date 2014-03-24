@@ -16,34 +16,33 @@
 # - make and break codes table: http://stanislavs.org/helppc/make_codes.html
 # - https://github.com/jedi4ever/veewee/blob/master/lib/veewee/provider/core/helper/scancode.rb
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import sys
 import re
 
-def get_one_char_codes():
+def _make_scancodes(key_map, str_pattern):
     scancodes = {}
+    for keys in key_map:
+        offset = key_map[keys]
+        for idx, k in enumerate(list(keys)):
+            scancodes[k] = str_pattern % (idx + offset, idx + offset + 0x80)
+    return scancodes
+
+def get_one_char_codes():
     key_map = {'1234567890-=' : 0x02,
         'qwertyuiop[]' : 0x10,
         'asdfghjkl;\'`' : 0x1e,
         '\\zxcvbnm,./' : 0x2b
     }
-    for keys in key_map:
-        idx = 0
-        offset = key_map[keys]
-        for k in list(keys):
-            scancodes[k] = '%02x %02x' % (idx + offset, idx + offset + 0x80)
-            idx += 1
+    scancodes = _make_scancodes(key_map, '%02x %02x')
     # Shift keys
     key_map =  { '!@#$%^&*()_+' : 0x02,
         'QWERTYUIOP{}' : 0x10,
         'ASDFGHJKL:"~' : 0x1e,
         '|ZXCVBNM<>?' : 0x2b
     }
-    for keys in key_map:
-        idx = 0
-        offset = key_map[keys]
-        for k in list(keys):
-            scancodes[k] = '2a %02x %02x aa' % (idx + offset, idx + offset + 0x80)
-            idx += 1
+    scancodes.update(_make_scancodes(key_map, '2a %02x %02x aa'))
     return scancodes
 
 def get_multi_char_codes():
@@ -76,7 +75,7 @@ def get_multi_char_codes():
     return scancodes
 
 def process_multiply(input):
-    # process <Multiply(what,times)> 
+    # process <Multiply(what,times)>
     # example usage: <Multiply(<Wait>,4)> --> <Wait><Wait><Wait><Wait>
     # key thing about multiply_regexpr: match is non-greedy
     multiply_regexpr = '<Multiply\((.+?),[ ]*([\d]+)[ ]*\)>'
@@ -92,7 +91,7 @@ def process_multiply(input):
 def translate_chars(input):
     # create list to collect information about input string structure
     # -1 mean no key yet assign to cell in array
-    keys_array = [-1] * len(input) 
+    keys_array = [-1] * len(input)
 
     # proces multi-char codes/marks (special)
     spc_scancodes = get_multi_char_codes()
@@ -107,12 +106,12 @@ def translate_chars(input):
             for i in range(s+1, e):
                 keys_array[i] = ''
 
-    # process single-char codes 
+    # process single-char codes
     scancodes = get_one_char_codes()
     # convert input string to list
     input = list(input)
     # check only not assign yet (with value equal -1) cells in keys_array
-    for index in range(0, len(keys_array)):
+    for index, _ in enumerate(keys_array):
         if keys_array[index] != -1:
             continue
         try:
