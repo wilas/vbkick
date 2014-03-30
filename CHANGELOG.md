@@ -9,6 +9,9 @@ IMPROVEMENTS
  - works when IPV6 is enabled and ```::1     localhost``` appear in ```/etc/hosts``` - [#33](../../issues/33)
  - checks curl status code
 
+BUG FIXES
+ - expand a special variables in paths e.g. ~ (tilde) is now not treated as a literal string "~" but expand to user home dir.
+
 ## 0.6 (22-10-2013)
 
 FEATURES
@@ -127,5 +130,5 @@ FEATURES:
  - examples and descriptions for both postinstall methods were added
  - Makefile installer was added
 
-## 0.1 
+## 0.1
  - Initial release

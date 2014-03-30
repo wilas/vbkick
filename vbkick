@@ -257,8 +257,12 @@ function prepare_path {
     local path=${path//%SRCPATH%/${boot_file_src_path}}
     local path=${path//%VBOXFOLDER%/${location}}
     local path=${path//%PWD%/`pwd`}
+    # get homedir - `getent passwd UID` doesn't work for MacOS; $HOME is less portable than ~
     local path=${path//%HOME%/~}
     local path=${path//%NAME%/${VM}}
+    # expand a special variable - e.g. tilde (~) and
+    # strips out > characters which could clobber a file during the eval
+    local path=$(eval echo "${path//>}")
     # Creates dir if necessary
     if [[ $mkdir_path -eq 1 ]] && [[ ! -z "${path}" ]] && [[ ! -d "${path}" ]]; then
         mkdir -p "${path}"
