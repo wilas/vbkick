@@ -244,7 +244,8 @@ function load_definition {
 # Get virtualbox version
 function get_vb_version {
     local version=$(VBoxManage --version) # e.g. 4.2.12r84980
-    local version=${version%r*} #e.g. 4.2.12
+    local pos=$(expr "${version}" : '[0-9.]\+')
+    local version=${version:0:$pos} #e.g. 4.2.12
     printf "${version}"
 }
 
