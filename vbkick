@@ -211,6 +211,9 @@ function autoupdate_files_with_vbox_version {
         if [[ -s "${file}" ]]; then
             # example value to update: VBOX_VERSION="4.2.12", but ignore comments
             sed -r -i "/^#/!s/(VBOX_VERSION)=\"([0-9\.]+)\"/\1=\"$vb_version\"/g" "${file}"
+        else
+            printf "VBOX_VERSION=\"$vb_version\"\n" > "${file}"
+            printf "export VBOX_VERSION" >> "${file}"
         fi
     done
 }
