@@ -207,6 +207,10 @@ function process_args {
 # Help automatically update/maintain value of VBOX_VERSION in given files list
 function autoupdate_files_with_vbox_version {
     for file in "${files_to_autoupdate_vbox_version[@]}"; do
+        # check whether file is an empty string
+        if [[ -z "${file}" ]]; then
+            continue
+        fi
         # check whether file exist
         if [[ -s "${file}" ]]; then
             # example value to update: VBOX_VERSION="4.2.12", but ignore comments
@@ -250,6 +254,30 @@ function get_vb_version {
     local pos=$(expr "${version}" : '[0-9.]\+')
     local version=${version:0:$pos} #e.g. 4.2.12
     printf "${version}"
+}
+
+function is_present {
+    VBoxManage list vms | grep -qw "${VM}"
+}
+
+function is_running {
+    VBoxManage list runningvms | grep -qw "${VM}"
+}
+
+function is_port_used {
+    local port_nr="${1}"
+    # () is useful to be silent
+    (printf "" > /dev/tcp/127.0.0.1/$port_nr) 2>/dev/null
+}
+
+function is_port_present {
+    local port_name="${@}"
+    VBoxManage showvminfo "${VM}" | grep -w 'guest port' | grep -qw "${port_name}"
+}
+
+function is_shared_folder_present {
+    local folder_name="${@}"
+    VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"
 }
 
 # Check whether given directory exist
@@ -358,16 +386,18 @@ function download_boot_media {
         curl_safe "${boot_file_src}" "${boot_file_src_file}"
     fi
 
-    # verify boot_file_src checksum
-    local get_checksum=$(openssl "${boot_file_checksum_type}" "${boot_file_src_file}" | cut -d" " -f 2)
-    if [[ "${boot_file_src_checksum}" != "${get_checksum}" ]]; then
-        yellow "WARNING: CHECKSUM is different then expected !\n"
-        read -r -p "Do you want continue? [y/N]" ans
-        if [[ ! $ans =~ ^[Yy]$ ]]; then
-            return 1
+    # verify boot_file_src checksum if boot_file_src_checksum is provided
+    if [[ ! -z "${boot_file_src_checksum}" ]]; then
+        local get_checksum=$(openssl "${boot_file_checksum_type}" "${boot_file_src_file}" | cut -d" " -f 2)
+        if [[ "${boot_file_src_checksum}" != "${get_checksum}" ]]; then
+            yellow "WARNING: CHECKSUM is different then expected !\n"
+            read -r -p "Do you want continue? [y/N]" ans
+            if [[ ! $ans =~ ^[Yy]$ ]]; then
+                return 1
+            fi
+        else
+            printf "INFO: CHECKSUM:${boot_file_src_checksum} is valid.\n"
         fi
-    else
-        printf "INFO: CHECKSUM:${boot_file_src_checksum} is valid.\n"
     fi
 
     # process unpack
@@ -426,7 +456,7 @@ function get_priv_ssh_key {
 
 function build_vm {
     # check whether VM already exist
-    if VBoxManage list vms | grep -qw "${VM}"; then
+    if is_present; then
         red "${VM} already exist\n"
         exit 1
     fi
@@ -572,7 +602,7 @@ function create_box {
     done
 
     # ssh port NAT mapping; ssh port is a special one
-    if ! VBoxManage showvminfo "${VM}" | grep -q "${ssh_port_name}"; then
+    if ! is_port_present "${ssh_port_name}"; then
         VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
@@ -600,7 +630,7 @@ function add_extra_ports_mapping {
         local port_host="${port_info[1]}"
         local port_guest="${port_info[2]}"
         # add only if port doesn't exist
-        if ! VBoxManage showvminfo "${VM}" | grep -q "${port_name}"; then
+        if ! is_port_present "${port_name}"; then
             VBoxManage controlvm "${VM}" natpf1 "${port_name},tcp,,${port_host},,${port_guest}"
         fi
         IFS=$OIFS
@@ -615,7 +645,7 @@ function remove_extra_ports_mapping {
             continue
         fi
         local port_name=${port%%:*}
-        if VBoxManage showvminfo "${VM}" | grep -qw "${port_name}"; then
+        if is_port_present "${port_name}"; then
             VBoxManage modifyvm "${VM}" --natpf1 delete "${port_name}"
             # note which extra ports were removed by moving extraports_removed_ptr
             extraports_removed_ptr=$((extraports_removed_ptr+1))
@@ -640,20 +670,20 @@ function add_shared_folders {
         local folder_path=$(prepare_path "${folder_info[1]}" 1)
 
         # check whether shared_folder already exist
-        if VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"; then
+        if is_shared_folder_present "${folder_name}"; then
             IFS=$OIFS
             continue
         fi
 
         if [[ ${#folder_info[@]} -eq 2 ]]; then
             printf "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\"\n"
-            VBoxManage sharedfolder add  "${VM}" --name "${folder_name}" --hostpath "${folder_path}"
+            VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}"
         elif [[ ${#folder_info[@]} -eq 3 ]]; then
             printf "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]}\n"
-            VBoxManage sharedfolder add  "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}"
+            VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}"
         elif [[ ${#folder_info[@]} -eq 4 ]]; then
             printf "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]} --${folder_info[3]}\n"
-            VBoxManage sharedfolder add  "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
+            VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
         else
             red "ERROR - too much options in one of the shared_folders.\n"
             exit 1
@@ -670,8 +700,8 @@ function remove_shared_folders {
             continue
         fi
         local folder_name=${folder%%:*}
-        if VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"; then
-            VBoxManage sharedfolder remove  "${VM}" --name "${folder_name}"
+        if is_shared_folder_present "${folder_name}"; then
+            VBoxManage sharedfolder remove "${VM}" --name "${folder_name}"
             # note which shared folders were removed by moving sharedfolders_removed_ptr
             sharedfolders_removed_ptr=$((sharedfolders_removed_ptr+1))
         fi
@@ -704,7 +734,7 @@ function kickstart_monitoring {
 
 function destroy_vm {
     # check whether VM already exist
-    if ! VBoxManage list vms | grep -qw "${VM}"; then
+    if ! is_present; then
         red "${VM} doesn't exist\n"
         exit 1
     fi
@@ -717,7 +747,7 @@ function destroy_vm {
     fi
 
     # check whether VM is running
-    if VBoxManage list runningvms | grep -qw "${VM}"; then
+    if is_running; then
         printf "Poweroff ${VM}\n"
         VBoxManage controlvm "${VM}" poweroff
         sleep 1
@@ -744,7 +774,7 @@ function export_vm {
         exit 1
     fi
     # check whether VM exist
-    if ! VBoxManage list vms | grep -qw "${VM}"; then
+    if ! is_present; then
         red "${VM} doesn't exist\n"
         exit 1
     fi
@@ -752,7 +782,7 @@ function export_vm {
     shutdown
 
     # clearing previously set port forwarding rules (only if exist)
-    if VBoxManage showvminfo "${VM}" | grep -qw "${ssh_port_name}"; then
+    if is_port_present "${ssh_port_name}"; then
         VBoxManage modifyvm "${VM}" --natpf1 delete "${ssh_port_name}"
         ssh_natmapping_was_removed=1
     fi
@@ -820,14 +850,14 @@ function recover_vm_state {
 
 function turn_on {
     # check whether VM is already running
-    if VBoxManage list runningvms | grep -qw "${VM}"; then
+    if is_running; then
         # nothing to do
         green "${VM} is already running...\n"
         exit 0
     fi
 
     # check whether VM already exist
-    if ! VBoxManage list vms | grep -qw "${VM}"; then
+    if ! is_present; then
         red "${VM} doese not exist. Use \"vbkick build\" to create the new VM.\n"
         exit 1
     fi
@@ -841,7 +871,7 @@ function turn_on {
 
 function turn_off {
     # check whether VM is running
-    if ! VBoxManage list runningvms | grep -qw "${VM}"; then
+    if ! is_running; then
         green "${VM} is already turn off.\n"
         exit 0
     fi
@@ -855,7 +885,7 @@ function turn_off {
 
 function shutdown {
     # check whether VM is running and exec shutdown_cmd via SSH
-    if VBoxManage list runningvms | grep -qw "${VM}"; then
+    if is_running; then
         printf "Shutting down ${VM} "
         if [[ $ssh_keys_enabled -eq 1 ]]; then
             # ssh key authentication enabled
@@ -869,7 +899,7 @@ function shutdown {
         fi
         # wait until VM is down or shutdown_timeout was reached
         local shutdown_counter=0
-        while VBoxManage list runningvms | grep -qw "${VM}" && [[ $shutdown_counter -le $shutdown_timeout ]]; do
+        while is_running && [[ $shutdown_counter -le $shutdown_timeout ]]; do
             shutdown_counter=$((shutdown_counter+1))
             printf "."
             sleep 1
@@ -877,7 +907,7 @@ function shutdown {
     fi
 
     # check whether VM is still running, if so use acpipowerbutton
-    if VBoxManage list runningvms | grep -qw "${VM}"; then
+    if is_running; then
         VBoxManage controlvm "${VM}" acpipowerbutton
         printf "\n${VM} - acpipowerbutton was used. Waiting $shutdown_timeout seconds...\n"
         sleep $shutdown_timeout
@@ -888,7 +918,7 @@ function shutdown {
     fi
 
     # check whether VM is still running, if so poweroff it using hard way.
-    if VBoxManage list runningvms | grep -qw "${VM}"; then
+    if is_running; then
         VBoxManage controlvm "${VM}" poweroff
         printf "\n${VM} was powered off.\n"
         sleep 3
@@ -900,7 +930,7 @@ function shutdown {
 
 function update_guest_additions_media {
     # check whether VM exist
-    if ! VBoxManage list vms | grep -qw "${VM}"; then
+    if ! is_present; then
         red "${VM} doese not exist. Use \"vbkick build\" to create the new VM.\n"
         exit 1
     fi
@@ -993,7 +1023,7 @@ function ssh_exec {
     local launch=("${@}")
 
     # check whether VM is running
-    if ! VBoxManage list runningvms | grep -qw "${VM}"; then
+    if ! is_running; then
         red "${VM} is not running...\n"
         exit 1
     fi
@@ -1013,7 +1043,8 @@ function ssh_exec {
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
     fi
 
-    # check whether all pkt can by transported, before starting transporting
+    # check whether all pkt can by transported, before starting transporting -
+    # - be a bit more atomic
     for pkt in "${transport[@]}"; do
         if [[ -z "${pkt}" ]] || [[ -d "${pkt}" ]] || [[ -f "${pkt}" ]]; then
             continue
@@ -1095,7 +1126,7 @@ function ssh_exec {
 
 function lazy_ssh {
     # check whether VM is running
-    if ! VBoxManage list runningvms | grep -qw "${VM}"; then
+    if ! is_running; then
         red "${VM} is not running...\n"
         exit 1
     fi
@@ -1162,7 +1193,7 @@ function auto_passwd_scp {
 function check_port_usage {
     local port_nr=$1
     local port_message="${2}"
-    if (printf "" > /dev/tcp/127.0.0.1/$port_nr) 2>/dev/null; then
+    if is_port_used $port_nr; then
         red "$port_nr port (${port_message}) is already in use.\n"
         exit 1
     fi
@@ -1192,7 +1223,7 @@ function start_web_server {
     webserver_status=1
     sleep 2
     # check whether web server was really started
-    if ! (printf "" > /dev/tcp/127.0.0.1/$kickstart_port) 2>/dev/null; then
+    if ! is_port_used $kickstart_port; then
         red "webserver was not started\n"
         if kill -s 0 $web_pid 2>/dev/null; then
             kill $web_pid
@@ -1249,10 +1280,10 @@ function clean_up {
 
 function depend_check {
     local dep_cmd="${1}"
-    local dep_name="${2}"
+    local dep_name="${@}"
     # check whether dep_name is installed - dep_cmd command exist
     if ! command -v $dep_cmd >/dev/null 2>&1; then
-        red "$dep_cmd command not exist - install $dep_name to continue\n"
+        red "${dep_cmd} command doesn't exist - install '${dep_name}' to continue.\n"
         exit 1
     fi
 }

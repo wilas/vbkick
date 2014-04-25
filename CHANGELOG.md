@@ -8,6 +8,7 @@ IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)
  - works when IPV6 is enabled and ```::1     localhost``` appear in ```/etc/hosts``` - [#33](../../issues/33)
  - checks curl status code
+ - empty boot_file_src_checksum variable mean don't check checksum instead warning about wrong value
 
 BUG FIXES
  - expand a special variables in paths e.g. ~ (tilde) is now not treated as a literal string "~" but expand to user home dir.
