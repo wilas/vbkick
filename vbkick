@@ -161,18 +161,18 @@ GREEN="\e[1;32m"
 RED="\e[1;31m"
 YELLOW="\e[1;33m"
 NORMAL="\e[0m"
-function green {
+green() {
     printf "$GREEN$*$NORMAL"
 }
-function red {
+red() {
     printf "$RED$*$NORMAL" >&2
 }
-function yellow {
+yellow() {
     printf "$YELLOW$*$NORMAL"
 }
 
 # Display help
-function usage {
+usage() {
     printf "Desc: the automatic Virtualbox Guests and Vagrant Base Boxes builder\n"
     printf "\n"
     printf "Usage: $0 ACTION VM_NAME (DEFINITION_FILE_NAME)\n"
@@ -192,7 +192,7 @@ function usage {
 }
 
 # Cmd line parser, take 2 args
-function process_args {
+process_args() {
     VM="${2}"
     case "$1" in
         "build") build_vm ;;
@@ -209,7 +209,7 @@ function process_args {
 }
 
 # Help automatically update/maintain value of VBOX_VERSION in given files list
-function autoupdate_files_with_vbox_version {
+autoupdate_files_with_vbox_version() {
     for file in "${files_to_autoupdate_vbox_version[@]}"; do
         # check whether file is an empty string
         if [[ -z "${file}" ]]; then
@@ -226,7 +226,27 @@ function autoupdate_files_with_vbox_version {
     done
 }
 
-function check_required_options {
+depend_check() {
+    local dep_cmd="${1}"
+    local dep_name="${@}"
+    # check whether dep_name is installed - dep_cmd command exist
+    if ! command -v $dep_cmd >/dev/null 2>&1; then
+        red "${dep_cmd} command doesn't exist - install '${dep_name}' to continue.\n"
+        exit 1
+    fi
+}
+
+dependencies_check() {
+    depend_check "VBoxManage" "Virtualbox"
+    depend_check "curl" "curl"
+    depend_check "ssh" "ssh-client (e.g. openssh-client)"
+    depend_check "scp" "scp-client (e.g. openssh-client)"
+    depend_check "python" "python"
+    depend_check "bash" "bash"
+    depend_check "openssl" "openssl"
+}
+
+check_required_options() {
     local opts=("boot_file" "boot_file_src" "os_type_id")
     for opt in "${opts[@]}"; do
         if [[ -z "${!opt+x}" ]]; then
@@ -237,7 +257,7 @@ function check_required_options {
 }
 
 # Load definition.cfg config file; it overwrite default settings
-function load_definition {
+load_definition() {
     if [[ -s "${definition_fname}" ]]; then
         # In POSIX mode the '.' and 'source' builtins do not search the current directory
         # for the filename argument if it is not found by searching PATH.
@@ -253,39 +273,49 @@ function load_definition {
 }
 
 # Get virtualbox version
-function get_vb_version {
+get_vb_version() {
     local version=$(VBoxManage --version) # e.g. 4.2.12r84980
     local pos=$(expr "${version}" : '[0-9.]\+')
     local version=${version:0:$pos} #e.g. 4.2.12
     printf "${version}"
 }
 
-function is_present {
+is_present() {
     VBoxManage list vms | grep -qw "${VM}"
 }
 
-function is_running {
+is_running() {
     VBoxManage list runningvms | grep -qw "${VM}"
 }
 
-function is_port_used {
+is_port_used() {
     local port_nr="${1}"
     # () is useful to be silent
     (printf "" > /dev/tcp/127.0.0.1/$port_nr) 2>/dev/null
 }
 
-function is_port_present {
+is_port_present() {
     local port_name="${@}"
     VBoxManage showvminfo "${VM}" | grep -w 'guest port' | grep -qw "${port_name}"
 }
 
-function is_shared_folder_present {
+is_shared_folder_present() {
     local folder_name="${@}"
     VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"
 }
 
+# checks whether port is not used by other proc
+check_port_usage() {
+    local port_nr="${1}"
+    local port_message="${@}"
+    if is_port_used $port_nr; then
+        red "$port_nr port (${port_message}) is already in use.\n"
+        exit 1
+    fi
+}
+
 # Check whether given directory exist
-function prepare_path {
+prepare_path() {
     local path="${1}"
     local mkdir_path="${2}"
     # Process special variables in path definition e.g. path="%VBOXFOLDER%/%NAME%"
@@ -307,7 +337,7 @@ function prepare_path {
     printf "${path}"
 }
 
-function curl_safe {
+curl_safe() {
     local src="${1}"
     local dest="${2}"
     echo $src
@@ -320,7 +350,7 @@ function curl_safe {
 }
 
 # Downloads custom VBoxGuestAdditions if required
-function download_guest_additions_media {
+download_guest_additions_media() {
     if [[ -z "${guest_additions_path}" ]]; then
         # nothing to do
         return
@@ -336,7 +366,7 @@ function download_guest_additions_media {
 }
 
 # Remove other (not needed) VBoxGuestAdditions from media directory
-function remove_guest_additions_media {
+remove_guest_additions_media() {
     if [[ -z "${guest_additions_path}" ]]; then
         # nothing to do
         return
@@ -363,7 +393,7 @@ function remove_guest_additions_media {
 }
 
 # Prepare installation/boot media
-function download_boot_media {
+download_boot_media() {
     local boot_file_path=$(dirname "${boot_file}")
     local boot_file_name=$(basename "${boot_file}")
     local boot_file_path=$(prepare_path "${boot_file_path}" 1)
@@ -444,7 +474,7 @@ function download_boot_media {
 }
 
 # Prepare ssh keys
-function get_priv_ssh_key {
+get_priv_ssh_key() {
     # check whether keys dir exist
     if [[ ! -d "${ssh_keys_path}" ]]; then
         printf "Creates vbkick ssh keys directory\n"
@@ -458,7 +488,7 @@ function get_priv_ssh_key {
     chmod 600 "${ssh_keys_path}/${ssh_priv_key}"
 }
 
-function build_vm {
+build_vm() {
     # check whether VM already exist
     if is_present; then
         red "${VM} already exist\n"
@@ -525,7 +555,7 @@ function build_vm {
     exit 0
 }
 
-function create_box {
+create_box() {
     # Register vm
     VBoxManage createvm --name "${VM}" --ostype "${os_type_id}" --register
 
@@ -619,7 +649,7 @@ function create_box {
     add_shared_folders
 }
 
-function add_extra_ports_mapping {
+add_extra_ports_mapping() {
     for port in "${extra_ports[@]}"; do
         if [[ -z "${port}" ]]; then
             continue
@@ -643,7 +673,7 @@ function add_extra_ports_mapping {
     done
 }
 
-function remove_extra_ports_mapping {
+remove_extra_ports_mapping() {
     for port in "${extra_ports[@]}"; do
         if [[ -z "${port}" ]]; then
             # note which extra ports were removed by moving extraports_removed_ptr
@@ -659,7 +689,7 @@ function remove_extra_ports_mapping {
     done
 }
 
-function add_shared_folders {
+add_shared_folders() {
     for folder in "${shared_folders[@]}"; do
         if [[ -z "${folder}" ]]; then
             continue
@@ -698,7 +728,7 @@ function add_shared_folders {
     done
 }
 
-function remove_shared_folders {
+remove_shared_folders() {
     for folder in "${shared_folders[@]}"; do
         if [[ -z "${folder}" ]]; then
             # note which shared folders were removed by moving sharedfolders_removed_ptr
@@ -715,7 +745,7 @@ function remove_shared_folders {
 }
 
 # Check whether machine was kickstarted before timeout
-function kickstart_monitoring {
+kickstart_monitoring() {
     local kickstart_counter=0
     local extra_ssh_options="-o ConnectionAttempts=1 -o ConnectTimeout=1"
     # ssh key authentication enabled
@@ -738,7 +768,7 @@ function kickstart_monitoring {
     fi
 }
 
-function destroy_vm {
+destroy_vm() {
     # check whether VM already exist
     if ! is_present; then
         red "${VM} doesn't exist\n"
@@ -764,7 +794,7 @@ function destroy_vm {
     exit 0
 }
 
-function export_vm {
+export_vm() {
     #
     # basic replacement for that vagrant command:
     # vagrant package --base "${VM}" --output "${VM}.box"
@@ -832,7 +862,7 @@ function export_vm {
     exit 0
 }
 
-function recover_vm_state {
+recover_vm_state() {
     # add NAT mapping after exporting - only if exist prev.
     if [[ $ssh_natmapping_was_removed -eq 1 ]]; then
         VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
@@ -854,7 +884,7 @@ function recover_vm_state {
     fi
 }
 
-function turn_on {
+turn_on() {
     # check whether VM is already running
     if is_running; then
         # nothing to do
@@ -875,7 +905,7 @@ function turn_on {
     fi
 }
 
-function turn_off {
+turn_off() {
     # check whether VM is running
     if ! is_running; then
         green "${VM} is already turn off.\n"
@@ -889,7 +919,7 @@ function turn_off {
     shutdown
 }
 
-function shutdown {
+shutdown() {
     # check whether VM is running and exec shutdown_cmd via SSH
     if is_running; then
         printf "Shutting down ${VM} "
@@ -934,7 +964,7 @@ function shutdown {
     fi
 }
 
-function update_guest_additions_media {
+update_guest_additions_media() {
     # check whether VM exist
     if ! is_present; then
         red "${VM} doese not exist. Use \"vbkick build\" to create the new VM.\n"
@@ -983,7 +1013,7 @@ function update_guest_additions_media {
     # Manuall Guest Additions update/installation is required (via lazy_update cmd).
 }
 
-function validate_vm {
+validate_vm() {
     #
     # test should be smart enough to check what I really want to test
     # e.g. If I don't need chef, don't test whether I have chef
@@ -995,7 +1025,7 @@ function validate_vm {
     exit 0
 }
 
-function lazy_postinstall {
+lazy_postinstall() {
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
@@ -1003,7 +1033,7 @@ function lazy_postinstall {
     exit 0
 }
 
-function lazy_update {
+lazy_update() {
     # load vm description/definition
     load_definition
     # Check whether VBoxGuestAdditions should be installed. If not then not update additions.
@@ -1015,7 +1045,7 @@ function lazy_update {
     exit 0
 }
 
-function ssh_exec {
+ssh_exec() {
     #
     # transport scripts to VM Guest via SCP and exec them via SSH
     #
@@ -1130,7 +1160,7 @@ function ssh_exec {
     fi
 }
 
-function lazy_ssh {
+lazy_ssh() {
     # check whether VM is running
     if ! is_running; then
         red "${VM} is not running...\n"
@@ -1149,7 +1179,7 @@ function lazy_ssh {
     fi
 }
 
-function auto_passwd_ssh {
+auto_passwd_ssh() {
     local _cmd="${1}"
     if command -v expect >/dev/null 2>&1; then
         if [[ -z "${_cmd}" ]]; then
@@ -1172,7 +1202,7 @@ function auto_passwd_ssh {
     fi
 }
 
-function auto_passwd_scp {
+auto_passwd_scp() {
     #echo "Not implemented yet !"
     local _src="${1}"
     local _recursive="${2}"
@@ -1195,17 +1225,7 @@ function auto_passwd_scp {
     fi
 }
 
-# checks whether port is not used by other proc
-function check_port_usage {
-    local port_nr=$1
-    local port_message="${2}"
-    if is_port_used $port_nr; then
-        red "$port_nr port (${port_message}) is already in use.\n"
-        exit 1
-    fi
-}
-
-function start_web_server {
+start_web_server() {
     # Do not start webserver - remote server is used instead to serve kickstart files.
     if [[ $webserver_disabled -eq 1 ]]; then
         return
@@ -1239,7 +1259,7 @@ function start_web_server {
     printf "webserver has been started (pid $web_pid)\n"
 }
 
-function stop_web_server {
+stop_web_server() {
     # check whether webserver is running
     if [[ $webserver_status -eq 0 ]]; then
         return
@@ -1266,7 +1286,7 @@ function stop_web_server {
 }
 
 # (signals and error handler) - cleaning after ctr-c, etc.
-function clean_up {
+clean_up() {
     printf "INFO: Signal/Error handler - cleanup before exiting...\n"
     if [[ $webserver_kill_cmd_status -eq 0 ]]; then
         # stop webserver (only if stop_web_server function didn't fail previuosly)
@@ -1284,27 +1304,7 @@ function clean_up {
     exit 1
 }
 
-function depend_check {
-    local dep_cmd="${1}"
-    local dep_name="${@}"
-    # check whether dep_name is installed - dep_cmd command exist
-    if ! command -v $dep_cmd >/dev/null 2>&1; then
-        red "${dep_cmd} command doesn't exist - install '${dep_name}' to continue.\n"
-        exit 1
-    fi
-}
-
-function dependencies_check {
-    depend_check "VBoxManage" "Virtualbox"
-    depend_check "curl" "curl"
-    depend_check "ssh" "ssh-client (e.g. openssh-client)"
-    depend_check "scp" "scp-client (e.g. openssh-client)"
-    depend_check "python" "python"
-    depend_check "bash" "bash"
-    depend_check "openssl" "openssl"
-}
-
-function main {
+main() {
     # 2 Args required, 3rd is optional - ACTION VM_NAME (DEFINITION_FILE_NAME)
     args_num=$#
     if [[ $args_num -lt 2 ]] || [[ $args_num -gt 3 ]]; then
