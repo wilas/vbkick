@@ -27,6 +27,10 @@ memory_size=512
 disk_size=(10140)
 disk_format="vdi"
 video_memory_size=10
+# default nic type: Intel PRO/1000 MT Desktop (82540EM); recommended - virtio
+# more to choose Am79C970A|Am79C973|82540EM|82543GC|82545EM|virtio
+# http://www.virtualbox.org/manual/ch06.html#nichardware
+nic_type="82540EM"
 # list of VM options: ("option1:value" "option2:value")
 vm_options=("ioapic:on")
 # list of VM extradata to set: ("extradata:value" "extradata:value")
@@ -582,6 +586,8 @@ function create_box {
     VBoxManage modifyvm "${VM}" --vram $video_memory_size
     # setting bootorder
     VBoxManage modifyvm "${VM}" --boot1 disk --boot2 dvd --boot3 none --boot4 none
+    # setting networking
+    VBoxManage modifyvm "${VM}" --nic1 nat --nictype1 $nic_type --cableconnected1 on
     # other settings
     for option in "${vm_options[@]}"; do
         if [[ -z "${option}" ]]; then

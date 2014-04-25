@@ -3,6 +3,7 @@
 FEATURES
  - ansible and puppet provisioners examples were added
  - Fedora 20 template was added
+ - added ```nic_type``` option to allow change type of networking hardware
 
 IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)
