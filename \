@@ -161,17 +161,26 @@ GREEN="\e[1;32m"
 RED="\e[1;31m"
 YELLOW="\e[1;33m"
 NORMAL="\e[0m"
+green() {
+    printf "$GREEN$*$NORMAL"
+}
+red() {
+    printf "$RED$*$NORMAL" >&2
+}
+yellow() {
+    printf "$YELLOW$*$NORMAL"
+}
 log_info() {
     printf "[INFO] $*\n"
 }
 log_ginfo() {
-    printf "$GREEN[INFO] $*$NORMAL\n"
+    green "[INFO] $*\n"
 }
 log_warning() {
-    printf "$YELLOW[WARNING] $*$NORMAL\n"
+    yellow "[WARNING] $*\n"
 }
 log_error() {
-    printf "$RED[ERROR] $*$NORMAL\n" >&2
+    red "[ERROR] $*\n"
 }
 
 # Display help
@@ -526,7 +535,6 @@ build_vm() {
         VBoxManage startvm --type headless "${VM}" && sleep $boot_wait
     fi
     # boot VM machine
-    log_info "Sending keyboard scancodes:"
     for boot_cmd in "${boot_cmd_sequence[@]}"; do
         if [[ -z "${boot_cmd}" ]]; then
             continue
@@ -534,7 +542,7 @@ build_vm() {
         boot_cmd=${boot_cmd//%IP%/$host_ip}
         boot_cmd=${boot_cmd//%PORT%/$kickstart_port}
         boot_cmd=${boot_cmd//%NAME%/${VM}}
-        log_info "${boot_cmd}"
+        log_info "${boot_cmd}\n"
         # converts string to scancode via external python script
         local boot_cmd_code=$(printf "${boot_cmd}" | convert_2_scancode.py)
         # sends code to VM
@@ -570,7 +578,7 @@ create_box() {
     # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media and port 1 for guest additions
     # check disk_size lenght
     if [[ ${#disk_size[@]} -gt 28 ]]; then
-        log_error "Too many disks in disk_size (limited to 28 disks)"
+        log_error "Too many disks in disk_size (limited to 28 disks)\n"
         return 1;
     fi
     if [[ "${vb_version}" > "4.3.0" ]] || [[ "${vb_version}" == "4.3.0" ]]; then
@@ -662,7 +670,7 @@ add_extra_ports_mapping() {
         IFS=':'
         local port_info=($port)
         if [[ ${#port_info[@]} -ne 3 ]]; then
-            log_error "ERROR - one of the ports in extra_ports has invalid format."
+            log_error "ERROR - one of the ports in extra_ports has invalid format.\n"
             return 1
         fi
         local port_name="${port_info[0]}"
@@ -702,7 +710,7 @@ add_shared_folders() {
         IFS=':'
         local folder_info=($folder)
         if [[ ${#folder_info[@]} -lt 2 ]]; then
-            log_error "ERROR - one of the folders in shared_folders has no info about path."
+            log_error "ERROR - one of the folders in shared_folders has no info about path.\n"
             return 1
         fi
         local folder_name="${folder_info[0]}"
@@ -715,16 +723,16 @@ add_shared_folders() {
         fi
 
         if [[ ${#folder_info[@]} -eq 2 ]]; then
-            log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\""
+            log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\"\n"
             VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}"
         elif [[ ${#folder_info[@]} -eq 3 ]]; then
-            log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]}"
+            log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]}\n"
             VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}"
         elif [[ ${#folder_info[@]} -eq 4 ]]; then
-            log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]} --${folder_info[3]}"
+            log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]} --${folder_info[3]}\n"
             VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
         else
-            log_error "ERROR - too much options in one of the shared_folders."
+            log_error "ERROR - too much options in one of the shared_folders.\n"
             return 1
         fi
         IFS=$OIFS
@@ -756,7 +764,7 @@ kickstart_monitoring() {
         # create path to ssh private key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
         printf "\n"
-        log_info "Waiting for ssh login with user ${ssh_user} to 127.0.0.1:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec"
+        log_info "Waiting for ssh login with user ${ssh_user} to 127.0.0.1:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec\n"
         # wait until ssh start working (communication chanel with VM) or kickstart_timeout was reached
         while ! ssh "${ssh_user}@127.0.0.1" -q -t -i ${key_path} -p $ssh_host_port $ssh_options $extra_ssh_options -C "echo"\
             && [[ $kickstart_counter -le $kickstart_timeout ]]; do
@@ -767,7 +775,7 @@ kickstart_monitoring() {
         printf "\n"
     else
         # if no ssh key authentication enabled then wait until timeout will be reached
-        log_info "Sleeping ${kickstart_timeout} seconds ..."
+        log_info "Sleeping ${kickstart_timeout} seconds ...\n"
         sleep $kickstart_timeout
     fi
 }
@@ -775,12 +783,12 @@ kickstart_monitoring() {
 destroy_vm() {
     # check whether VM already exist
     if ! is_present; then
-        log_error "${VM} doesn't exist"
+        log_error "${VM} doesn't exist\n"
         exit 1
     fi
 
     # destroy VM
-    log_info "Destroy ${VM}"
+    log_info "Destroy ${VM}\n"
     read -r -p "Are you sure? [y/N]" ans
     if [[ ! $ans =~ ^[Yy]$ ]]; then
         exit 1
@@ -788,12 +796,12 @@ destroy_vm() {
 
     # check whether VM is running
     if is_running; then
-        log_info "Poweroff ${VM}"
+        log_info "Poweroff ${VM}\n"
         VBoxManage controlvm "${VM}" poweroff
         sleep 1
     fi
 
-    log_info "Destroying..."
+    log_info "Destroying...\n"
     VBoxManage unregistervm "${VM}" --delete
     exit 0
 }
@@ -810,12 +818,12 @@ export_vm() {
     load_definition
     # check whether VM_NAME.box exist in current dir
     if [[ -f "${VM}.box" ]]; then
-        log_error "${VM}.box already exist in `pwd`"
+        log_error "${VM}.box already exist in `pwd`\n"
         exit 1
     fi
     # check whether VM exist
     if ! is_present; then
-        log_error "${VM} doesn't exist"
+        log_error "${VM} doesn't exist\n"
         exit 1
     fi
     # check whether VM is running and shutdown it
@@ -862,7 +870,7 @@ export_vm() {
     rm -rf $tmp_dir
     # help recover some changes made on VM during exporting
     recover_vm_state
-    log_info "Done: `pwd`/${VM}.box"
+    log_info "Done: `pwd`/${VM}.box\n"
     exit 0
 }
 
@@ -892,13 +900,13 @@ turn_on() {
     # check whether VM is already running
     if is_running; then
         # nothing to do
-        log_ginfo "${VM} is already running..."
+        log_ginfo "${VM} is already running...\n"
         exit 0
     fi
 
     # check whether VM already exist
     if ! is_present; then
-        log_error "${VM} doese not exist. Use \"vbkick build\" to create the new VM."
+        log_error "${VM} doese not exist. Use \"vbkick build\" to create the new VM.\n"
         exit 1
     fi
 
@@ -912,7 +920,7 @@ turn_on() {
 turn_off() {
     # check whether VM is running
     if ! is_running; then
-        log_ginfo "${VM} is already turn off."
+        log_ginfo "${VM} is already turn off.\n"
         exit 0
     fi
 
@@ -926,7 +934,7 @@ turn_off() {
 shutdown() {
     # check whether VM is running and exec shutdown_cmd via SSH
     if is_running; then
-        log_info "Shutting down ${VM}."
+        log_info "Shutting down ${VM} "
         if [[ $ssh_keys_enabled -eq 1 ]]; then
             # ssh key authentication enabled
             # if key not exist then get it
@@ -950,10 +958,10 @@ shutdown() {
     # check whether VM is still running, if so use acpipowerbutton
     if is_running; then
         VBoxManage controlvm "${VM}" acpipowerbutton
-        log_info "${VM} - acpipowerbutton was used. Waiting $shutdown_timeout seconds..."
+        log_info "${VM} - acpipowerbutton was used. Waiting $shutdown_timeout seconds...\n"
         sleep $shutdown_timeout
     else
-        log_info "${VM} was shutdown cleanly."
+        log_info "${VM} was shutdown cleanly.\n"
         sleep 3
         return
     fi
@@ -961,10 +969,10 @@ shutdown() {
     # check whether VM is still running, if so poweroff it using hard way.
     if is_running; then
         VBoxManage controlvm "${VM}" poweroff
-        log_info "${VM} was powered off."
+        log_info "${VM} was powered off.\n"
         sleep 3
     else
-        log_info "${VM} was shutdown cleanly."
+        log_info "${VM} was shutdown cleanly.\n"
         sleep 3
     fi
 }
@@ -972,7 +980,7 @@ shutdown() {
 update_guest_additions_media() {
     # check whether VM exist
     if ! is_present; then
-        log_error "${VM} doese not exist. Use \"vbkick build\" to create the new VM."
+        log_error "${VM} doese not exist. Use \"vbkick build\" to create the new VM.\n"
         exit 1
     fi
     # get current guest version
@@ -986,20 +994,19 @@ update_guest_additions_media() {
 
     # check whether we need update or install VBoxGuestAdditions
     if [[ "${vb_version}" == "${guest_version}" ]]; then
-        log_ginfo "VBoxGuestAdditions on ${VM} is up-to-date - update media iso is not needed."
+        log_ginfo "VBoxGuestAdditions on ${VM} is up-to-date - update media iso is not needed.\n"
         return
     fi
     # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
     # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
     if ! VBoxManage showvminfo "${VM}" | grep -qw "SATA Controller (1, 0)"; then
-        log_error "\"SATA Controller (1, 0)\" for \"${VM}\" doesn't exist."
-        log_error "\"SATA Controller\" is sata controller name used by vbkick."
-        log_error "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
-        log_error "To create proper controller use:"
-        log_error "'VBoxManage storagectl \"${VM}\" --name \"SATA Controller\" --add sata --hostiocache $hostiocache --portcount $((${#disk_size[@]}+2))'"
-        log_error "'VBoxManage storageattach \"${VM}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
-        log_error "To do this \"${VM}\" must be shutdown !!!"
-        log_error "Remember - VM Guest may have only one sata controller."
+        log_error "\"SATA Controller (1, 0)\" for \"${VM}\" doesn't exist.\n"
+        red "\"SATA Controller\" is sata controller name used by vbkick.\n"
+        red "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
+        red "\nTo create proper controller use:\n"
+        red "'VBoxManage storagectl \"${VM}\" --name \"SATA Controller\" --add sata --hostiocache $hostiocache --portcount $((${#disk_size[@]}+2))'\n"
+        red "'VBoxManage storageattach \"${VM}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
+        red "\nTo do this \"${VM}\" must be shutdown !!! \nRemember - VM Guest may have only one sata controller.\n"
         exit 1
     fi
     # Attach new VBoxGuestAdditions to install
@@ -1066,14 +1073,14 @@ ssh_exec() {
 
     # check whether VM is running
     if ! is_running; then
-        log_error "${VM} is not running..."
+        log_error "${VM} is not running...\n"
         exit 1
     fi
 
     # checking port forwarding (if no proper rules, try add new one for NAT mapping)
     if ! VBoxManage showvminfo "${VM}" | grep "NIC 1" | grep "host port = ${ssh_host_port}"\
         | grep -q "guest port = ${ssh_guest_port}"; then
-        log_info "NAT mapping - enable ssh port forwarding"
+        log_info "NAT mapping - enable ssh port forwarding\n"
         VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
@@ -1090,7 +1097,7 @@ ssh_exec() {
             continue
         else
             # pkt is neither file nor directory
-            log_error "${pkt} is neither file nor directory"
+            log_error "${pkt} is neither file nor directory\n"
             exit 1
         fi
     done
@@ -1107,7 +1114,7 @@ ssh_do_transport() {
         if [[ -z "${pkt}" ]]; then
             continue
         fi
-        log_info "Scp: ${pkt}"
+        log_info "Scp: ${pkt}\n"
         # check whether pkt is file or dir
         if [[ -d "${pkt}" ]]; then
             # pkt is directory
@@ -1148,11 +1155,11 @@ ssh_do_launch() {
             cmd=${cmd//%HOST%/}
             # process defined/template variables
             cmd=$(prepare_path "${cmd}" 0)
-            log_info "Exec (on host): ${cmd}"
+            log_info "Exec (on host): ${cmd}\n"
             eval "${cmd}"
             continue
         fi
-        log_info "Exec: ${cmd}"
+        log_info "Exec: ${cmd}\n"
         if [[ $ssh_keys_enabled -eq 1 ]]; then
             # create path to ssh private key
             local key_path="${ssh_keys_path}/${ssh_priv_key}"
@@ -1172,7 +1179,7 @@ ssh_do_cleanup() {
             if [[ -z "${pkt}" ]]; then
                 continue
             fi
-            log_info "Clean transported: ${pkt}"
+            log_info "Clean transported: ${pkt}\n"
             local pkt_to_clean=$(basename "${pkt}")
             if [[ $ssh_keys_enabled -eq 1 ]]; then
                 # create path to ssh private key
@@ -1189,7 +1196,7 @@ ssh_do_cleanup() {
 lazy_ssh() {
     # check whether VM is running
     if ! is_running; then
-        log_error "${VM} is not running..."
+        log_error "${VM} is not running...\n"
         exit 1
     fi
     # load vm description/definition
@@ -1216,8 +1223,8 @@ auto_passwd_ssh() {
         fi
         expect -c "log_user 0; spawn $_expect_cmd; expect password; send \"$ssh_password\r\"; interact; catch wait reason; exit [lindex \$reason 3]"
     else
-        log_warning "'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key."
-        log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}"
+        log_warning "'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key.\n"
+        log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}\n"
         # Process without expect
         if [[ -z "$_cmd" ]]; then
             # No cmd to exec, interactive shell
@@ -1240,8 +1247,8 @@ auto_passwd_scp() {
         fi
         expect -c "log_user 0; spawn $_expect_cmd; expect password; send \"$ssh_password\r\"; expect eof; catch wait reason; exit [lindex \$reason 3]"
     else
-        log_warning "'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key."
-        log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}"
+        log_warning "'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key.\n"
+        log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}\n"
         # Process without expect
         if [[ $_recursive -eq 1 ]]; then
             scp -q -P $ssh_host_port $ssh_options -r "${_src}" "${ssh_user}@127.0.0.1:~${ssh_user}"
@@ -1265,7 +1272,7 @@ start_web_server() {
     elif [[ $py_version -eq 3 ]]; then
         webserver_module="http.server"
     else
-        log_error "Unknown python version."
+        log_error "Unknown python version\n"
         exit 1
     fi
     python -m $webserver_module $kickstart_port &
@@ -1276,13 +1283,13 @@ start_web_server() {
     sleep 2
     # check whether web server was really started
     if ! is_port_used $kickstart_port; then
-        log_error "webserver was not started"
+        log_error "webserver was not started\n"
         if kill -s 0 $web_pid 2>/dev/null; then
             kill $web_pid
         fi
         exit 1
     fi
-    log_info "webserver has been started (pid $web_pid)"
+    log_info "webserver has been started (pid $web_pid)\n"
 }
 
 stop_web_server() {
@@ -1290,7 +1297,7 @@ stop_web_server() {
     if [[ $webserver_status -eq 0 ]]; then
         return
     fi
-    log_info "Stopping webserver (pid $web_pid)"
+    log_info "Stopping webserver (pid $web_pid)\n"
     # with "set -e -E" if kill command fail then ERR trap is processing
     # simply execution of function is not continued
     webserver_kill_cmd_status=1
@@ -1304,22 +1311,22 @@ stop_web_server() {
     # kill command is sucessfull when SIGTERM is sent to running process
     # not when child process was really killed
     if ! ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -qv grep; then
-        log_info "webserver was stopped"
+        log_info "webserver was stopped\n"
     else
-        log_warning "problem with stopping webserver. Kill process manually"
+        log_warning "problem with stopping webserver. Kill process manually\n"
         ps -ef | grep "python -m $webserver_module $kickstart_port" | grep -v grep
     fi
 }
 
 # (signals and error handler) - cleaning after ctr-c, etc.
 clean_up() {
-    log_info "Signal/Error handler - cleanup before exiting..."
+    printf "INFO: Signal/Error handler - cleanup before exiting...\n"
     if [[ $webserver_kill_cmd_status -eq 0 ]]; then
         # stop webserver (only if stop_web_server function didn't fail previuosly)
         stop_web_server
     else
         # previuosly executed stop_web_server function fail in killing $web_pid
-        log_warning "problem with killing webserver (proc ${web_pid}). Kill process manually."
+        log_warning "problem with killing webserver (proc ${web_pid}). Kill process manually.\n"
     fi
     # help recover some changes made on VM during exporting
     recover_vm_state
