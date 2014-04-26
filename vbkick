@@ -1075,8 +1075,6 @@ ssh_exec() {
     if [[ $ssh_keys_enabled -eq 1 ]]; then
         # if key not exist then get it
         get_priv_ssh_key
-        # create path to ssh private key
-        local key_path="${ssh_keys_path}/${ssh_priv_key}"
     fi
 
     # check whether all pkt can by transported, before starting transporting -
@@ -1091,6 +1089,13 @@ ssh_exec() {
         fi
     done
 
+    ssh_do_transport "${transport[@]}"
+    ssh_do_launch "${launch[@]}"
+    ssh_do_cleanup "${transport[@]}"
+}
+
+ssh_do_transport() {
+    local transport=("${@}")
     # transport scripts to guest
     for pkt in "${transport[@]}"; do
         if [[ -z "${pkt}" ]]; then
@@ -1101,6 +1106,8 @@ ssh_exec() {
         if [[ -d "${pkt}" ]]; then
             # pkt is directory
             if [[ $ssh_keys_enabled -eq 1 ]]; then
+                # create path to ssh private key
+                local key_path="${ssh_keys_path}/${ssh_priv_key}"
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options -r "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
                 # 1 mean scp directory (recursive)
@@ -1109,6 +1116,8 @@ ssh_exec() {
         elif [[ -f "${pkt}" ]]; then
             # pkt is file
             if [[ $ssh_keys_enabled -eq 1 ]]; then
+                # create path to ssh private key
+                local key_path="${ssh_keys_path}/${ssh_priv_key}"
                 scp -q -P $ssh_host_port -i "${key_path}" $ssh_options "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
                 # 0 mean scp file
@@ -1118,6 +1127,10 @@ ssh_exec() {
         sleep 1
     done
 
+}
+
+ssh_do_launch() {
+    local launch=("${@}")
     # run commands via ssh
     for cmd in "${launch[@]}"; do
         if [[ -z "${cmd}" ]]; then
@@ -1135,13 +1148,18 @@ ssh_exec() {
         fi
         printf "Exec: ${cmd}\n"
         if [[ $ssh_keys_enabled -eq 1 ]]; then
+            # create path to ssh private key
+            local key_path="${ssh_keys_path}/${ssh_priv_key}"
             ssh -q "${ssh_user}@127.0.0.1" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "${cmd}"
         else
             auto_passwd_ssh "${cmd}"
         fi
         sleep 1
     done
+}
 
+ssh_do_cleanup() {
+    local transport=("${@}")
     # clean after scp by rm transported media/scripts
     if [[ $clean_transported -eq 1 ]]; then
         for pkt in "${transport[@]}"; do
@@ -1151,6 +1169,8 @@ ssh_exec() {
             printf "Clean transported: ${pkt}\n"
             local pkt_to_clean=$(basename "${pkt}")
             if [[ $ssh_keys_enabled -eq 1 ]]; then
+                # create path to ssh private key
+                local key_path="${ssh_keys_path}/${ssh_priv_key}"
                 ssh -q "${ssh_user}@127.0.0.1" -t -i ${key_path} -p $ssh_host_port $ssh_options -C "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
             else
                 auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
