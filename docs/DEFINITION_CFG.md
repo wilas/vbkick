@@ -39,6 +39,10 @@ More details soon.
 
  default: "on"
 
+ - nic_type
+ 
+ default: "82540EM"
+
  - vm_options
 
  default: ("ioapic:on")
