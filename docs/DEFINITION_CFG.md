@@ -39,6 +39,10 @@ More details soon.
 
  default: "on"
 
+ - boot_order
+
+ default: ("disk" "dvd")
+
  - nic_type
  
  default: "82540EM"
