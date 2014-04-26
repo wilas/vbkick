@@ -234,7 +234,7 @@ depend_check() {
     # check whether dep_name is installed - dep_cmd command exist
     if ! command -v $dep_cmd >/dev/null 2>&1; then
         log_error "${dep_cmd} command doesn't exist - install '${dep_name}' to continue."
-        exit 1
+        return 1
     fi
 }
 
@@ -253,7 +253,7 @@ check_required_options() {
     for opt in "${opts[@]}"; do
         if [[ -z "${!opt+x}" ]]; then
             log_error "Required $opt option is not defined."
-            exit 1
+            return 1
         fi
     done
 }
@@ -267,7 +267,7 @@ load_definition() {
         . "./${definition_fname}"
     else
         log_error "Not existing or empty \"${definition_fname}\" file in `pwd`. Terminating..."
-        exit 1
+        return 1
     fi
     check_required_options
     autoupdate_files_with_vbox_version
@@ -311,7 +311,7 @@ check_port_usage() {
     local port_message="${@}"
     if is_port_used $port_nr; then
         log_error "$port_nr port (${port_message}) is already used by an other process."
-        exit 1
+        return 1
     fi
 }
 
@@ -341,8 +341,6 @@ prepare_path() {
 curl_safe() {
     local src="${1}"
     local dest="${2}"
-    echo $src
-    echo $dest
     local STATUSCODE=$(curl -Lkfw "%{http_code}\n" "${src}" -o "${dest}")
     if [[ $STATUSCODE -ne 200 ]]; then
         log_error "${src} status code is ${STATUSCODE}. Terminating..."
@@ -506,16 +504,10 @@ build_vm() {
     # start simple webserver (in background)
     start_web_server
     # download boot/iso files
-    if ! download_boot_media; then
-        stop_web_server
-        exit 1
-    fi
+    download_boot_media
     download_guest_additions_media
     # create VM box with given settings
-    if ! create_box; then
-        stop_web_server
-        exit 1
-    fi
+    create_box
     # host ip to connect from guest
     local host_ip=10.0.2.2
     # start VM
@@ -662,6 +654,7 @@ add_extra_ports_mapping() {
         local port_info=($port)
         if [[ ${#port_info[@]} -ne 3 ]]; then
             log_error "one of the ports in extra_ports has invalid format."
+            IFS=$OIFS
             return 1
         fi
         local port_name="${port_info[0]}"
@@ -702,6 +695,7 @@ add_shared_folders() {
         local folder_info=($folder)
         if [[ ${#folder_info[@]} -lt 2 ]]; then
             log_error "one of the folders in shared_folders has no info about path."
+            IFS=$OIFS
             return 1
         fi
         local folder_name="${folder_info[0]}"
@@ -724,6 +718,7 @@ add_shared_folders() {
             VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
         else
             log_error "too much options in one of the shared_folders."
+            IFS=$OIFS
             return 1
         fi
         IFS=$OIFS
@@ -972,7 +967,7 @@ update_guest_additions_media() {
     # check whether VM exist
     if ! is_present; then
         log_error "${VM} doese not exist. Use \"vbkick build\" to create the new VM."
-        exit 1
+        return 1
     fi
     # get current guest version
     if VBoxManage guestproperty enumerate "${VM}" | grep -q "GuestAdd/Version"; then
@@ -999,7 +994,7 @@ update_guest_additions_media() {
         log_error "'VBoxManage storageattach \"${VM}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
         log_error "To do this \"${VM}\" must be shutdown !!!"
         log_error "Remember - VM Guest may have only one sata controller."
-        exit 1
+        return 1
     fi
     # Attach new VBoxGuestAdditions to install
     # vbkick creates VM with SATA Controller port 1 available for VBoxGuestAdditions iso.
@@ -1026,7 +1021,9 @@ validate_vm() {
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}"
+    if ! ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}"; then
+        exit 1
+    fi
     exit 0
 }
 
@@ -1034,7 +1031,9 @@ lazy_postinstall() {
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}"
+    if ! ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}"; then
+        exit 1
+    fi
     exit 0
 }
 
@@ -1043,10 +1042,14 @@ lazy_update() {
     load_definition
     # Check whether VBoxGuestAdditions should be installed. If not then not update additions.
     if [[ $guest_additions_attach -eq 1 ]]; then
-        update_guest_additions_media
+        if ! update_guest_additions_media; then
+            exit 1
+        fi
     fi
     # Run other update scripts on VM Guest via ssh
-    ssh_exec ${#update_transport[@]} "${update_transport[@]}" "${update_launch[@]}"
+    if ! ssh_exec ${#update_transport[@]} "${update_transport[@]}" "${update_launch[@]}"; then
+        exit 1
+    fi
     exit 0
 }
 
@@ -1066,7 +1069,7 @@ ssh_exec() {
     # check whether VM is running
     if ! is_running; then
         log_error "${VM} is not running..."
-        exit 1
+        return 1
     fi
 
     # checking port forwarding (if no proper rules, try add new one for NAT mapping)
@@ -1090,11 +1093,14 @@ ssh_exec() {
         else
             # pkt is neither file nor directory
             log_error "${pkt} is neither file nor directory"
-            exit 1
+            return 1
         fi
     done
 
-    ssh_do_transport "${transport[@]}"
+    if ! ssh_do_transport "${transport[@]}"; then
+        ssh_do_cleanup "${transport[@]}"
+        return 1
+    fi
     ssh_do_launch "${launch[@]}"
     ssh_do_cleanup "${transport[@]}"
 }
@@ -1131,7 +1137,6 @@ ssh_do_transport() {
         fi
         sleep 1
     done
-
 }
 
 ssh_do_launch() {
@@ -1228,7 +1233,6 @@ auto_passwd_ssh() {
 }
 
 auto_passwd_scp() {
-    #echo "Not implemented yet !"
     local _src="${1}"
     local _recursive="${2}"
     if command -v expect >/dev/null 2>&1; then
@@ -1265,7 +1269,7 @@ start_web_server() {
         webserver_module="http.server"
     else
         log_error "Unknown python version."
-        exit 1
+        return 1
     fi
     python -m $webserver_module $kickstart_port &
     # get the pid already spawned process, to kill it later
@@ -1279,7 +1283,8 @@ start_web_server() {
         if kill -s 0 $web_pid 2>/dev/null; then
             kill $web_pid
         fi
-        exit 1
+        webserver_status=0
+        return 1
     fi
     log_info "webserver has been started (pid $web_pid)"
 }
