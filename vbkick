@@ -508,7 +508,9 @@ build_vm() {
     # start simple webserver (in background)
     start_web_server
     # download boot/iso files
-    download_boot_media
+    if ! download_boot_media; then
+        exit 1
+    fi
     download_guest_additions_media
     # create VM box with given settings
     create_box
