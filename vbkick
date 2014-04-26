@@ -1330,6 +1330,11 @@ stop_web_server() {
 # (signals and error handler) - cleaning after ctr-c, etc.
 clean_up() {
     log_info "Signal/Error handler - cleanup before exiting..."
+    exit 1
+}
+
+on_exit(){
+    log_info "Clean exit."
     if [[ $webserver_kill_cmd_status -eq 0 ]]; then
         # stop webserver (only if stop_web_server function didn't fail previuosly)
         stop_web_server
@@ -1343,7 +1348,6 @@ clean_up() {
     if [[ -d $tmp_dir ]]; then
         rm -rf $tmp_dir
     fi
-    exit 1
 }
 
 main() {
@@ -1369,4 +1373,5 @@ main() {
 # Note: no exit handler is set, so `exit 1` ends the program without running clean_up,
 # this is done on purpose to not run clean_up twice when error occur
 trap clean_up SIGHUP SIGINT SIGTERM ERR
+trap on_exit EXIT
 main "$@"
