@@ -402,8 +402,19 @@ download_boot_media() {
     local boot_file_path=$(prepare_path "${boot_file_path}" 1)
     boot_file="${boot_file_path}/${boot_file_name}"
 
+    # the temporary name for boot_file is last part from boot_file_src
+    local tmp_name=$(basename "${boot_file_src}")
+    boot_file_src_path=$(prepare_path "${boot_file_src_path}" 1)
+    local boot_file_src_file="${boot_file_src_path}/${tmp_name}"
+
     # check whether boot file exist
     if [[ -f "${boot_file}" ]]; then
+        # if boot_file is the same as boot_file_src_file then we can verify checksum
+        # Note: In definition provided is checksum for the boot_file_src which may be a different
+        # than destination boot_file
+        if [[ "${boot_file}" == "${boot_file_src_file}" ]]; then
+            verify_boot_media_checksum "${boot_file}"
+        fi
         # file exist, nothing to do
         return
     fi
@@ -414,10 +425,6 @@ download_boot_media() {
         return 1
     fi
 
-    # the temporary name for boot_file is last part from boot_file_src
-    local tmp_name=$(basename "${boot_file_src}")
-    boot_file_src_path=$(prepare_path "${boot_file_src_path}" 1)
-    local boot_file_src_file="${boot_file_src_path}/${tmp_name}"
     # check whether boot_file_src exist
     if [[ ! -f "${boot_file_src_file}" ]]; then
         curl_safe "${boot_file_src}" "${boot_file_src_file}"
