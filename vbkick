@@ -58,8 +58,7 @@ guest_additions_path=""
 boot_file_type="dvddrive"
 # default path for src media needed to create destination boot_file
 boot_file_src_path="iso"
-# by default checksum is empty
-# WARNING is given during processing if checksum is wrong
+# by default checksum is empty - checksum is not check
 boot_file_src_checksum=""
 # default cheksum type is sha256
 boot_file_checksum_type="sha256"
@@ -662,7 +661,7 @@ add_extra_ports_mapping() {
         IFS=':'
         local port_info=($port)
         if [[ ${#port_info[@]} -ne 3 ]]; then
-            log_error "ERROR - one of the ports in extra_ports has invalid format."
+            log_error "one of the ports in extra_ports has invalid format."
             return 1
         fi
         local port_name="${port_info[0]}"
@@ -702,7 +701,7 @@ add_shared_folders() {
         IFS=':'
         local folder_info=($folder)
         if [[ ${#folder_info[@]} -lt 2 ]]; then
-            log_error "ERROR - one of the folders in shared_folders has no info about path."
+            log_error "one of the folders in shared_folders has no info about path."
             return 1
         fi
         local folder_name="${folder_info[0]}"
@@ -724,7 +723,7 @@ add_shared_folders() {
             log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]} --${folder_info[3]}"
             VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
         else
-            log_error "ERROR - too much options in one of the shared_folders."
+            log_error "too much options in one of the shared_folders."
             return 1
         fi
         IFS=$OIFS
