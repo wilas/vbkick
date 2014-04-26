@@ -27,6 +27,10 @@ memory_size=512
 disk_size=(10140)
 disk_format="vdi"
 video_memory_size=10
+# available boot devices: none|floppy|dvd|disk|net
+# there are four slots, if priovided less than 4, extra slots set to none
+# if provided more than 4, extra values are droped
+boot_order=("disk" "dvd")
 # default nic type: Intel PRO/1000 MT Desktop (82540EM); recommended - virtio
 # more to choose Am79C970A|Am79C973|82540EM|82543GC|82545EM|virtio
 # http://www.virtualbox.org/manual/ch06.html#nichardware
@@ -446,7 +450,7 @@ verify_boot_media_checksum(){
     if [[ ! -z "${boot_file_src_checksum}" ]]; then
         local get_checksum=$(openssl "${boot_file_checksum_type}" "${boot_file_src_file}" | cut -d" " -f 2)
         if [[ "${boot_file_src_checksum}" != "${get_checksum}" ]]; then
-            log_warning "CHECKSUM is different then expected !"
+            log_warning "CHECKSUM is different than expected !"
             read -r -p "Do you want continue? [y/N]" ans
             if [[ ! $ans =~ ^[Yy]$ ]]; then
                 return 1
@@ -634,7 +638,21 @@ create_box() {
     # setting video memory size
     VBoxManage modifyvm "${VM}" --vram $video_memory_size
     # setting bootorder
-    VBoxManage modifyvm "${VM}" --boot1 disk --boot2 dvd --boot3 none --boot4 none
+    local bo_idx=1
+    for bo in "${boot_order[@]}"; do
+        if [[ -z "${bo}" ]]; then
+            VBoxManage modifyvm "${VM}" --boot${bo_idx} none
+        else
+            VBoxManage modifyvm "${VM}" --boot${bo_idx} ${bo}
+        fi
+        local bo_idx=$((bo_idx+1))
+        if [[ ${bo_idx} -eq 5 ]]; then
+            break
+        fi
+    done
+    for ((i=$bo_idx; i<=4; i++)); do
+        VBoxManage modifyvm "${VM}" --boot${i} none
+    done
     # setting networking
     VBoxManage modifyvm "${VM}" --nic1 nat --nictype1 $nic_type --cableconnected1 on
     # other settings
