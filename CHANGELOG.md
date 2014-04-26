@@ -10,6 +10,7 @@ IMPROVEMENTS
  - works when IPV6 is enabled and ```::1     localhost``` appear in ```/etc/hosts``` - [#33](../../issues/33)
  - checks curl status code
  - empty boot_file_src_checksum variable mean don't check checksum instead warning about wrong value
+ - auto destroy VM during building if all requested VM settings weren't correctly setup
 
 BUG FIXES
  - expand a special variables in paths e.g. ~ (tilde) is now not treated as a literal string "~" but expand to user home dir.

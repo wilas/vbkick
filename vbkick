@@ -148,6 +148,10 @@ webserver_status=0
 webserver_kill_cmd_status=0
 # during exporting tmp directory is created
 tmp_dir=""
+# during creation VM may be temporary in inconsistent state
+# e.g. not all ports mapping, options etc. were setup
+# this flag is used to make sure that vm was created completely or not at all
+vm_creation_state=0
 # during exporting NAT mapping is removed (temporary) - help recover state before exporting
 ssh_natmapping_was_removed=0
 # during exporting shared folders are removed (temporary) - help recover state before exporting
@@ -552,6 +556,7 @@ build_vm() {
 create_box() {
     # Register vm
     VBoxManage createvm --name "${VM}" --ostype "${os_type_id}" --register
+    vm_creation_state=1
 
     # Creates disks
     # Get default location for disks
@@ -641,6 +646,7 @@ create_box() {
 
     # add shared folders
     add_shared_folders
+    vm_creation_state=0
 }
 
 add_extra_ports_mapping() {
@@ -782,12 +788,12 @@ destroy_vm() {
 
     # check whether VM is running
     if is_running; then
-        log_info "Poweroff ${VM}"
+        log_info "Poweroff '${VM}'"
         VBoxManage controlvm "${VM}" poweroff
         sleep 1
     fi
 
-    log_info "Destroying..."
+    log_info "Destroying '${VM}'..."
     VBoxManage unregistervm "${VM}" --delete
     exit 0
 }
@@ -861,6 +867,12 @@ export_vm() {
 }
 
 recover_vm_state() {
+    # destroy VM as creation process was unsuccessful
+    if [[ $vm_creation_state -eq 1 ]]; then
+        log_info "Destroying not completed Virtual machine - '${VM}'"
+        VBoxManage unregistervm "${VM}" --delete
+        vm_creation_state=0
+    fi
     # add NAT mapping after exporting - only if exist prev.
     if [[ $ssh_natmapping_was_removed -eq 1 ]]; then
         VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
