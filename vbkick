@@ -383,13 +383,13 @@ remove_guest_additions_media() {
     fi
     log_info "List of VBoxGuestAdditions files to remove:"
     for file in ${file_list}; do
-        printf "${file}\n"
+        printf "${guest_additions_path}/${file}\n"
     done
     # to remove files ask about confirmation
     read -r -p "Do you want remove above VBoxGuestAdditions files? [y/N]" ans
     if [[ $ans =~ ^[Yy]$ ]]; then
         for file in ${file_list}; do
-            printf "${file}\n"
+            printf "${guest_additions_path}/${file}\n"
             rm -f "${guest_additions_path}/${file}"
         done
     fi
@@ -422,7 +422,19 @@ download_boot_media() {
     if [[ ! -f "${boot_file_src_file}" ]]; then
         curl_safe "${boot_file_src}" "${boot_file_src_file}"
     fi
+    verify_boot_media_checksum "${boot_file_src_file}"
 
+    # process unpack
+    if [[ ! -z "${boot_file_unpack_cmd}" ]]; then
+        unpack_boot_media
+        local boot_file_src_file="${boot_file_unpack_name}"
+    fi
+
+    deploy_boot_media_file "${boot_file_src_file}"
+}
+
+verify_boot_media_checksum(){
+    local boot_file_src_file="${@}"
     # verify boot_file_src checksum if boot_file_src_checksum is provided
     if [[ ! -z "${boot_file_src_checksum}" ]]; then
         local get_checksum=$(openssl "${boot_file_checksum_type}" "${boot_file_src_file}" | cut -d" " -f 2)
@@ -436,27 +448,28 @@ download_boot_media() {
             log_info "CHECKSUM:${boot_file_src_checksum} is valid."
         fi
     fi
+}
 
-    # process unpack
-    if [[ ! -z "${boot_file_unpack_cmd}" ]]; then
-        # check whether boot_file_unpack_name is empty if so then error
-        if [[ -z "${boot_file_unpack_name}" ]]; then
-            log_error "boot_file_unpack_name is empty, but boot_file_unpack_cmd is specify"
-            return 1
-        fi
-        # prepare path - this is full path, must already exist in filesystem
-        boot_file_unpack_name=$(prepare_path "${boot_file_unpack_name}" 0)
-        # check whether boot_file_unpack_name exist - if not then run unpack cmd
-        if [[ ! -f "${boot_file_unpack_name}" ]]; then
-            # prepare and run unpack cmd
-            boot_file_unpack_cmd=$(prepare_path "${boot_file_unpack_cmd}" 0)
-            log_info "${boot_file_unpack_cmd}"
-            eval "${boot_file_unpack_cmd}"
-        fi
-        local boot_file_src_file="${boot_file_unpack_name}"
+unpack_boot_media(){
+    # check whether boot_file_unpack_name is empty if so then error
+    if [[ -z "${boot_file_unpack_name}" ]]; then
+        log_error "boot_file_unpack_name is empty, but boot_file_unpack_cmd is specify"
+        return 1
     fi
+    # prepare path - this is full path, must already exist in filesystem
+    boot_file_unpack_name=$(prepare_path "${boot_file_unpack_name}" 0)
+    # check whether boot_file_unpack_name exist - if not then run unpack cmd
+    if [[ ! -f "${boot_file_unpack_name}" ]]; then
+        # prepare and run unpack cmd
+        boot_file_unpack_cmd=$(prepare_path "${boot_file_unpack_cmd}" 0)
+        log_info "${boot_file_unpack_cmd}"
+        eval "${boot_file_unpack_cmd}"
+    fi
+}
 
-    # process convert from raw
+deploy_boot_media_file(){
+    local boot_file_src_file="${@}"
+    # process convert from raw if necessary
     if [[ $boot_file_convert_from_raw -eq 1 ]]; then
         VBoxManage convertfromraw "${boot_file_src_file}" "${boot_file}" --format "${disk_format}"
         if [[ $keep_boot_src_file -eq 0 ]]; then
@@ -508,9 +521,7 @@ build_vm() {
     # start simple webserver (in background)
     start_web_server
     # download boot/iso files
-    if ! download_boot_media; then
-        exit 1
-    fi
+    download_boot_media
     download_guest_additions_media
     # create VM box with given settings
     create_box
@@ -1035,9 +1046,7 @@ validate_vm() {
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    if ! ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}"; then
-        exit 1
-    fi
+    ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}"
     exit 0
 }
 
@@ -1045,9 +1054,7 @@ lazy_postinstall() {
     # load vm description/definition
     load_definition
     # exec scripts on VM Guest via ssh
-    if ! ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}"; then
-        exit 1
-    fi
+    ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}"
     exit 0
 }
 
@@ -1056,14 +1063,10 @@ lazy_update() {
     load_definition
     # Check whether VBoxGuestAdditions should be installed. If not then not update additions.
     if [[ $guest_additions_attach -eq 1 ]]; then
-        if ! update_guest_additions_media; then
-            exit 1
-        fi
+        update_guest_additions_media
     fi
     # Run other update scripts on VM Guest via ssh
-    if ! ssh_exec ${#update_transport[@]} "${update_transport[@]}" "${update_launch[@]}"; then
-        exit 1
-    fi
+    ssh_exec ${#update_transport[@]} "${update_transport[@]}" "${update_launch[@]}"
     exit 0
 }
 
@@ -1111,6 +1114,9 @@ ssh_exec() {
         fi
     done
 
+    # complex function shouldn't be check by 'if'; it has big consequence how function definition is processed
+    # whole body of function will be executed even error occur (e.g. one of the subfunctions exit with error code 1)
+    # I'm aware of this and here it's fine to check ssh_do_transport
     if ! ssh_do_transport "${transport[@]}"; then
         ssh_do_cleanup "${transport[@]}"
         return 1
