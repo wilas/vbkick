@@ -695,16 +695,17 @@ create_box() {
     fi
 
     # extra ports NAT mapping
-    add_extra_ports_mapping
+    add_extra_ports_mapping "${extra_ports[@]}"
 
     # add shared folders
-    add_shared_folders
+    add_shared_folders "${shared_folders[@]}"
     _vm_creation_status=0
 }
 
 add_extra_ports_mapping() {
+    local lc_extra_ports=("${@}")
     local port
-    for port in "${extra_ports[@]}"; do
+    for port in "${lc_extra_ports[@]}"; do
         if [[ -z "${port}" ]]; then
             continue
         fi
@@ -729,8 +730,9 @@ add_extra_ports_mapping() {
 }
 
 remove_extra_ports_mapping() {
+    local lc_extra_ports=("${@}")
     local port
-    for port in "${extra_ports[@]}"; do
+    for port in "${lc_extra_ports[@]}"; do
         if [[ -z "${port}" ]]; then
             # note which extra ports were removed by moving _extraports_removed_ptr
             _extraports_removed_ptr=$((_extraports_removed_ptr+1))
@@ -746,8 +748,9 @@ remove_extra_ports_mapping() {
 }
 
 add_shared_folders() {
+    local lc_shared_folders=("${@}")
     local folder
-    for folder in "${shared_folders[@]}"; do
+    for folder in "${lc_shared_folders[@]}"; do
         if [[ -z "${folder}" ]]; then
             continue
         fi
@@ -788,8 +791,9 @@ add_shared_folders() {
 }
 
 remove_shared_folders() {
+    local lc_shared_folders=("${@}")
     local folder
-    for folder in "${shared_folders[@]}"; do
+    for folder in "${lc_shared_folders[@]}"; do
         if [[ -z "${folder}" ]]; then
             # note which shared folders were removed by moving _sharedfolders_removed_ptr
             _sharedfolders_removed_ptr=$((_sharedfolders_removed_ptr+1))
@@ -886,10 +890,10 @@ export_vm() {
     fi
 
     # rm extra ports (only if exist)
-    remove_extra_ports_mapping
+    remove_extra_ports_mapping "${extra_ports[@]}"
 
     # rm shared folder (only if exist)
-    remove_shared_folders
+    remove_shared_folders "${shared_folders[@]}"
 
     # create _tmp_dir for export data
     _tmp_dir=$(TMPDIR=. mktemp -d)
@@ -939,15 +943,15 @@ recover_vm_state() {
     # add extra ports after exporting - only if exist prev.
     if [[ ${_extraports_removed_ptr} -gt 0 ]]; then
         # add only folders which were removed, skip others (useful when SIGINT)
-        extra_ports=("${extra_ports[@]:0:${_extraports_removed_ptr}}")
-        add_extra_ports_mapping
+        local lc_extra_ports=("${extra_ports[@]:0:${_extraports_removed_ptr}}")
+        add_extra_ports_mapping "${lc_extra_ports[@]}"
         _extraports_removed_ptr=0
     fi
     # add shared folder after exporting - only if exist prev.
     if [[ ${_sharedfolders_removed_ptr} -gt 0 ]]; then
         # add only folders which were removed, skip others (useful when SIGINT)
-        shared_folders=("${shared_folders[@]:0:${_sharedfolders_removed_ptr}}")
-        add_shared_folders
+        local lc_shared_folders=("${shared_folders[@]:0:${_sharedfolders_removed_ptr}}")
+        add_shared_folders "${lc_shared_folders[@]}"
         _sharedfolders_removed_ptr=0
     fi
 }
