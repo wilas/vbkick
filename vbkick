@@ -199,6 +199,9 @@ usage() {
     printf "\tssh                   ssh to VM\n"
     printf "\ton                    turn on VM\n"
     printf "\tshutdown              shutdown VM\n"
+    printf "\n"
+    printf "Extra actions where VM_NAME is not required:\n"
+    printf "\tversion               display vbkick version and exit\n"
     printf "\thelp                  display this help and exit\n"
     printf "\n"
 }
@@ -218,6 +221,10 @@ process_args() {
         "shutdown") turn_off ;;
         *) usage; exit ;;
     esac
+}
+
+prog_version(){
+    printf "0.7.0-dev\n"
 }
 
 # Help automatically update/maintain value of VBOX_VERSION in given files list
@@ -1396,7 +1403,7 @@ clean_up() {
 }
 
 on_exit(){
-    log_info "vbkick clean exit."
+    #log_info "vbkick clean exit."
     if [[ ${_webserver_kill_cmd_status} -eq 0 ]]; then
         # stop webserver (only if stop_web_server function didn't fail previuosly)
         stop_web_server
@@ -1415,6 +1422,10 @@ on_exit(){
 main() {
     # 2 Args required, 3rd is optional - ACTION VM_NAME (DEFINITION_FILE_NAME)
     local args_num=$#
+    if [[ ${args_num} -gt 0 ]] && [[ "${1}" == "version" ]]; then
+        prog_version
+        exit 0
+    fi
     if [[ ${args_num} -lt 2 ]] || [[ ${args_num} -gt 3 ]]; then
         usage
         exit 1
