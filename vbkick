@@ -526,7 +526,7 @@ get_priv_ssh_key() {
 build_vm() {
     # check whether VM already exist
     if is_present; then
-        log_error "${VM} already exist"
+        log_error "'${VM}' already exist"
         exit 1
     fi
     # load vm description/definition
@@ -832,12 +832,12 @@ kickstart_monitoring() {
 destroy_vm() {
     # check whether VM already exist
     if ! is_present; then
-        log_error "${VM} doesn't exist"
+        log_error "'${VM}' doesn't exist"
         exit 1
     fi
 
     # destroy VM
-    log_info "Destroy ${VM}"
+    log_info "Destroy '${VM}'"
     local ans
     read -r -p "Are you sure? [y/N]" ans
     if [[ ! ${ans} =~ ^[Yy]$ ]]; then
@@ -868,12 +868,12 @@ export_vm() {
     load_definition
     # check whether VM_NAME.box exist in current dir
     if [[ -f "${VM}.box" ]]; then
-        log_error "${VM}.box already exist in $(pwd)"
+        log_error "'${VM}.box' already exist in '$(pwd)'"
         exit 1
     fi
     # check whether VM exist
     if ! is_present; then
-        log_error "${VM} doesn't exist"
+        log_error "'${VM}' doesn't exist"
         exit 1
     fi
     # check whether VM is running and shutdown it
@@ -920,7 +920,7 @@ export_vm() {
     rm -rf ${_tmp_dir}
     # help recover some changes made on VM during exporting
     recover_vm_state
-    log_info "Done: $(pwd)/${VM}.box"
+    log_info "Done: '$(pwd)/${VM}.box'"
     exit 0
 }
 
@@ -956,13 +956,13 @@ turn_on() {
     # check whether VM is already running
     if is_running; then
         # nothing to do
-        log_ginfo "${VM} is already running..."
+        log_ginfo "'${VM}' is already running..."
         exit 0
     fi
 
     # check whether VM already exist
     if ! is_present; then
-        log_error "${VM} doese not exist. Use \"vbkick build\" to create the new VM."
+        log_error "'${VM}' doese not exist. Use 'vbkick build' to create the new VM."
         exit 1
     fi
 
@@ -976,7 +976,7 @@ turn_on() {
 turn_off() {
     # check whether VM is running
     if ! is_running; then
-        log_ginfo "${VM} is already turn off."
+        log_ginfo "'${VM}' is already turn off."
         exit 0
     fi
 
@@ -990,7 +990,7 @@ turn_off() {
 shutdown() {
     # check whether VM is running and exec shutdown_cmd via SSH
     if is_running; then
-        log_info "Shutting down ${VM}."
+        log_info "Shutting down '${VM}'."
         if [[ ${ssh_keys_enabled} -eq 1 ]]; then
             # ssh key authentication enabled
             # if key not exist then get it
@@ -1014,10 +1014,10 @@ shutdown() {
     # check whether VM is still running, if so use acpipowerbutton
     if is_running; then
         VBoxManage controlvm "${VM}" acpipowerbutton
-        log_info "${VM} - acpipowerbutton was used. Waiting ${shutdown_timeout} seconds..."
+        log_info "'${VM}' - acpipowerbutton was used. Waiting ${shutdown_timeout} seconds..."
         sleep ${shutdown_timeout}
     else
-        log_info "${VM} was shutdown cleanly."
+        log_info "'${VM}' was shutdown cleanly."
         sleep 3
         return
     fi
@@ -1025,10 +1025,10 @@ shutdown() {
     # check whether VM is still running, if so poweroff it using hard way.
     if is_running; then
         VBoxManage controlvm "${VM}" poweroff
-        log_info "${VM} was powered off."
+        log_info "'${VM}' was powered off."
         sleep 3
     else
-        log_info "${VM} was shutdown cleanly."
+        log_info "'${VM}' was shutdown cleanly."
         sleep 3
     fi
 }
@@ -1036,7 +1036,7 @@ shutdown() {
 update_guest_additions_media() {
     # check whether VM exist
     if ! is_present; then
-        log_error "${VM} doese not exist. Use \"vbkick build\" to create the new VM."
+        log_error "'${VM}' doesn't exist. Use \"vbkick build\" to create the new VM."
         return 1
     fi
     # get current guest version
@@ -1050,19 +1050,19 @@ update_guest_additions_media() {
 
     # check whether we need update or install VBoxGuestAdditions
     if [[ "${_vb_version}" == "${guest_version}" ]]; then
-        log_ginfo "VBoxGuestAdditions on ${VM} is up-to-date - update media iso is not needed."
+        log_ginfo "VBoxGuestAdditions on '${VM}' is up-to-date - update media iso is not needed."
         return
     fi
     # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
     # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
     if ! VBoxManage showvminfo "${VM}" | grep -qw "SATA Controller (1, 0)"; then
-        log_error "\"SATA Controller (1, 0)\" for \"${VM}\" doesn't exist."
-        log_error "\"SATA Controller\" is sata controller name used by vbkick."
+        log_error "'SATA Controller (1, 0)' for '${VM}' doesn't exist."
+        log_error "'SATA Controller' is sata controller name used by vbkick."
         log_error "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
         log_error "To create proper controller use:"
         log_error "'VBoxManage storagectl \"${VM}\" --name \"SATA Controller\" --add sata --hostiocache ${hostiocache} --portcount $((${#disk_size[@]}+2))'"
         log_error "'VBoxManage storageattach \"${VM}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
-        log_error "To do this \"${VM}\" must be shutdown !!!"
+        log_error "To do this '${VM}' must be shutdown !!!"
         log_error "Remember - VM Guest may have only one sata controller."
         return 1
     fi
@@ -1130,7 +1130,7 @@ ssh_exec() {
 
     # check whether VM is running
     if ! is_running; then
-        log_error "${VM} is not running..."
+        log_error "'${VM}' is not running..."
         return 1
     fi
 
@@ -1263,7 +1263,7 @@ ssh_do_cleanup() {
 lazy_ssh() {
     # check whether VM is running
     if ! is_running; then
-        log_error "${VM} is not running..."
+        log_error "'${VM}' is not running..."
         exit 1
     fi
     # load vm description/definition
