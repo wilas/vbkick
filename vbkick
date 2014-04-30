@@ -148,15 +148,15 @@ definition_fname="definition.cfg"
 # virtual machine name
 VM=""
 # 0 - webserver is not running or kill isn't able to stop it
-_webserver_status=0
+_webserver_state=0
 # 0 - webserver was killed cleanly or we didn't try kill it yet
-_webserver_kill_cmd_status=0
+_webserver_kill_cmd_state=0
 # during exporting tmp directory is created
 _tmp_dir=""
 # during creation VM may be temporary in inconsistent state
 # e.g. not all ports mapping, options etc. were setup
 # this flag is used to make sure that vm was created completely or not at all
-_vm_creation_status=0
+_vm_creation_state=0
 # during exporting NAT mapping is removed (temporary) - help recover state before exporting
 _ssh_natmapping_was_removed=0
 # during exporting shared folders are removed (temporary) - help recover state before exporting
@@ -201,13 +201,14 @@ usage() {
     printf "\tshutdown              shutdown VM\n"
     printf "\n"
     printf "Extra actions where VM_NAME is not required:\n"
+    printf "\tlist                  list all VBox machines with the state\n"
     printf "\tversion               display vbkick version and exit\n"
     printf "\thelp                  display this help and exit\n"
     printf "\n"
 }
 
 # Cmd line parser, take 2 args
-process_args() {
+process_2_args() {
     VM="${2}"
     case "${1}" in
         "build") build_vm ;;
@@ -223,8 +224,32 @@ process_args() {
     esac
 }
 
+process_1_args() {
+    case "${1}" in
+        "list") list_all_vms ;;
+        "version") prog_version ;;
+        *) usage; exit ;;
+    esac
+}
+
 prog_version(){
     printf "0.7.0-dev\n"
+    exit 0
+}
+
+list_all_vms(){
+    local lc_vm
+    local lc_state
+    #list all vms and remove trailing spaces from the lc_vm name
+    VBoxManage list vms | cut -f 1 -d'{' | sed 's/\s*$//g' | while read -r lc_vm; do
+        # get the pure lc_vm name: "aa bb" -> aa bb
+        lc_vm="${lc_vm//\"/}"
+        # Example showvminfo output: "State:           powered off (since 2014-04-28T00:16:26.000000000)"
+        # get only the state value and trim leading and trailing spaces
+        lc_state=$(VBoxManage showvminfo "${lc_vm}" | grep State: | cut -d' ' -f 2- | cut -d'(' -f 1 | sed 's/\s*$//g;s/^\s*//g')
+        printf "${lc_vm}:${lc_state}\n"
+    done
+    exit 0
 }
 
 # Help automatically update/maintain value of VBOX_VERSION in given files list
@@ -339,7 +364,7 @@ prepare_path() {
     local path="${1}"
     local mkdir_path="${2}"
     # Process special variables in path definition e.g. path="%VBOXFOLDER%/%NAME%"
-    local location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^ *//g')
+    local location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^\s*//g')
     path=${path//%SRCPATH%/${boot_file_src_path}}
     path=${path//%VBOXFOLDER%/${location}}
     path=${path//%PWD%/$(pwd)}
@@ -597,11 +622,11 @@ build_vm() {
 create_box() {
     # Register vm
     VBoxManage createvm --name "${VM}" --ostype "${os_type_id}" --register
-    _vm_creation_status=1
+    _vm_creation_state=1
 
     # Creates disks
     # Get default location for disks
-    local location=$(VBoxManage list systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^ *//g')
+    local location=$(VBoxManage list systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^\s*//g')
 
     # SATA controller - place for hdd and iso files
     # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media and port 1 for guest additions
@@ -706,7 +731,7 @@ create_box() {
 
     # add shared folders
     add_shared_folders "${shared_folders[@]}"
-    _vm_creation_status=0
+    _vm_creation_state=0
 }
 
 add_extra_ports_mapping() {
@@ -717,12 +742,10 @@ add_extra_ports_mapping() {
             continue
         fi
 
-        local OIFS=${IFS}
-        IFS=':'
+        local IFS=':'
         local port_info=(${port})
         if [[ ${#port_info[@]} -ne 3 ]]; then
             log_error "one of the ports in extra_ports has invalid format."
-            IFS=${OIFS}
             return 1
         fi
         local port_name="${port_info[0]}"
@@ -732,7 +755,6 @@ add_extra_ports_mapping() {
         if ! is_port_present "${port_name}"; then
             VBoxManage controlvm "${VM}" natpf1 "${port_name},tcp,,${port_host},,${port_guest}"
         fi
-        IFS=${OIFS}
     done
 }
 
@@ -762,12 +784,10 @@ add_shared_folders() {
             continue
         fi
 
-        local OIFS=${IFS}
-        IFS=':'
+        local IFS=':'
         local folder_info=(${folder})
         if [[ ${#folder_info[@]} -lt 2 ]]; then
             log_error "one of the folders in shared_folders has no info about path."
-            IFS=${OIFS}
             return 1
         fi
         local folder_name="${folder_info[0]}"
@@ -775,7 +795,6 @@ add_shared_folders() {
 
         # check whether shared_folder already exist
         if is_shared_folder_present "${folder_name}"; then
-            IFS=${OIFS}
             continue
         fi
 
@@ -790,10 +809,8 @@ add_shared_folders() {
             VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
         else
             log_error "too much options in one of the shared_folders."
-            IFS=${OIFS}
             return 1
         fi
-        IFS=${OIFS}
     done
 }
 
@@ -937,10 +954,10 @@ export_vm() {
 
 recover_vm_state() {
     # destroy VM as creation process was unsuccessful
-    if [[ ${_vm_creation_status} -eq 1 ]]; then
+    if [[ ${_vm_creation_state} -eq 1 ]]; then
         log_info "Destroying not completed Virtual machine - '${VM}'"
         VBoxManage unregistervm "${VM}" --delete
-        _vm_creation_status=0
+        _vm_creation_state=0
     fi
     # add NAT mapping after exporting - only if exist prev.
     if [[ ${_ssh_natmapping_was_removed} -eq 1 ]]; then
@@ -982,6 +999,7 @@ turn_on() {
     else
         VBoxManage startvm --type headless "${VM}"
     fi
+    exit 0
 }
 
 turn_off() {
@@ -996,6 +1014,7 @@ turn_off() {
 
     #exec shutdown
     shutdown
+    exit 0
 }
 
 shutdown() {
@@ -1288,6 +1307,7 @@ lazy_ssh() {
     else
         auto_passwd_ssh ""
     fi
+    exit 0
 }
 
 auto_passwd_ssh() {
@@ -1355,8 +1375,8 @@ start_web_server() {
     python -m ${_webserver_module} ${kickstart_port} &
     # get the pid already spawned process, to kill it later
     _web_pid=$!
-    # update _webserver_status variable
-    _webserver_status=1
+    # update _webserver_state variable
+    _webserver_state=1
     sleep 2
     # check whether web server was really started
     if ! is_port_used ${kickstart_port}; then
@@ -1364,7 +1384,7 @@ start_web_server() {
         if kill -s 0 ${_web_pid} 2>/dev/null; then
             kill ${_web_pid}
         fi
-        _webserver_status=0
+        _webserver_state=0
         return 1
     fi
     log_info "webserver has been started (pid ${_web_pid})"
@@ -1372,20 +1392,20 @@ start_web_server() {
 
 stop_web_server() {
     # check whether webserver is running
-    if [[ ${_webserver_status} -eq 0 ]]; then
+    if [[ ${_webserver_state} -eq 0 ]]; then
         return
     fi
     log_info "Stopping webserver (pid ${_web_pid})"
     # with "set -e -E" if kill command fail then ERR trap is processing
     # simply execution of function is not continued
-    _webserver_kill_cmd_status=1
+    _webserver_kill_cmd_state=1
     # check whether process exist and accept signals before sending SIGTERM
     if kill -s 0 ${_web_pid} 2>/dev/null; then
         kill ${_web_pid}
     fi
-    _webserver_kill_cmd_status=0
-    # update _webserver_status variable
-    _webserver_status=0
+    _webserver_kill_cmd_state=0
+    # update _webserver_state variable
+    _webserver_state=0
     # kill command is sucessfull when SIGTERM is sent to running process
     # not when child process was really killed
     if ! ps -ef | grep "python -m ${_webserver_module} ${kickstart_port}" | grep -qv grep; then
@@ -1403,8 +1423,8 @@ clean_up() {
 }
 
 on_exit(){
-    #log_info "vbkick clean exit."
-    if [[ ${_webserver_kill_cmd_status} -eq 0 ]]; then
+    # this is a finally block - exec always on exit
+    if [[ ${_webserver_kill_cmd_state} -eq 0 ]]; then
         # stop webserver (only if stop_web_server function didn't fail previuosly)
         stop_web_server
     else
@@ -1420,13 +1440,12 @@ on_exit(){
 }
 
 main() {
-    # 2 Args required, 3rd is optional - ACTION VM_NAME (DEFINITION_FILE_NAME)
     local args_num=$#
-    if [[ ${args_num} -gt 0 ]] && [[ "${1}" == "version" ]]; then
-        prog_version
+    if [[ ${args_num} -eq 1 ]]; then
+        process_1_args "${1}"
         exit 0
-    fi
-    if [[ ${args_num} -lt 2 ]] || [[ ${args_num} -gt 3 ]]; then
+    elif [[ ${args_num} -eq 0 ]] || [[ ${args_num} -gt 3 ]]; then
+        # wrong number of arguments
         usage
         exit 1
     fi
@@ -1438,7 +1457,7 @@ main() {
     dependencies_check
     _vb_version=$(get_vb_version)
 
-    process_args "${1}" "${2}"
+    process_2_args "${1}" "${2}"
 }
 
 ## MAIN ##
