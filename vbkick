@@ -294,11 +294,13 @@ process_1_args() {
     esac
 }
 
+#@action
 prog_version(){
     printf "0.7.0-dev\n"
     exit 0
 }
 
+#@action
 list_all_vms(){
     local lc_vm
     local lc_state
@@ -641,6 +643,7 @@ get_priv_ssh_key() {
     chmod 600 "${ssh_keys_path}/${ssh_priv_key}"
 }
 
+#@action
 build_vm() {
     # check whether VM already exist
     if is_present; then
@@ -962,6 +965,7 @@ kickstart_monitoring() {
     fi
 }
 
+#@action
 destroy_vm() {
     # check whether VM already exist
     if ! is_present; then
@@ -989,6 +993,7 @@ destroy_vm() {
     exit 0
 }
 
+#@action
 export_vm() {
     #
     # basic replacement for that vagrant command:
@@ -1086,6 +1091,7 @@ recover_vm_state() {
     fi
 }
 
+#@action
 turn_on() {
     # check whether VM exist
     if ! is_present; then
@@ -1108,6 +1114,7 @@ turn_on() {
     exit 0
 }
 
+#@action
 turn_off() {
     # check whether VM exist
     if ! is_present; then
@@ -1215,6 +1222,7 @@ update_guest_additions_media() {
     # Manuall Guest Additions update/installation is required (via lazy_update cmd).
 }
 
+#@action
 validate_vm() {
     #
     # test should be smart enough to check what I really want to test
@@ -1228,6 +1236,7 @@ validate_vm() {
     exit 0
 }
 
+#@action
 lazy_postinstall() {
     # load vm description/definition
     local definition_fname="${1:-}"
@@ -1237,6 +1246,7 @@ lazy_postinstall() {
     exit 0
 }
 
+#@action
 lazy_update() {
     # load vm description/definition
     local definition_fname="${1:-}"
@@ -1400,6 +1410,7 @@ ssh_do_cleanup() {
     done
 }
 
+#@action
 lazy_ssh() {
     # check whether VM exist
     if ! is_present; then
@@ -1471,6 +1482,7 @@ auto_passwd_scp() {
     fi
 }
 
+#@action
 make_clone(){
     # check whether VM exist
     if ! is_present; then
@@ -1507,6 +1519,7 @@ make_clone(){
     exit 0
 }
 
+#@action
 take_snapshot(){
     # check whether VM exist
     if ! is_present; then
@@ -1537,6 +1550,7 @@ take_snapshot(){
     exit 0
 }
 
+#@action
 restore_snapshot(){
     # check whether VM exist
     if ! is_present; then
@@ -1571,6 +1585,7 @@ restore_snapshot(){
     exit 0
 }
 
+#@action
 delete_snapshot(){
     # check whether VM exist
     if ! is_present; then
@@ -1600,6 +1615,7 @@ delete_snapshot(){
     exit 0
 }
 
+#@action
 list_snapshots(){
     # check whether VM exist
     if ! is_present; then
