@@ -261,7 +261,7 @@ context_usage(){
 
 process_2_args() {
     # 2 args are required, 3 may be optional
-    if [[ "${2:-}" == "-h" ]] || [[ "${3:-}" == "-h" ]]; then
+    if [[ "${2}" == "-h" ]] || [[ "${3:-}" == "-h" ]]; then
         context_usage "${1}"
         exit 0
     fi
