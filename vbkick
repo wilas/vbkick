@@ -136,8 +136,8 @@ update_launch=("")
 files_to_autoupdate_vbox_version=("")
 # rm or not already transported via SCP files/directories (from postinstall, validate)
 clean_transported=0
-# nice for OS shutdown command
-shutdown_cmd="sudo /sbin/halt -h -p"
+# nice for OS shutdown command, if not specify acpipowerbutton will be used
+shutdown_cmd=""
 # when timeout is reached and VM is still running, hard poweroff is used
 shutdown_timeout=20
 
@@ -1124,27 +1124,20 @@ turn_off() {
 
 shutdown() {
     # check whether VM is running and exec shutdown_cmd via SSH
-    if is_running; then
-        log_info "Shutting down '${VM}'."
-        if [[ ${ssh_keys_enabled} -eq 1 ]]; then
-            # ssh key authentication enabled
-            # if key not exist then get it
-            get_priv_ssh_key
-            # create path to ssh private key
-            local key_path="${ssh_keys_path}/${ssh_priv_key}"
-            ssh "${ssh_user}@127.0.0.1" -q -t -i ${key_path} -p ${ssh_host_port} ${ssh_options} -C "${shutdown_cmd}" || true
-        else
-            auto_passwd_ssh "${shutdown_cmd}"
+    if [[ -n "${shutdown_cmd}" ]]; then
+        if is_running; then
+            log_info "Shutting down '${VM}'."
+            ssh_exec 1 "" "${shutdown_cmd}" || true
+            # wait until VM is down or shutdown_timeout was reached
+            local shutdown_counter=0
+            while is_running && [[ ${shutdown_counter} -le ${shutdown_timeout} ]]; do
+                shutdown_counter=$((shutdown_counter+1))
+                printf "."
+                sleep 1
+            done
+            printf "\n"
         fi
-        # wait until VM is down or shutdown_timeout was reached
-        local shutdown_counter=0
-        while is_running && [[ ${shutdown_counter} -le ${shutdown_timeout} ]]; do
-            shutdown_counter=$((shutdown_counter+1))
-            printf "."
-            sleep 1
-        done
     fi
-    printf "\n"
 
     # check whether VM is still running, if so use acpipowerbutton
     if is_running; then

@@ -17,7 +17,8 @@ IMPROVEMENTS
  - checks curl status code
  - empty boot_file_src_checksum variable mean don't check checksum instead warning about wrong value
  - auto destroy VM during building if all requested VM settings weren't correctly setup - be a bit more atomic
- - checks whether vm exist for the 'shutdown' action
+ - checks whether vm exist for the ```shutdown``` action
+ - checks whether ```shutdown_cmd``` option is empty, if so use acpipowerbutton
  - checks whether machine is 'alive' not only a 'running' for some actions, e.g. 'paused' state is the 'alive' state but is not 'running' state
 
 BUG FIXES

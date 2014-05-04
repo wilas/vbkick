@@ -1,4 +1,4 @@
-# Available options in definition.cfg 
+# Available options in definition.cfg
 
 More details soon.
 
@@ -44,7 +44,7 @@ More details soon.
  default: ("disk" "dvd")
 
  - nic_type
- 
+
  default: "82540EM"
 
  - vm_options
@@ -73,9 +73,9 @@ More details soon.
 
 
 ## GUEST ADDITIONS
- 
+
  - guest_additions_path
- 
+
  default: ""
 
  - guest_additions_attach
@@ -88,15 +88,15 @@ More details soon.
  - boot_file
 
  no default - REQUIRED!
- 
+
  - boot_file_type
 
  default: "dvddrive"
 
  - boot_file_src
 
- no default - REQUIRED! 
- 
+ no default - REQUIRED!
+
  - boot_file_src_path
 
  default: "iso"
@@ -112,17 +112,17 @@ More details soon.
  - boot_file_unpack_cmd
 
  default: ""
- 
+
  - boot_file_unpack_name
 
  default: ""
- 
+
  - boot_file_convert_from_raw
 
  default: 0
 
  - keep_boot_src_file
- 
+
  default: 0
 
  - boot_wait
@@ -221,7 +221,7 @@ More details soon.
  default: ("")
 
  - update_launch
- 
+
  default: ("")
 
 
@@ -233,7 +233,7 @@ More details soon.
 
  - shutdown_cmd
 
- default: "sudo /sbin/halt -h -p"
+ default: ""
 
  - shutdown_timeout
 
