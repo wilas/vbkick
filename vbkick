@@ -1142,7 +1142,7 @@ shutdown() {
     if [[ -n "${shutdown_cmd}" ]]; then
         if is_running; then
             log_info "Shutting down '${VM}'."
-            ssh_exec 1 "" "${shutdown_cmd}" || true
+            ssh_do_launch "${shutdown_cmd}" || true
             # wait until VM is down or shutdown_timeout was reached
             local shutdown_counter=0
             while is_running && [[ ${shutdown_counter} -le ${shutdown_timeout} ]]; do
@@ -1151,6 +1151,7 @@ shutdown() {
                 sleep 1
             done
             printf "\n"
+            sleep 3
         fi
     fi
 
