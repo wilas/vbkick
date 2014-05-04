@@ -10,6 +10,7 @@ FEATURES
  - added ```snap``` ACTION
  - added ```resnap``` ACTION
  - added ```delsnap``` ACTION
+ - added ```clone``` ACTION
 
 IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)

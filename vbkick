@@ -199,6 +199,7 @@ usage() {
     printf "\tssh                   Connect to the VM via SSH\n"
     printf "\ton                    Turn on the VM\n"
     printf "\tshutdown              Shut down the VM\n"
+    printf "\tclone                 Clone the VM\n"
     printf "\tlssnap                List all snapshots for a given VM\n"
     printf "\tsnap                  Take a new VM snapshot\n"
     printf "\tresnap                Restore the VM snapshot\n"
@@ -236,6 +237,10 @@ context_usage(){
         "shutdown")
             printf "Usage: vbkick shutdown VM_NAME <definition_file>\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+        "clone")
+            printf "Usage: vbkick clone VM_NAME <clone_name>\n"
+            printf "If no clone name specify default one will be used - {VM_NAME}-clone{NR},\n"
+            printf "where {NR} is the next available number.\n" ;;
         "snap")
             printf "Usage: vbkick snap VM_NAME <snapshot_name>\n"
             printf "If no snapshot name specify default one will be used - {VM_NAME}-snap{NR},\n"
@@ -271,6 +276,7 @@ process_2_args() {
         "ssh") lazy_ssh "${3:-}" ;;
         "on") turn_on ;;
         "shutdown") turn_off "${3:-}" ;;
+        "clone") make_clone "${3:-}" ;;
         "snap") take_snapshot "${3:-}" ;;
         "resnap") restore_snapshot "${3:-}" ;;
         "delsnap") delete_snapshot "${3:-}" ;;
@@ -389,7 +395,8 @@ get_vb_version() {
 }
 
 is_present() {
-    VBoxManage list vms | grep -qw "${VM}"
+    local pattern="${1:-\"${VM}\"}"
+    VBoxManage list vms | grep -qw "${pattern}"
 }
 
 is_running() {
@@ -399,7 +406,8 @@ is_running() {
 is_alive() {
     # Alive machine may be in paused|running state
     # Useful to change state: VBoxManage controlvm "${VM}" pause|resume
-    VBoxManage list runningvms | grep -qw "${VM}"
+    local pattern="${1:-\"${VM}\"}"
+    VBoxManage list runningvms | grep -qw "${pattern}"
 }
 
 is_port_used() {
@@ -1463,6 +1471,42 @@ auto_passwd_scp() {
     fi
 }
 
+make_clone(){
+    # check whether VM exist
+    if ! is_present; then
+        log_error "'${VM}' doesn't exist"
+        exit 1
+    fi
+
+    if is_alive; then
+        log_error "'${VM}' is alive. VM must be shut down to create clone."
+        exit 1
+    fi
+
+    # check whether clone_name is provided and take the snapshot with this name
+    if [[ -n "${1:-}" ]]; then
+        local clone_name="${1:-}"
+        if is_present "${clone_name}"; then
+            log_error "'${clone_name}' already exists."
+            exit 1
+        fi
+    # clone_name is not provided, make the clone with auto generate name - {VM}-clone{NR++}
+    elif is_present "\"${VM}-clone[0-9]\+\""; then
+        # clone are numered, e.g.: vm_name:aa22-snap-aa11 -> clone_name:aa22-snap-aa11-snap1..999..
+        # get all clones match our clone pattern, extract NR value from each clonename, get the highes NR
+        local last_clone_nr=$(VBoxManage list vms | cut -f 1 -d'{' | grep "\"${VM}-clone[0-9]\+\""\
+            | sed "s/${VM}-clone//;s/\"//g" | sort -gu | tail -1)
+        last_clone_nr=$((last_clone_nr+1))
+        local clone_name="${VM}-clone${last_clone_nr}"
+    # clone with the auto generate name doesn't exist, make the first one.
+    else
+        local clone_name="${VM}-clone1"
+    fi
+    VBoxManage clonevm "${VM}" --name "${clone_name}" --register
+    log_info "'${VM}' has been cloned as '${clone_name}'."
+    exit 0
+}
+
 take_snapshot(){
     # check whether VM exist
     if ! is_present; then
@@ -1470,27 +1514,23 @@ take_snapshot(){
         exit 1
     fi
 
-    local snap_name="${1:-}"
     # check whether snap_name is provided and take the snapshot with this name
-    if [[ -n "${snap_name}" ]]; then
+    if [[ -n "${1:-}" ]]; then
         # Note: VBox allow make multiple snapshots with the same name, they are identify by UUID
-        VBoxManage snapshot "${VM}" take "${snap_name}" --live
-        log_info "'${snap_name}' snapshot was taken."
-        exit 0
-    fi
+        local snap_name="${1:-}"
     # snap_name is not provided, take the snapshot with auto generate name - {VM}-snap{NR++}
-    if is_snapshot_present "${VM}-snap[0-9]\+"; then
+    elif is_snapshot_present "\"${VM}-snap[0-9]\+\""; then
         # it would be nice to use `date` but it isn't portable between linux/osx/freebsd
         # so that snapshot are numered, e.g.:
         # vm_name:aa22-snap-aa11 -> snap_name:aa22-snap-aa11-snap1..999..
         # get all snapshots match our snap pattern, extract NR value from each snapname, get the highes NR
         local last_snap_nr=$(VBoxManage snapshot "${VM}" list --machinereadable | grep ^SnapshotName\
-            | cut -d"=" -f 2- | grep "${VM}-snap[0-9]\+" | sed "s/${VM}-snap//;s/\"//g" | sort -gu | tail -1)
+            | cut -d"=" -f 2- | grep "\"${VM}-snap[0-9]\+\"" | sed "s/${VM}-snap//;s/\"//g" | sort -gu | tail -1)
         last_snap_nr=$((last_snap_nr+1))
-        snap_name="${VM}-snap${last_snap_nr}"
+        local snap_name="${VM}-snap${last_snap_nr}"
     # snapshot with the auto generate name doesn't exist, make the first one.
     else
-        snap_name="${VM}-snap1"
+        local snap_name="${VM}-snap1"
     fi
     VBoxManage snapshot "${VM}" take "${snap_name}" --live
     log_info "'${snap_name}' snapshot was taken."
@@ -1517,7 +1557,7 @@ restore_snapshot(){
     local snap_name="${1:-}"
     # check whether snap_name is provided and delete the requested snap_name
     if [[ -n "${snap_name}" ]]; then
-        if ! is_snapshot_present "${snap_name}"; then
+        if ! is_snapshot_present "\"${snap_name}\""; then
             log_error "'${snap_name}' snapshot doesn't exist for the '${VM}'"
             log_error "Use 'vbkick lssnap \"${VM}\"' to list all available snapshots."
             exit 1
@@ -1545,7 +1585,7 @@ delete_snapshot(){
     local snap_name="${1:-}"
     # check whether snap_name is provided and delete the requested snap_name
     if [[ -n "${snap_name}" ]]; then
-        if ! is_snapshot_present "${snap_name}"; then
+        if ! is_snapshot_present "\"${snap_name}\""; then
             log_error "'${snap_name}' snapshot doesn't exist for the '${VM}'"
             log_error "Use 'vbkick lssnap \"${VM}\"' to list all available snapshots."
             exit 1
@@ -1651,12 +1691,12 @@ on_exit(){
         # previuosly executed stop_web_server function fail in killing $_web_pid
         log_warning "problem with killing webserver (proc ${_web_pid}). Kill process manually."
     fi
-    # help recover some changes made on VM during exporting
-    recover_vm_state
     # clean _tmp_dir if exist
     if [[ -d ${_tmp_dir} ]]; then
         rm -rf ${_tmp_dir}
     fi
+    # help recover some changes made on VM during exporting
+    recover_vm_state
 }
 
 main() {

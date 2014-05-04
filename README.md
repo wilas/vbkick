@@ -79,6 +79,7 @@ Works in both bash 3 and bash 4 (use POSIX mode). If you have trouble using scri
     vbkick  ssh          VM_NAME        # connect to the VM via SSH
     vbkick  on           VM_NAME        # turn on the VM
     vbkick  shutdown     VM_NAME        # shut down the VM
+    vbkick  clone        VM_NAME        # clone the VM
     vbkick  lssnap       VM_NAME        # list all snapshots
     vbkick  snap         VM_NAME        # take the snapshot
     vbkick  resnap       VM_NAME        # restore the snapshot
