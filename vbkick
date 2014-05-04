@@ -846,7 +846,14 @@ remove_extra_ports_mapping() {
             _extraports_removed_ptr=$((_extraports_removed_ptr+1))
             continue
         fi
-        local port_name=${port%%:*}
+
+        local IFS=':'
+        local port_info=(${port})
+        if [[ ${#port_info[@]} -ne 3 ]]; then
+            log_error "one of the ports in extra_ports has invalid format."
+            return 1
+        fi
+        local port_name="${port_info[0]}"
         if is_port_present "${port_name}"; then
             VBoxManage modifyvm "${VM}" --natpf1 delete "${port_name}"
             # note which extra ports were removed by moving _extraports_removed_ptr
@@ -902,7 +909,18 @@ remove_shared_folders() {
             _sharedfolders_removed_ptr=$((_sharedfolders_removed_ptr+1))
             continue
         fi
-        local folder_name=${folder%%:*}
+
+        local IFS=':'
+        local folder_info=(${folder})
+        if [[ ${#folder_info[@]} -lt 2 ]]; then
+            log_error "one of the folders in shared_folders has no info about path."
+            return 1
+        fi
+        if [[ ${#folder_info[@]} -gt 4 ]]; then
+            log_error "too much options in one of the shared_folders."
+            return 1
+        fi
+        local folder_name="${folder_info[0]}"
         if is_shared_folder_present "${folder_name}"; then
             VBoxManage sharedfolder remove "${VM}" --name "${folder_name}"
             # note which shared folders were removed by moving _sharedfolders_removed_ptr
