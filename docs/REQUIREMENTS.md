@@ -5,6 +5,10 @@ Requirements (standard tools on most linux/freebsd/osx boxes):
  - scp
  - openssl
  - curl
+ - sed
+ - cut
+ - sort
+ - tail
  - VBoxManage (Virtualbox)
  - tar (only for export action)
  - expect (tcl)(if you do not want be prompt for a password when ssh_keys are disabled)

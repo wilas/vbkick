@@ -6,13 +6,19 @@ FEATURES
  - added ```nic_type``` option to allow change type of networking hardware
  - added ```boot_order``` option to allow choose boot devices
  - added ```version``` ACTION to display vbkick version
+ - added ```lssnap``` ACTION
+ - added ```snap``` ACTION
+ - added ```resnap``` ACTION
+ - added ```delsnap``` ACTION
 
 IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)
  - works when IPV6 is enabled and ```::1     localhost``` appear in ```/etc/hosts``` - [#33](../../issues/33)
  - checks curl status code
  - empty boot_file_src_checksum variable mean don't check checksum instead warning about wrong value
- - auto destroy VM during building if all requested VM settings weren't correctly setup
+ - auto destroy VM during building if all requested VM settings weren't correctly setup - be a bit more atomic
+ - checks whether vm exist for the 'shutdown' action
+ - checks whether machine is 'alive' not only a 'running' for some actions, e.g. 'paused' state is the 'alive' state but is not 'running' state
 
 BUG FIXES
  - expand a special variables in paths e.g. ~ (tilde) is now not treated as a literal string "~" but expand to user home dir.

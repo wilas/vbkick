@@ -141,10 +141,8 @@ shutdown_cmd="sudo /sbin/halt -h -p"
 # when timeout is reached and VM is still running, hard poweroff is used
 shutdown_timeout=20
 
-# Other global variables - do not use it in definition.cfg (will be overwrite during program runtime)
+# Other global variables - do not use it in definition file (will be overwrite during program runtime)
 # name of global "private" variables should start with underscore
-# default definition file
-definition_fname="definition.cfg"
 # virtual machine name
 VM=""
 # 0 - webserver is not running or kill isn't able to stop it
@@ -185,46 +183,104 @@ log_error() {
 
 # Display help
 usage() {
-    printf "Desc: the automatic Virtualbox Guests and Vagrant Base Boxes builder\n"
+    printf "Description: the automatic Virtualbox Guests and Vagrant Base Boxes builder\n"
     printf "\n"
-    printf "Usage: ${0} ACTION VM_NAME (DEFINITION_FILE_NAME)\n"
+    printf "Usage: vbkick <command> <VM_NAME> [<args>]\n"
+    printf "\tversion               Print the version and exit\n"
+    printf "\thelp                  Print this help\n"
     printf "\n"
-    printf "Available actions:\n"
-    printf "\tbuild                 build VM\n"
-    printf "\tpostinstall           run postinstall scripts via ssh\n"
-    printf "\tvalidate              run validate/feature scripts via ssh\n"
-    printf "\texport                export VM and creates Vagrant VM_NAME.box\n"
-    printf "\tupdate                run update scripts via ssh\n"
-    printf "\tdestroy               destroy VM\n"
-    printf "\tssh                   ssh to VM\n"
-    printf "\ton                    turn on VM\n"
-    printf "\tshutdown              shutdown VM\n"
+    printf "Common commands:\n"
+    printf "\tbuild                 Build the new VM\n"
+    printf "\tpostinstall           Run postinstall scripts via SSH\n"
+    printf "\tvalidate              Run validate scripts via SSH\n"
+    printf "\tupdate                Run update scripts via SSH\n"
+    printf "\texport                Exports the VM and creates a Vagrant box - VM_NAME.box\n"
+    printf "\tdestroy               Shut down and deletes the VM\n"
+    printf "\tssh                   Connect to the VM via SSH\n"
+    printf "\ton                    Turn on the VM\n"
+    printf "\tshutdown              Shut down the VM\n"
+    printf "\tlssnap                List all snapshots for a given VM\n"
+    printf "\tsnap                  Take a new VM snapshot\n"
+    printf "\tresnap                Restore the VM snapshot\n"
+    printf "\tdelsnap               Delete the VM snapshot\n"
+    printf "\tlist                  List all VirtualBox machines with the state\n"
     printf "\n"
-    printf "Extra actions where VM_NAME is not required:\n"
-    printf "\tlist                  list all VBox machines with the state\n"
-    printf "\tversion               display vbkick version and exit\n"
-    printf "\thelp                  display this help and exit\n"
+    printf "For help on any individual command run 'vbkick <command> -h'\n"
     printf "\n"
 }
 
-# Cmd line parser, take 2 args
+context_usage(){
+    case "${1}" in
+        "build")
+            printf "Usage: vbkick build VM_NAME <definition_file>\n"
+            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+        "destroy")
+            printf "Usage: vbkick destroy VM_NAME\n" ;;
+        "export")
+            printf "Usage: vbkick export VM_NAME <definition_file>\n"
+            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+        "validate")
+            printf "Usage: vbkick validate VM_NAME <definition_file>\n"
+            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+        "postinstall")
+            printf "Usage: vbkick postinstall VM_NAME <definition_file>\n"
+            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+        "update")
+            printf "Usage: vbkick update VM_NAME <definition_file>\n"
+            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+        "ssh")
+            printf "Usage: vbkick ssh VM_NAME <definition_file>\n"
+            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+        "on")
+            printf "Usage: vbkick on VM_NAME\n" ;;
+        "shutdown")
+            printf "Usage: vbkick shutdown VM_NAME <definition_file>\n"
+            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+        "snap")
+            printf "Usage: vbkick snap VM_NAME <snapshot_name>\n"
+            printf "If no snapshot name specify default one will be used - {VM_NAME}-snap{NR},\n"
+            printf "where {NR} is the next available number.\n" ;;
+        "resnap")
+            printf "Usage: vbkick resnap VM_NAME <snapshot_name>\n"
+            printf "If no snapshot name specify, restore to the current snapshot.\n" ;;
+        "delsnap")
+            printf "Usage: vbkick delsnap VM_NAME <snapshot_name>\n"
+            printf "If no snapshot name specify, delete the current snapshot.\n" ;;
+        "lssnap")
+            printf "Usage: vbkick lssnap VM_NAME\n" ;;
+        "list")
+            printf "Usage: vbkick list\n" ;;
+        *) usage; exit ;;
+    esac
+}
+
 process_2_args() {
+    # 2 args are required, 3 may be optional
+    if [[ "${2:-}" == "-h" ]] || [[ "${3:-}" == "-h" ]]; then
+        context_usage "${1}"
+        exit 0
+    fi
     VM="${2}"
     case "${1}" in
-        "build") build_vm ;;
+        "build") build_vm "${3:-}" ;;
         "destroy") destroy_vm ;;
-        "export") export_vm ;;
-        "validate") validate_vm ;;
-        "postinstall") lazy_postinstall ;;
-        "update") lazy_update ;;
-        "ssh") lazy_ssh ;;
+        "export") export_vm "${3:-}" ;;
+        "validate") validate_vm "${3:-}" ;;
+        "postinstall") lazy_postinstall "${3:-}" ;;
+        "update") lazy_update "${3:-}" ;;
+        "ssh") lazy_ssh "${3:-}" ;;
         "on") turn_on ;;
-        "shutdown") turn_off ;;
+        "shutdown") turn_off "${3:-}" ;;
+        "snap") take_snapshot "${3:-}" ;;
+        "resnap") restore_snapshot "${3:-}" ;;
+        "delsnap") delete_snapshot "${3:-}" ;;
+        "lssnap") list_snapshots ;;
         *) usage; exit ;;
     esac
 }
 
 process_1_args() {
+    # 1 arg is required
     case "${1}" in
         "list") list_all_vms ;;
         "version") prog_version ;;
@@ -289,6 +345,11 @@ dependencies_check() {
     depend_check "python" "python"
     depend_check "bash" "bash"
     depend_check "openssl" "openssl"
+    depend_check "sed" "sed"
+    depend_check "grep" "grep"
+    depend_check "cut" "coreutils"
+    depend_check "sort" "coreutils"
+    depend_check "tail" "coreutils"
 }
 
 check_required_options() {
@@ -304,6 +365,8 @@ check_required_options() {
 
 # Load definition.cfg config file; it overwrite default settings
 load_definition() {
+    # definition.cfg is a default definition file
+    local definition_fname="${1:-definition.cfg}"
     if [[ -s "${definition_fname}" ]]; then
         # In POSIX mode the '.' and 'source' builtins do not search the current directory
         # for the filename argument if it is not found by searching PATH.
@@ -330,6 +393,12 @@ is_present() {
 }
 
 is_running() {
+    VBoxManage showvminfo "${VM}" | grep -q "State:\s\+running"
+}
+
+is_alive() {
+    # Alive machine may be in paused|running state
+    # Useful to change state: VBoxManage controlvm "${VM}" pause|resume
     VBoxManage list runningvms | grep -qw "${VM}"
 }
 
@@ -347,6 +416,15 @@ is_port_present() {
 is_shared_folder_present() {
     local folder_name="${1}"
     VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"
+}
+
+is_snapshot_present() {
+    local snap_name="${1}"
+    VBoxManage snapshot "${VM}" list --machinereadable | grep -w "^SnapshotName\|SnapshotUUID" | grep -qw "${snap_name}"
+}
+
+has_snapshots() {
+    VBoxManage snapshot "${VM}" list --machinereadable | grep -qw "^SnapshotName"
 }
 
 # checks whether port is not used by other proc
@@ -562,7 +640,8 @@ build_vm() {
         exit 1
     fi
     # load vm description/definition
-    load_definition
+    local definition_fname="${1:-}"
+    load_definition "${definition_fname}"
     # get ssh private key
     if [[ ${ssh_keys_enabled} -eq 1 ]]; then
         get_priv_ssh_key
@@ -872,8 +951,8 @@ destroy_vm() {
         exit 1
     fi
 
-    # check whether VM is running
-    if is_running; then
+    # check whether VM is alive
+    if is_alive; then
         log_info "Poweroff '${VM}'"
         VBoxManage controlvm "${VM}" poweroff
         sleep 1
@@ -893,7 +972,8 @@ export_vm() {
     # tar command is required, check whether is installed
     depend_check "tar" "tar"
     # load vm description/definition
-    load_definition
+    local definition_fname="${1:-}"
+    load_definition "${definition_fname}"
     # check whether VM_NAME.box exist in current dir
     if [[ -f "${VM}.box" ]]; then
         log_error "'${VM}.box' already exist in '$(pwd)'"
@@ -981,17 +1061,17 @@ recover_vm_state() {
 }
 
 turn_on() {
-    # check whether VM is already running
-    if is_running; then
-        # nothing to do
-        log_ginfo "'${VM}' is already running..."
-        exit 0
-    fi
-
-    # check whether VM already exist
+    # check whether VM exist
     if ! is_present; then
         log_error "'${VM}' doese not exist. Use 'vbkick build' to create the new VM."
         exit 1
+    fi
+
+    # check whether VM is already alive
+    if is_alive; then
+        # nothing to do
+        log_ginfo "'${VM}' is already alive..."
+        exit 0
     fi
 
     if [[ ${gui_enabled} -eq 1 ]]; then
@@ -1003,14 +1083,21 @@ turn_on() {
 }
 
 turn_off() {
-    # check whether VM is running
-    if ! is_running; then
+    # check whether VM exist
+    if ! is_present; then
+        log_error "'${VM}' doese not exist. Use 'vbkick build' to create the new VM."
+        exit 1
+    fi
+
+    # check whether VM is alive
+    if ! is_alive; then
         log_ginfo "'${VM}' is already turn off."
         exit 0
     fi
 
     # load vm description/definition
-    load_definition
+    local definition_fname="${1:-}"
+    load_definition "${definition_fname}"
 
     #exec shutdown
     shutdown
@@ -1046,14 +1133,10 @@ shutdown() {
         VBoxManage controlvm "${VM}" acpipowerbutton
         log_info "'${VM}' - acpipowerbutton was used. Waiting ${shutdown_timeout} seconds..."
         sleep ${shutdown_timeout}
-    else
-        log_info "'${VM}' was shutdown cleanly."
-        sleep 3
-        return
     fi
 
-    # check whether VM is still running, if so poweroff it using hard way.
-    if is_running; then
+    # check whether VM is still alive (e.g. paused), if so poweroff it using hard way.
+    if is_alive; then
         VBoxManage controlvm "${VM}" poweroff
         log_info "'${VM}' was powered off."
         sleep 3
@@ -1119,7 +1202,8 @@ validate_vm() {
     # e.g. If I don't need chef, don't test whether I have chef
     #
     # load vm description/definition
-    load_definition
+    local definition_fname="${1:-}"
+    load_definition "${definition_fname}"
     # exec scripts on VM Guest via ssh
     ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}"
     exit 0
@@ -1127,7 +1211,8 @@ validate_vm() {
 
 lazy_postinstall() {
     # load vm description/definition
-    load_definition
+    local definition_fname="${1:-}"
+    load_definition "${definition_fname}"
     # exec scripts on VM Guest via ssh
     ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}"
     exit 0
@@ -1135,7 +1220,8 @@ lazy_postinstall() {
 
 lazy_update() {
     # load vm description/definition
-    load_definition
+    local definition_fname="${1:-}"
+    load_definition "${definition_fname}"
     # Check whether VBoxGuestAdditions should be installed. If not then not update additions.
     if [[ ${guest_additions_attach} -eq 1 ]]; then
         update_guest_additions_media
@@ -1158,6 +1244,11 @@ ssh_exec() {
     # get launch array;
     local launch=("${@}")
 
+    # check whether VM exist
+    if ! is_present; then
+        log_error "'${VM}' doesn't exist"
+        return 1
+    fi
     # check whether VM is running
     if ! is_running; then
         log_error "'${VM}' is not running..."
@@ -1291,13 +1382,19 @@ ssh_do_cleanup() {
 }
 
 lazy_ssh() {
+    # check whether VM exist
+    if ! is_present; then
+        log_error "'${VM}' doesn't exist"
+        exit 1
+    fi
     # check whether VM is running
     if ! is_running; then
         log_error "'${VM}' is not running..."
         exit 1
     fi
     # load vm description/definition
-    load_definition
+    local definition_fname="${1:-}"
+    load_definition "${definition_fname}"
     if [[ ${ssh_keys_enabled} -eq 1 ]]; then
         # if key not exist then get it
         get_priv_ssh_key
@@ -1322,7 +1419,7 @@ auto_passwd_ssh() {
         expect -c "log_user 0; spawn ${expect_cmd}; expect password; send \"${ssh_password}\r\"; interact; catch wait reason; exit [lindex \$reason 3]"
     else
         log_warning "'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key."
-        log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}"
+        log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your definition file."
         # Process without expect
         if [[ -z "${cmd}" ]]; then
             # No cmd to exec, interactive shell
@@ -1345,7 +1442,7 @@ auto_passwd_scp() {
         expect -c "log_user 0; spawn ${expect_cmd}; expect password; send \"${ssh_password}\r\"; expect eof; catch wait reason; exit [lindex \$reason 3]"
     else
         log_warning "'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key."
-        log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your ${definition_fname}"
+        log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your definition file."
         # Process without expect
         if [[ ${recursive} -eq 1 ]]; then
             scp -q -P ${ssh_host_port} ${ssh_options} -r "${src}" "${ssh_user}@127.0.0.1:~${ssh_user}"
@@ -1353,6 +1450,118 @@ auto_passwd_scp() {
             scp -q -P ${ssh_host_port} ${ssh_options} "${src}" "${ssh_user}@127.0.0.1:~${ssh_user}"
         fi
     fi
+}
+
+take_snapshot(){
+    # check whether VM exist
+    if ! is_present; then
+        log_error "'${VM}' doesn't exist"
+        exit 1
+    fi
+
+    local snap_name="${1:-}"
+    # check whether snap_name is provided and take the snapshot with this name
+    if [[ -n "${snap_name}" ]]; then
+        # Note: VBox allow make multiple snapshots with the same name, they are identify by UUID
+        VBoxManage snapshot "${VM}" take "${snap_name}" --live
+        log_info "'${snap_name}' snapshot was taken."
+        exit 0
+    fi
+    # snap_name is not provided, take the snapshot with auto generate name - {VM}-snap{NR++}
+    if is_snapshot_present "${VM}-snap[0-9]\+"; then
+        # it would be nice to use `date` but it isn't portable between linux/osx/freebsd
+        # so that snapshot are numered, e.g.:
+        # vm_name:aa22-snap-aa11 -> snap_name:aa22-snap-aa11-snap1..999..
+        # get all snapshots match our snap pattern, extract NR value from each snapname, get the highes NR
+        local last_snap_nr=$(VBoxManage snapshot "${VM}" list --machinereadable | grep ^SnapshotName\
+            | cut -d"=" -f 2- | grep "${VM}-snap[0-9]\+" | sed "s/${VM}-snap//;s/\"//g" | sort -gu | tail -1)
+        last_snap_nr=$((last_snap_nr+1))
+        snap_name="${VM}-snap${last_snap_nr}"
+    # snapshot with the auto generate name doesn't exist, make the first one.
+    else
+        snap_name="${VM}-snap1"
+    fi
+    VBoxManage snapshot "${VM}" take "${snap_name}" --live
+    log_info "'${snap_name}' snapshot was taken."
+    exit 0
+}
+
+restore_snapshot(){
+    # check whether VM exist
+    if ! is_present; then
+        log_error "'${VM}' doesn't exist"
+        exit 1
+    fi
+
+    if ! has_snapshots; then
+        log_error "No snapshots found for the '${VM}'"
+        exit 1
+    fi
+
+    if is_alive; then
+        log_error "'${VM}' is alive. VM must be shut down to restore snapshot."
+        exit 1
+    fi
+
+    local snap_name="${1:-}"
+    # check whether snap_name is provided and delete the requested snap_name
+    if [[ -n "${snap_name}" ]]; then
+        if ! is_snapshot_present "${snap_name}"; then
+            log_error "'${snap_name}' snapshot doesn't exist for the '${VM}'"
+            log_error "Use 'vbkick lssnap \"${VM}\"' to list all available snapshots."
+            exit 1
+        fi
+        VBoxManage snapshot "${VM}" restore "${snap_name}"
+        log_info "'${snap_name}' snapshot was restored."
+        exit 0
+    fi
+    VBoxManage snapshot "${VM}" restorecurrent
+    log_info "Current snapshot was restored."
+    exit 0
+}
+
+delete_snapshot(){
+    # check whether VM exist
+    if ! is_present; then
+        log_error "'${VM}' doesn't exist"
+        exit 1
+    fi
+
+    if ! has_snapshots; then
+        log_error "No snapshots found for the '${VM}'"
+        exit 1
+    fi
+    local snap_name="${1:-}"
+    # check whether snap_name is provided and delete the requested snap_name
+    if [[ -n "${snap_name}" ]]; then
+        if ! is_snapshot_present "${snap_name}"; then
+            log_error "'${snap_name}' snapshot doesn't exist for the '${VM}'"
+            log_error "Use 'vbkick lssnap \"${VM}\"' to list all available snapshots."
+            exit 1
+        fi
+    # snap_name is not provided, remove the current snapshot
+    else
+        snap_name=$(VBoxManage snapshot "${VM}" list --machinereadable | grep ^CurrentSnapshotUUID\
+            | cut -d"=" -f 2- | sed 's/"//g')
+    fi
+    VBoxManage snapshot "${VM}" delete "${snap_name}"
+    log_info "'${snap_name}' snapshot was deleted."
+    exit 0
+}
+
+list_snapshots(){
+    # check whether VM exist
+    if ! is_present; then
+        log_error "'${VM}' doesn't exist"
+        exit 1
+    fi
+
+    if ! has_snapshots; then
+        log_error "No snapshots found for the '${VM}'"
+        exit 1
+    fi
+    VBoxManage snapshot "${VM}" list
+    exit 0
 }
 
 start_web_server() {
@@ -1442,22 +1651,19 @@ on_exit(){
 main() {
     local args_num=$#
     if [[ ${args_num} -eq 1 ]]; then
+        # check whether we have everything to start with vbkick
+        dependencies_check
         process_1_args "${1}"
-        exit 0
-    elif [[ ${args_num} -eq 0 ]] || [[ ${args_num} -gt 3 ]]; then
+    elif [[ ${args_num} -eq 2 ]] || [[ ${args_num} -eq 3 ]]; then
+        # check whether we have everything to start with vbkick
+        dependencies_check
+        _vb_version=$(get_vb_version)
+        process_2_args "${1}" "${2}" "${3:-}"
+    else
         # wrong number of arguments
         usage
         exit 1
     fi
-    if [[ ${args_num} -eq 3 ]]; then
-        definition_fname="${3}"
-    fi
-
-    # check whether we have everything to start with vbkick
-    dependencies_check
-    _vb_version=$(get_vb_version)
-
-    process_2_args "${1}" "${2}"
 }
 
 ## MAIN ##

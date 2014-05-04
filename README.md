@@ -6,8 +6,8 @@ Vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
 
 ## Prelude
 ```
-    # clone repo including submodules e.g. templates
-    git clone --recursive git@github.com:wilas/vbkick.git
+    # clone repo
+    git clone git@github.com:wilas/vbkick.git
 
     # default (master) branch is for development, if you prefere use more stable version - choose stable branch
     git checkout stable
@@ -52,7 +52,7 @@ Vbkick - simple bash tool for building Virtualbox Guests and Vagrant Base Boxes 
     vbkick update existingVM
     vbkick validate existingVM
     vbkick export existingVM
- 
+
     vagrant box remove existingVM virtualbox
     vagrant box add existingVM existingVM.box
     vagrant box list
@@ -70,16 +70,22 @@ Works in both bash 3 and bash 4 (use POSIX mode). If you have trouble using scri
     man vbkick
 
     vbkick  <action>     <vm_name>
-    vbkick  build        VM_NAME        # build VM
-    vbkick  postinstall  VM_NAME        # run postinstall scripts via ssh
-    vbkick  validate     VM_NAME        # run validate/feature scripts via ssh
-    vbkick  export       VM_NAME        # export VM and creates Vagrant VM_NAME.box
-    vbkick  update       VM_NAME        # run update scripts via ssh
-    vbkick  destroy      VM_NAME        # destroy VM
-    vbkick  ssh          VM_NAME        # ssh to VM
-    vbkick  on           VM_NAME        # turn on VM
-    vbkick  shutdown     VM_NAME        # shutdown VM
-    vbkick  help                        # display help and exit
+    vbkick  build        VM_NAME        # build the VM
+    vbkick  postinstall  VM_NAME        # run postinstall scripts via SSH
+    vbkick  validate     VM_NAME        # run validate scripts via SSH
+    vbkick  update       VM_NAME        # run update scripts via SSH
+    vbkick  export       VM_NAME        # exports the VM and creates Vagrant base box - VM_NAME.box
+    vbkick  destroy      VM_NAME        # destroy the VM
+    vbkick  ssh          VM_NAME        # connect to the VM via SSH
+    vbkick  on           VM_NAME        # turn on the VM
+    vbkick  shutdown     VM_NAME        # shut down the VM
+    vbkick  lssnap       VM_NAME        # list all snapshots
+    vbkick  snap         VM_NAME        # take the snapshot
+    vbkick  resnap       VM_NAME        # restore the snapshot
+    vbkick  delsnap      VM_NAME        # destroy the snapshot
+    vbkick  list                        # list all VirtualBox machines with the state
+    vbkick  version                     # print the version and exit
+    vbkick  help                        # print help
 ```
 
 ## convert_2_scancode.py
@@ -102,9 +108,9 @@ Example keyboard scancodes:
 
     $ printf "<Multiply(H,3)>" | convert_2_scancode.py
     2a 23 a3 aa 2a 23 a3 aa 2a 23 a3 aa
-    
+
     $ printf "<Multiply(<Wait>,3)>" | convert_2_scancode.py
-    wait wait wait 
+    wait wait wait
 ```
 
 Special keys:
@@ -118,19 +124,6 @@ Special keys:
 
 `<Multiply(what, N)>` - repeat "what" N times
 
-
-# Model and Philosophy (base on Unix)
-
-Model:
- - lots of small tools that can be combined in lots of useful ways
-
-Philosophy:
- - do one thing well,
- - small is beautiful, easy to write and easy to maintain,
- - gracefully handle errors and signals,
- - more: Mike Gancarz [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
-
-
 # Bibliography
  - !! veewee: https://github.com/jedi4ever/veewee
  - !! vagrant: https://github.com/mitchellh/vagrant
@@ -142,3 +135,4 @@ Philosophy:
  - manpage creation: http://www.linuxhowtos.org/System/creatingman.htm (http://www.cyberciti.biz/faq/linux-unix-creating-a-manpage/)
  - BDD with shell scripts: http://chrismdp.com/2013/03/bdd-with-shell-script/
  - expect + passwd: http://www.linuxquestions.org/questions/linux-newbie-8/ssh-with-password-533684/
+ - [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
