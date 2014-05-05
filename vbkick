@@ -85,7 +85,7 @@ boot_cmd_sequence=("")
 # default number of second wait between each boot_cmd
 boot_seq_wait=1
 # default webserver port to serve kickstart files
-kickstart_port=7122
+#kickstart_port=7122 -> load_env_allowed_settings
 # default max webserver live time
 kickstart_timeout=7200
 # do not start local webserver, by default 0 - mean start webserver to serve files from current dir.
@@ -105,7 +105,7 @@ ssh_priv_key="vbkick_key"
 # default auto-download path
 ssh_priv_key_src="https://raw.github.com/wilas/vbkick/master/keys/vbkick_key"
 # default ssh host port
-ssh_host_port=2222
+#ssh_host_port=2222 -> load_env_allowed_settings
 # default (22) ssh guest port to forwarding
 ssh_guest_port=22
 # default "vbkickSSH"
@@ -161,6 +161,11 @@ log_warning() {
 }
 log_error() {
     printf "${RED}[ERROR] ${*}${NORMAL}\n" >&2
+}
+
+load_env_allowed_settings() {
+    : ${kickstart_port:=7122}
+    : ${ssh_host_port:=2222}
 }
 
 # Global variables - do not use it in definition file (will be overwrite during program runtime)
@@ -236,7 +241,8 @@ context_usage(){
             printf "Usage: vbkick ssh VM_NAME <definition_file>\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "on")
-            printf "Usage: vbkick on VM_NAME\n" ;;
+            printf "Usage: vbkick on VM_NAME <definition_file>\n"
+            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "shutdown")
             printf "Usage: vbkick shutdown VM_NAME <definition_file>\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
@@ -277,7 +283,7 @@ process_2_args() {
         "postinstall") lazy_postinstall "${3:-}" ;;
         "update") lazy_update "${3:-}" ;;
         "ssh") lazy_ssh "${3:-}" ;;
-        "on") turn_on ;;
+        "on") turn_on "${3:-}" ;;
         "shutdown") turn_off "${3:-}" ;;
         "clone") make_clone "${3:-}" ;;
         "snap") take_snapshot "${3:-}" ;;
@@ -363,7 +369,7 @@ dependencies_check() {
     depend_check "tail" "coreutils"
 }
 
-check_required_options() {
+check_required_settings() {
     local opts=("boot_file" "boot_file_src" "os_type_id")
     local opt
     for opt in "${opts[@]}"; do
@@ -387,9 +393,10 @@ load_definition() {
         log_error "Not existing or empty \"${definition_fname}\" file in $(pwd). Terminating..."
         return 1
     fi
+    load_env_allowed_settings
     # if someone overwrite them in definition file
     init_global_variables
-    check_required_options
+    check_required_settings
     autoupdate_files_with_vbox_version
 }
 
@@ -1125,6 +1132,10 @@ turn_on() {
         log_info "'${VM}' was resumed."
         exit 0
     fi
+
+    # load vm description/definition - needed for gui or headless
+    local definition_fname="${1:-}"
+    load_definition "${definition_fname}"
 
     if [[ ${gui_enabled} -eq 1 ]]; then
         VBoxManage startvm --type gui "${VM}"
