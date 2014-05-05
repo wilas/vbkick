@@ -141,26 +141,29 @@ shutdown_cmd=""
 # when timeout is reached and VM is still running, hard poweroff is used
 shutdown_timeout=20
 
-# Other global variables - do not use it in definition file (will be overwrite during program runtime)
-# name of global "private" variables should start with underscore
 # virtual machine name
 VM=""
-# 0 - webserver is not running or kill isn't able to stop it
-_webserver_state=0
-# 0 - webserver was killed cleanly or we didn't try kill it yet
-_webserver_kill_cmd_state=0
-# during exporting tmp directory is created
-_tmp_dir=""
-# during creation VM may be temporary in inconsistent state
-# e.g. not all ports mapping, options etc. were setup
-# this flag is used to make sure that vm was created completely or not at all
-_vm_creation_state=0
-# during exporting NAT mapping is removed (temporary) - help recover state before exporting
-_ssh_natmapping_was_removed=0
-# during exporting shared folders are removed (temporary) - help recover state before exporting
-_sharedfolders_removed_ptr=0
-# during exporting extra ports are removed (temporary) - help recover state before exporting
-_extraports_removed_ptr=0
+
+# Other global variables - do not use it in definition file (will be overwrite during program runtime)
+# name of global "private" variables should start with underscore
+init_global_variables(){
+    # 0 - webserver is not running or kill isn't able to stop it
+    _webserver_state=0
+    # 0 - webserver was killed cleanly or we didn't try kill it yet
+    _webserver_kill_cmd_state=0
+    # during exporting tmp directory is created
+    _tmp_dir=""
+    # during creation VM may be temporary in inconsistent state
+    # e.g. not all ports mapping, options etc. were setup
+    # this flag is used to make sure that vm was created completely or not at all
+    _vm_creation_state=0
+    # during exporting NAT mapping is removed (temporary) - help recover state before exporting
+    _ssh_natmapping_was_removed=0
+    # during exporting shared folders are removed (temporary) - help recover state before exporting
+    _sharedfolders_removed_ptr=0
+    # during exporting extra ports are removed (temporary) - help recover state before exporting
+    _extraports_removed_ptr=0
+}
 
 # For nice printing
 # name of constants should be uppercase
@@ -384,6 +387,8 @@ load_definition() {
         log_error "Not existing or empty \"${definition_fname}\" file in $(pwd). Terminating..."
         return 1
     fi
+    # if someone overwrite them in definition file
+    init_global_variables
     check_required_options
     autoupdate_files_with_vbox_version
 }
@@ -1732,6 +1737,7 @@ on_exit(){
 
 main() {
     local args_num=$#
+    init_global_variables
     if [[ ${args_num} -eq 1 ]]; then
         # check whether we have everything to start with vbkick
         dependencies_check

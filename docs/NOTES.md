@@ -9,7 +9,6 @@ Links:
 
 General TODO
  - creates curl installer: curl -ks "url" | sudo bash #(http://calibre-ebook.com/download_linux)
- - refactoring (Naming consistence): _local; __func_local, global_variable (e.g from def.)
  - describe options in definition.cfg (possibility and consequences)(OS influence)(what each option mean, what I can do, what format is accepted, special variables - %HOME%, %PWD%, etc.)
  - contribute
     - to_do priority:
