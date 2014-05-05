@@ -484,7 +484,7 @@ curl_safe() {
     local statuscode=$(curl -Lkfw "%{http_code}\n" "${src}" -o "${dest}")
     if [[ ${statuscode} -ne 200 ]]; then
         log_error "${src} status code is ${statuscode}. Terminating..."
-        clean_up
+        return 1
     fi
 }
 
@@ -661,10 +661,6 @@ build_vm() {
     # load vm description/definition
     local definition_fname="${1:-}"
     load_definition "${definition_fname}"
-    # get ssh private key
-    if [[ ${ssh_keys_enabled} -eq 1 ]]; then
-        get_priv_ssh_key
-    fi
     # check SSH port usage
     check_port_usage ${ssh_host_port} "SSH host"
     # start simple webserver (in background)
@@ -955,11 +951,12 @@ kickstart_monitoring() {
     # ssh key authentication enabled
     if [[ ${ssh_keys_enabled} -eq 1 ]]; then
         # create path to ssh private key
+        get_priv_ssh_key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
         printf "\n"
         log_info "Waiting for ssh login with user ${ssh_user} to 127.0.0.1:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec"
         # wait until ssh start working (communication chanel with VM) or kickstart_timeout was reached
-        while ! ssh "${ssh_user}@127.0.0.1" -q -t -i ${key_path} -p ${ssh_host_port} ${ssh_options} ${extra_ssh_options} -C "echo"\
+        while ! ssh "${ssh_user}@127.0.0.1" -q -t -i "${key_path}" -p ${ssh_host_port} ${ssh_options} ${extra_ssh_options} -C "echo"\
             && [[ ${kickstart_counter} -le ${kickstart_timeout} ]]; do
             kickstart_counter=$((kickstart_counter+1))
             printf "."
@@ -1160,7 +1157,7 @@ shutdown() {
     if [[ -n "${shutdown_cmd}" ]]; then
         if is_running; then
             log_info "Shutting down '${VM}'."
-            ssh_do_launch "${shutdown_cmd}" || true
+            ssh_do_launch "${shutdown_cmd}"
             # wait until VM is down or shutdown_timeout was reached
             local shutdown_counter=0
             while is_running && [[ ${shutdown_counter} -le ${shutdown_timeout} ]]; do
@@ -1312,12 +1309,6 @@ ssh_exec() {
         VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
-    # ssh key authentication enabled
-    if [[ ${ssh_keys_enabled} -eq 1 ]]; then
-        # if key not exist then get it
-        get_priv_ssh_key
-    fi
-
     # check whether all pkt can by transported, before starting transporting -
     # - be a bit more atomic
     local pkt
@@ -1356,6 +1347,7 @@ ssh_do_transport() {
             # pkt is directory
             if [[ ${ssh_keys_enabled} -eq 1 ]]; then
                 # create path to ssh private key
+                get_priv_ssh_key
                 local key_path="${ssh_keys_path}/${ssh_priv_key}"
                 scp -q -P ${ssh_host_port} -i "${key_path}" ${ssh_options} -r "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
@@ -1366,6 +1358,7 @@ ssh_do_transport() {
             # pkt is file
             if [[ ${ssh_keys_enabled} -eq 1 ]]; then
                 # create path to ssh private key
+                get_priv_ssh_key
                 local key_path="${ssh_keys_path}/${ssh_priv_key}"
                 scp -q -P ${ssh_host_port} -i "${key_path}" ${ssh_options} "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
@@ -1398,8 +1391,9 @@ ssh_do_launch() {
         log_info "Exec: ${cmd}"
         if [[ ${ssh_keys_enabled} -eq 1 ]]; then
             # create path to ssh private key
+            get_priv_ssh_key
             local key_path="${ssh_keys_path}/${ssh_priv_key}"
-            ssh -q "${ssh_user}@127.0.0.1" -t -i ${key_path} -p ${ssh_host_port} ${ssh_options} -C "${cmd}"
+            ssh -q "${ssh_user}@127.0.0.1" -t -i "${key_path}" -p ${ssh_host_port} ${ssh_options} -C "${cmd}"
         else
             auto_passwd_ssh "${cmd}"
         fi
@@ -1422,8 +1416,9 @@ ssh_do_cleanup() {
         local pkt_to_clean=$(basename "${pkt}")
         if [[ ${ssh_keys_enabled} -eq 1 ]]; then
             # create path to ssh private key
+            get_priv_ssh_key
             local key_path="${ssh_keys_path}/${ssh_priv_key}"
-            ssh -q "${ssh_user}@127.0.0.1" -t -i ${key_path} -p ${ssh_host_port} ${ssh_options} -C "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
+            ssh -q "${ssh_user}@127.0.0.1" -t -i "${key_path}" -p ${ssh_host_port} ${ssh_options} -C "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
         else
             auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
         fi
@@ -1447,11 +1442,10 @@ lazy_ssh() {
     local definition_fname="${1:-}"
     load_definition "${definition_fname}"
     if [[ ${ssh_keys_enabled} -eq 1 ]]; then
-        # if key not exist then get it
-        get_priv_ssh_key
         # create path to ssh private key
+        get_priv_ssh_key
         local key_path="${ssh_keys_path}/${ssh_priv_key}"
-        ssh -q "${ssh_user}@127.0.0.1" -t -i ${key_path} -p ${ssh_host_port} ${ssh_options}
+        ssh -q "${ssh_user}@127.0.0.1" -t -i "${key_path}" -p ${ssh_host_port} ${ssh_options}
     else
         auto_passwd_ssh ""
     fi
