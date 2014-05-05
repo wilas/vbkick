@@ -23,6 +23,25 @@ set -o posix
 # virtual machine name
 VM=""
 
+# For nice printing
+# name of constants should be uppercase
+GREEN="\e[1;32m"
+RED="\e[1;31m"
+YELLOW="\e[1;33m"
+NORMAL="\e[0m"
+log_info() {
+    printf "[INFO] ${*}\n"
+}
+log_ginfo() {
+    printf "${GREEN}[INFO] ${*}${NORMAL}\n"
+}
+log_warning() {
+    printf "${YELLOW}[WARNING] ${*}${NORMAL}\n"
+}
+log_error() {
+    printf "${RED}[ERROR] ${*}${NORMAL}\n" >&2
+}
+
 load_default_settings() {
     # VM default settings - basic
     hostiocache="on"
@@ -144,25 +163,6 @@ load_default_settings() {
     shutdown_cmd=""
     # when timeout is reached and VM is still running, hard poweroff is used
     shutdown_timeout=20
-}
-
-# For nice printing
-# name of constants should be uppercase
-GREEN="\e[1;32m"
-RED="\e[1;31m"
-YELLOW="\e[1;33m"
-NORMAL="\e[0m"
-log_info() {
-    printf "[INFO] ${*}\n"
-}
-log_ginfo() {
-    printf "${GREEN}[INFO] ${*}${NORMAL}\n"
-}
-log_warning() {
-    printf "${YELLOW}[WARNING] ${*}${NORMAL}\n"
-}
-log_error() {
-    printf "${RED}[ERROR] ${*}${NORMAL}\n" >&2
 }
 
 load_env_allowed_settings() {
