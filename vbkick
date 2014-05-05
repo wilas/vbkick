@@ -20,6 +20,9 @@ shopt -s failglob;
 # http://www.gnu.org/software/bash/manual/html_node/Bash-POSIX-Mode.html
 set -o posix
 
+# virtual machine name
+VM=""
+
 # VM default settings - basic
 hostiocache="on"
 cpu_count=1
@@ -141,10 +144,26 @@ shutdown_cmd=""
 # when timeout is reached and VM is still running, hard poweroff is used
 shutdown_timeout=20
 
-# virtual machine name
-VM=""
+# For nice printing
+# name of constants should be uppercase
+GREEN="\e[1;32m"
+RED="\e[1;31m"
+YELLOW="\e[1;33m"
+NORMAL="\e[0m"
+log_info() {
+    printf "[INFO] ${*}\n"
+}
+log_ginfo() {
+    printf "${GREEN}[INFO] ${*}${NORMAL}\n"
+}
+log_warning() {
+    printf "${YELLOW}[WARNING] ${*}${NORMAL}\n"
+}
+log_error() {
+    printf "${RED}[ERROR] ${*}${NORMAL}\n" >&2
+}
 
-# Other global variables - do not use it in definition file (will be overwrite during program runtime)
+# Global variables - do not use it in definition file (will be overwrite during program runtime)
 # name of global "private" variables should start with underscore
 init_global_variables(){
     # 0 - webserver is not running or kill isn't able to stop it
@@ -163,25 +182,6 @@ init_global_variables(){
     _sharedfolders_removed_ptr=0
     # during exporting extra ports are removed (temporary) - help recover state before exporting
     _extraports_removed_ptr=0
-}
-
-# For nice printing
-# name of constants should be uppercase
-GREEN="\e[1;32m"
-RED="\e[1;31m"
-YELLOW="\e[1;33m"
-NORMAL="\e[0m"
-log_info() {
-    printf "[INFO] ${*}\n"
-}
-log_ginfo() {
-    printf "${GREEN}[INFO] ${*}${NORMAL}\n"
-}
-log_warning() {
-    printf "${YELLOW}[WARNING] ${*}${NORMAL}\n"
-}
-log_error() {
-    printf "${RED}[ERROR] ${*}${NORMAL}\n" >&2
 }
 
 # Display help
