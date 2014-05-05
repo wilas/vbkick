@@ -888,7 +888,7 @@ remove_extra_ports_mapping() {
         fi
         local port_name="${port_info[0]}"
         if is_port_present "${port_name}"; then
-            VBoxManage modifyvm "${VM}" --natpf1 delete "${port_name}"
+            VBoxManage controlvm "${VM}" natpf1 delete "${port_name}"
             # note which extra ports were removed by moving _extraports_removed_ptr
             _extraports_removed_ptr=$((_extraports_removed_ptr+1))
         fi
@@ -1049,7 +1049,7 @@ export_vm() {
 
     # clearing previously set port forwarding rules (only if exist)
     if is_port_present "${ssh_port_name}"; then
-        VBoxManage modifyvm "${VM}" --natpf1 delete "${ssh_port_name}"
+        VBoxManage controlvm "${VM}" natpf1 delete "${ssh_port_name}"
         _ssh_natmapping_was_removed=1
     fi
 
@@ -1179,6 +1179,7 @@ shutdown() {
     if [[ -n "${shutdown_cmd}" ]]; then
         if is_running; then
             log_info "Shutting down '${VM}'."
+            fix_ssh_port
             ssh_do_launch "${shutdown_cmd}"
             shutdown_monitoring
             sleep 3
@@ -1330,11 +1331,7 @@ ssh_exec() {
     fi
 
     # checking port forwarding (if no proper rules, try add new one for NAT mapping)
-    if ! VBoxManage showvminfo "${VM}" | grep "NIC 1" | grep "host port = ${ssh_host_port}"\
-        | grep -q "guest port = ${ssh_guest_port}"; then
-        log_info "NAT mapping - enable ssh port forwarding"
-        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
-    fi
+    fix_ssh_port
 
     # check whether all pkt can by transported, before starting transporting -
     # - be a bit more atomic
@@ -1358,6 +1355,21 @@ ssh_exec() {
     fi
     ssh_do_launch "${launch[@]}"
     ssh_do_cleanup "${transport[@]}"
+}
+
+# try change ssh_host_port if is used a different than already configured (e.g. env variables where used)
+fix_ssh_port() {
+    # port is not setup
+    if ! is_port_present "${ssh_port_name}"; then
+        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+        return 0
+    fi
+    # port is setup, but host port and/or guest port are incorrect
+    if ! is_port_present "${ssh_port_name}.*host port = ${ssh_host_port}.*guest port = ${ssh_guest_port}"; then
+        VBoxManage controlvm "${VM}" natpf1 delete "${ssh_port_name}"
+        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+    fi
+    # everything is correct - nothing to do.
 }
 
 ssh_do_transport() {
@@ -1468,6 +1480,8 @@ lazy_ssh() {
     # load vm description/definition
     local definition_fname="${1:-}"
     load_definition "${definition_fname}"
+
+    fix_ssh_port
     if [[ ${ssh_keys_enabled} -eq 1 ]]; then
         # create path to ssh private key
         get_priv_ssh_key
