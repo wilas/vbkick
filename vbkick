@@ -42,6 +42,7 @@ log_error() {
     printf "${RED}[ERROR] ${*}${NORMAL}\n" >&2
 }
 
+# default vm settings which may be overwritten by definition file
 load_default_settings() {
     # VM default settings - basic
     hostiocache="on"
@@ -165,6 +166,7 @@ load_default_settings() {
     shutdown_timeout=20
 }
 
+# settings which may be changed by env variables if definition file allow/support it.
 load_env_allowed_settings() {
     : ${kickstart_port:=7122}
     : ${ssh_host_port:=2222}
@@ -382,6 +384,7 @@ check_required_settings() {
     done
 }
 
+# Every action which requires vm settings must use this function to load them.
 load_definition() {
     load_default_settings
     # definition.cfg is a default definition file
