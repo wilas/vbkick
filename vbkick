@@ -1180,14 +1180,7 @@ shutdown() {
         if is_running; then
             log_info "Shutting down '${VM}'."
             ssh_do_launch "${shutdown_cmd}"
-            # wait until VM is down or shutdown_timeout was reached
-            local shutdown_counter=0
-            while is_running && [[ ${shutdown_counter} -le ${shutdown_timeout} ]]; do
-                shutdown_counter=$((shutdown_counter+1))
-                printf "."
-                sleep 1
-            done
-            printf "\n"
+            shutdown_monitoring
             sleep 3
         fi
     fi
@@ -1195,8 +1188,9 @@ shutdown() {
     # check whether VM is still running, if so use acpipowerbutton
     if is_running; then
         VBoxManage controlvm "${VM}" acpipowerbutton
-        log_info "'${VM}' - acpipowerbutton was used. Waiting ${shutdown_timeout} seconds..."
-        sleep ${shutdown_timeout}
+        log_info "Shutting down '${VM}' via acpipowerbutton."
+        shutdown_monitoring
+        sleep 3
     fi
 
     # check whether VM is still alive (e.g. paused), if so poweroff it using hard way.
@@ -1210,6 +1204,17 @@ shutdown() {
     else
         log_warning "'${VM}' has different than 'powered off' state."
     fi
+}
+
+shutdown_monitoring() {
+    # wait until VM is down or shutdown_timeout was reached
+    local shutdown_counter=0
+    while is_running && [[ ${shutdown_counter} -le ${shutdown_timeout} ]]; do
+        shutdown_counter=$((shutdown_counter+1))
+        printf "."
+        sleep 1
+    done
+    printf "\n"
 }
 
 update_guest_additions_media() {
