@@ -23,126 +23,128 @@ set -o posix
 # virtual machine name
 VM=""
 
-# VM default settings - basic
-hostiocache="on"
-cpu_count=1
-memory_size=512
-disk_size=(10140)
-disk_format="vdi"
-video_memory_size=10
-# available boot devices: none|floppy|dvd|disk|net
-# there are four slots, if priovided less than 4, extra slots set to none
-# if provided more than 4, extra values are droped
-boot_order=("disk" "dvd")
-# default nic type: Intel PRO/1000 MT Desktop (82540EM); recommended - virtio
-# more to choose Am79C970A|Am79C973|82540EM|82543GC|82545EM|virtio
-# http://www.virtualbox.org/manual/ch06.html#nichardware
-nic_type="82540EM"
-# list of VM options: ("option1:value" "option2:value")
-vm_options=("ioapic:on")
-# list of VM extradata to set: ("extradata:value" "extradata:value")
-vm_extradata=("")
-# by default gui enabled unless the VirtualBox GUI is missing
-gui_enabled=1
-if ! command -v VirtualBox >/dev/null 2>&1; then
-    gui_enabled=0
-fi
-# by default add one shared folder - to disable: shared_folders=("")
-shared_folders=("vbkick:%PWD%:automount")
-# by default no extra ports is mapping
-extra_ports=("")
+load_default_settings() {
+    # VM default settings - basic
+    hostiocache="on"
+    cpu_count=1
+    memory_size=512
+    disk_size=(10140)
+    disk_format="vdi"
+    video_memory_size=10
+    # available boot devices: none|floppy|dvd|disk|net
+    # there are four slots, if priovided less than 4, extra slots set to none
+    # if provided more than 4, extra values are droped
+    boot_order=("disk" "dvd")
+    # default nic type: Intel PRO/1000 MT Desktop (82540EM); recommended - virtio
+    # more to choose Am79C970A|Am79C973|82540EM|82543GC|82545EM|virtio
+    # http://www.virtualbox.org/manual/ch06.html#nichardware
+    nic_type="82540EM"
+    # list of VM options: ("option1:value" "option2:value")
+    vm_options=("ioapic:on")
+    # list of VM extradata to set: ("extradata:value" "extradata:value")
+    vm_extradata=("")
+    # by default gui enabled unless the VirtualBox GUI is missing
+    gui_enabled=1
+    if ! command -v VirtualBox >/dev/null 2>&1; then
+        gui_enabled=0
+    fi
+    # by default add one shared folder - to disable: shared_folders=("")
+    shared_folders=("vbkick:%PWD%:automount")
+    # by default no extra ports is mapping
+    extra_ports=("")
 
-# Guest Additions default settings
-# set to 0 to not attach VBoxGuestAdditions iso to guest
-guest_additions_attach=1
-# path where guest_additions should be download, if empty then not download custom VBoxGuestAdditions to host, use default one
-guest_additions_path=""
+    # Guest Additions default settings
+    # set to 0 to not attach VBoxGuestAdditions iso to guest
+    guest_additions_attach=1
+    # path where guest_additions should be download, if empty then not download custom VBoxGuestAdditions to host, use default one
+    guest_additions_path=""
 
-# Boot default settings
-#boot_file -> required option, fail if not in definition
-#boot_file_src -> required option, fail if not in definition
-# type of boot media e.g.: hdd, dvddrive; by default dvddrive
-boot_file_type="dvddrive"
-# default path for src media needed to create destination boot_file
-boot_file_src_path="iso"
-# by default checksum is empty - checksum is not check
-boot_file_src_checksum=""
-# default cheksum type is sha256
-boot_file_checksum_type="sha256"
-# by default unpacke is not needed
-boot_file_unpack_cmd=""
-# where is the path and the filename after unpack
-boot_file_unpack_name=""
-# is boot_file_src raw image and need to be converted
-boot_file_convert_from_raw=0
-# whether use cp or mv when boot_file is created form boot_file_src_file;
-# mv mean don't keep boot_file_src_file; keep only boot_file; by default 0 - use mv
-keep_boot_src_file=0
-# default time before boot_cmd_sequence start
-boot_wait=10
-# list of boot_cmd: ("cmd1" "cmd2" "cmd3")
-boot_cmd_sequence=("")
-# default number of second wait between each boot_cmd
-boot_seq_wait=1
-# default webserver port to serve kickstart files
-#kickstart_port=7122 -> load_env_allowed_settings
-# default max webserver live time
-kickstart_timeout=7200
-# do not start local webserver, by default 0 - mean start webserver to serve files from current dir.
-webserver_disabled=0
+    # Boot default settings
+    #boot_file -> required option, fail if not in definition
+    #boot_file_src -> required option, fail if not in definition
+    # type of boot media e.g.: hdd, dvddrive; by default dvddrive
+    boot_file_type="dvddrive"
+    # default path for src media needed to create destination boot_file
+    boot_file_src_path="iso"
+    # by default checksum is empty - checksum is not check
+    boot_file_src_checksum=""
+    # default cheksum type is sha256
+    boot_file_checksum_type="sha256"
+    # by default unpacke is not needed
+    boot_file_unpack_cmd=""
+    # where is the path and the filename after unpack
+    boot_file_unpack_name=""
+    # is boot_file_src raw image and need to be converted
+    boot_file_convert_from_raw=0
+    # whether use cp or mv when boot_file is created form boot_file_src_file;
+    # mv mean don't keep boot_file_src_file; keep only boot_file; by default 0 - use mv
+    keep_boot_src_file=0
+    # default time before boot_cmd_sequence start
+    boot_wait=10
+    # list of boot_cmd: ("cmd1" "cmd2" "cmd3")
+    boot_cmd_sequence=("")
+    # default number of second wait between each boot_cmd
+    boot_seq_wait=1
+    # default webserver port to serve kickstart files
+    #kickstart_port=7122 -> load_env_allowed_settings
+    # default max webserver live time
+    kickstart_timeout=7200
+    # do not start local webserver, by default 0 - mean start webserver to serve files from current dir.
+    webserver_disabled=0
 
-# SSH default settings (veeded to run vbkick validate and/or lazy_posinstall)
-# by default use ssh keys
-ssh_keys_enabled=1
-# default user
-ssh_user="vbkick"
-# default user password - not use when ssh_keys authentication is enabled
-ssh_password="vbkick"
-# default path to ssh keys
-ssh_keys_path="keys"
-# default private key name
-ssh_priv_key="vbkick_key"
-# default auto-download path
-ssh_priv_key_src="https://raw.github.com/wilas/vbkick/master/keys/vbkick_key"
-# default ssh host port
-#ssh_host_port=2222 -> load_env_allowed_settings
-# default (22) ssh guest port to forwarding
-ssh_guest_port=22
-# default "vbkickSSH"
-ssh_port_name="vbkickSSH"
-# default extra ssh and scp options
-# UserKnownHostsFile - database file to use for storing the user host keys
-# StrictHostKeyChecking - if "no" then automatically add new host keys to the host key database file
-# you may consider editing ssh config: http://superuser.com/questions/141344/ssh-dont-add-hostkey-to-known-hosts
-ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=1"
+    # SSH default settings (veeded to run vbkick validate and/or lazy_posinstall)
+    # by default use ssh keys
+    ssh_keys_enabled=1
+    # default user
+    ssh_user="vbkick"
+    # default user password - not use when ssh_keys authentication is enabled
+    ssh_password="vbkick"
+    # default path to ssh keys
+    ssh_keys_path="keys"
+    # default private key name
+    ssh_priv_key="vbkick_key"
+    # default auto-download path
+    ssh_priv_key_src="https://raw.github.com/wilas/vbkick/master/keys/vbkick_key"
+    # default ssh host port
+    #ssh_host_port=2222 -> load_env_allowed_settings
+    # default (22) ssh guest port to forwarding
+    ssh_guest_port=22
+    # default "vbkickSSH"
+    ssh_port_name="vbkickSSH"
+    # default extra ssh and scp options
+    # UserKnownHostsFile - database file to use for storing the user host keys
+    # StrictHostKeyChecking - if "no" then automatically add new host keys to the host key database file
+    # you may consider editing ssh config: http://superuser.com/questions/141344/ssh-dont-add-hostkey-to-known-hosts
+    ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=1"
 
-# Lazy Postinstall default settings
-# list of files and directories to transport to guest
-postinstall_transport=("")
-# list of postinstall commands
-postinstall_launch=("")
+    # Lazy Postinstall default settings
+    # list of files and directories to transport to guest
+    postinstall_transport=("")
+    # list of postinstall commands
+    postinstall_launch=("")
 
-# Validate default settings
-# list of files and directories to transport to guest
-validate_transport=("")
-# list of validate commands
-validate_launch=("")
+    # Validate default settings
+    # list of files and directories to transport to guest
+    validate_transport=("")
+    # list of validate commands
+    validate_launch=("")
 
-# Lazy Update default settings
-# list of files and directories to transport to guest
-update_transport=("")
-# list of update commands
-update_launch=("")
+    # Lazy Update default settings
+    # list of files and directories to transport to guest
+    update_transport=("")
+    # list of update commands
+    update_launch=("")
 
-# Clean
-# list of files to autoupdate VBOX_VERSION value
-files_to_autoupdate_vbox_version=("")
-# rm or not already transported via SCP files/directories (from postinstall, validate)
-clean_transported=0
-# nice for OS shutdown command, if not specify acpipowerbutton will be used
-shutdown_cmd=""
-# when timeout is reached and VM is still running, hard poweroff is used
-shutdown_timeout=20
+    # Clean
+    # list of files to autoupdate VBOX_VERSION value
+    files_to_autoupdate_vbox_version=("")
+    # rm or not already transported via SCP files/directories (from postinstall, validate)
+    clean_transported=0
+    # nice for OS shutdown command, if not specify acpipowerbutton will be used
+    shutdown_cmd=""
+    # when timeout is reached and VM is still running, hard poweroff is used
+    shutdown_timeout=20
+}
 
 # For nice printing
 # name of constants should be uppercase
@@ -380,9 +382,10 @@ check_required_settings() {
     done
 }
 
-# Load definition.cfg config file; it overwrite default settings
 load_definition() {
+    load_default_settings
     # definition.cfg is a default definition file
+    # loading definition file overwrite default settings
     local definition_fname="${1:-definition.cfg}"
     if [[ -s "${definition_fname}" ]]; then
         # In POSIX mode the '.' and 'source' builtins do not search the current directory
