@@ -126,14 +126,11 @@ Special keys:
 `<Multiply(what, N)>` - repeat "what" N times
 
 # Bibliography
- - !! veewee: https://github.com/jedi4ever/veewee
- - !! vagrant: https://github.com/mitchellh/vagrant
- - virtualbox manual: http://www.virtualbox.org/manual/ch08.html
- - controle vm with api: http://www.jedi.be/blog/2009/11/17/controlling-virtual-machines-with-an-API/
- - !! Unix Philosophy: http://en.wikipedia.org/wiki/Unix_philosophy
- - Filter (Unix): http://en.wikipedia.org/wiki/Filter_%28Unix%29
- - well-behave Python cmd line app: http://www.slideshare.net/gjcross/tutorial1-14045370
- - manpage creation: http://www.linuxhowtos.org/System/creatingman.htm (http://www.cyberciti.biz/faq/linux-unix-creating-a-manpage/)
- - BDD with shell scripts: http://chrismdp.com/2013/03/bdd-with-shell-script/
- - expect + passwd: http://www.linuxquestions.org/questions/linux-newbie-8/ssh-with-password-533684/
+ - [veewee](https://github.com/jedi4ever/veewee)
+ - [vagrant](https://github.com/mitchellh/vagrant)
+ - [VirtualBox manual](http://www.virtualbox.org/manual/ch08.html)
  - [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
+ - [Filter (Unix)](http://en.wikipedia.org/wiki/Filter_%28Unix%29)
+ - [Well-behave Python cmd line app](http://www.slideshare.net/gjcross/tutorial1-14045370)
+ - [BDD with shell scripts](http://chrismdp.com/2013/03/bdd-with-shell-script/)
+
