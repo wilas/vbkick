@@ -129,7 +129,7 @@ Special keys:
  - [veewee](https://github.com/jedi4ever/veewee)
  - [vagrant](https://github.com/mitchellh/vagrant)
  - [VirtualBox manual](http://www.virtualbox.org/manual/ch08.html)
- - [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy).
+ - [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy)
  - [Filter (Unix)](http://en.wikipedia.org/wiki/Filter_%28Unix%29)
  - [Well-behave Python cmd line app](http://www.slideshare.net/gjcross/tutorial1-14045370)
  - [BDD with shell scripts](http://chrismdp.com/2013/03/bdd-with-shell-script/)
