@@ -1,37 +1,5 @@
 # Examples - how to customize box definition.
 
-## Typical box definition structure.
-
-```
-    .
-    └─ SL6
-       ├── definition.cfg -> definition-6.4-x86_64-noX.cfg
-       ├── definition-6.3-i386-noX.cfg
-       ├── definition-6.3-x86_64-noX.cfg
-       ├── definition-6.4-i386-noX.cfg
-       ├── definition-6.4-x86_64-noX.cfg
-       ├── kickstart
-       │   └── <scientificlinux-6.4-x86_64-noX.cfg, scientificlinux-6.4-x86_64-GNOME.cfg, ...>
-       ├── validate
-       │   └── <adm_features.sh, adm_context.txt, adm_envrc, test_puppet.sh, test_ruby.sh, test_virtualbox.sh, test_vagrant, ....sh >
-       └── postinstall
-           └── <adm_postinstall.sh, adm_context.txt, adm_envrc, base.sh, cleanup.sh, puppet.sh, ruby.sh, virtualbox.sh, ....sh >
-```
-
-**The definition.cfg is symlink** to choosen vbkick definition. The definition contains all crucial parameters to build and tuning the new box, e.g.:
-
- - number of CPUs
- - memory size
- - disk size
- - os type
- - url to install ISO
- - boot sequence
- - ssh key
- - command for clean shutdown
- - list of postinstall commands/scripts
- - list of validation commands/tests
- - list of update commands/scripts
-
 ## Example definition.cfg - the core file of each box.
 
 ```

@@ -2,7 +2,7 @@
 
 ## Overview
 
-By default template defines Vagrant Base Box, so in each template vagrant user is created.
+By default templates define Vagrant Base Boxes, so in each template vagrant user is created.
 
 ## templates structure (good practice)
 
