@@ -219,47 +219,47 @@ usage() {
 context_usage(){
     case "${1}" in
         "build")
-            printf "Usage: vbkick build VM_NAME <definition_file>\n"
+            printf "Usage: vbkick build <VM_NAME> [definition_file]\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "destroy")
-            printf "Usage: vbkick destroy VM_NAME\n" ;;
+            printf "Usage: vbkick destroy <VM_NAME>\n" ;;
         "export")
-            printf "Usage: vbkick export VM_NAME <definition_file>\n"
+            printf "Usage: vbkick export <VM_NAME> [definition_file]\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "validate")
-            printf "Usage: vbkick validate VM_NAME <definition_file>\n"
+            printf "Usage: vbkick validate <VM_NAME> [definition_file]\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "postinstall")
-            printf "Usage: vbkick postinstall VM_NAME <definition_file>\n"
+            printf "Usage: vbkick postinstall <VM_NAME> [definition_file]\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "update")
-            printf "Usage: vbkick update VM_NAME <definition_file>\n"
+            printf "Usage: vbkick update <VM_NAME> [definition_file]\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "ssh")
-            printf "Usage: vbkick ssh VM_NAME <definition_file>\n"
+            printf "Usage: vbkick ssh <VM_NAME> [definition_file]\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "on")
-            printf "Usage: vbkick on VM_NAME <definition_file>\n"
+            printf "Usage: vbkick on <VM_NAME> [definition_file]\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "shutdown")
-            printf "Usage: vbkick shutdown VM_NAME <definition_file>\n"
+            printf "Usage: vbkick shutdown <VM_NAME> [definition_file]\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "clone")
-            printf "Usage: vbkick clone VM_NAME <clone_name>\n"
+            printf "Usage: vbkick clone <VM_NAME> [clone_name]\n"
             printf "If no clone name specify default one will be used - {VM_NAME}-clone{NR},\n"
             printf "where {NR} is the next available number.\n" ;;
         "snap")
-            printf "Usage: vbkick snap VM_NAME <snapshot_name>\n"
+            printf "Usage: vbkick snap <VM_NAME> [snapshot_name]\n"
             printf "If no snapshot name specify default one will be used - {VM_NAME}-snap{NR},\n"
             printf "where {NR} is the next available number.\n" ;;
         "resnap")
-            printf "Usage: vbkick resnap VM_NAME <snapshot_name>\n"
+            printf "Usage: vbkick resnap <VM_NAME> [snapshot_name]\n"
             printf "If no snapshot name specify, restore to the current snapshot.\n" ;;
         "delsnap")
-            printf "Usage: vbkick delsnap VM_NAME <snapshot_name>\n"
+            printf "Usage: vbkick delsnap <VM_NAME> [snapshot_name]\n"
             printf "If no snapshot name specify, delete the current snapshot.\n" ;;
         "lssnap")
-            printf "Usage: vbkick lssnap VM_NAME\n" ;;
+            printf "Usage: vbkick lssnap <VM_NAME>\n" ;;
         "list")
             printf "Usage: vbkick list\n" ;;
         *) usage; exit ;;
@@ -1743,7 +1743,7 @@ stop_web_server() {
 
 # (signals and error handler) - cleaning after ctr-c, etc.
 clean_up() {
-    log_info "Signal/Error handler - cleanup before exiting..."
+    log_info "Signal handler - cleanup before exiting..."
     exit 1
 }
 

@@ -1,87 +1,130 @@
-man(1)                          vbkick man page                         man(1)
-
-
-
-NNAAMMEE
-       vbkick  -  the  automatic  Virtualbox  Guests and/or Vagrant base boxes
-       builder.
-
-SSYYNNOOPPSSIISS
-       vvbbkkiicckk _A_C_T_I_O_N _V_M___N_A_M_E _(_D_E_F_I_N_I_T_I_O_N___F_I_L_E___N_A_M_E_)
-
-DDEESSCCRRIIPPTTIIOONN
-       vbkick is easy in use and free bash script (with enabled  POSIX  mode).
-       It  automate/simplify  Virtualbox Guest and Vagrant base box build pro-
-       cess (only 1-2 actions are needed). New Virtual machine is describe  as
-       a  code  in _d_e_f_i_n_i_t_i_o_n_._c_f_g (DEFINITION_FILE_NAME) file.  Task is mostly
-       about running VBoxManage command in proper order with  proper  options.
-       Uses also ssh and scp commands to complete the job.
-
-       Kickstart  and  postinstall  files  are serve to VM via local webserver
-       started in background.
-
-       vbkick is supported by _c_o_n_v_e_r_t___2___s_c_a_n_c_o_d_e_._p_y  tool,  which  help  enter
-       key-strokes into a VirtualBox guest programmatically from the host.
-
-AACCTTIIOONNSS
-       bbuuiilldd  Builds  a  new  Virtualbox  Guest from given _d_e_f_i_n_i_t_i_o_n_._c_f_g. The
-              definition.cfg file must exist in  directory  where  command  is
-              run.
-
-       ppoossttiinnssttaallll
-              Run defined postinstall scripts via SSH on the Virtualbox Guest.
-              The _d_e_f_i_n_i_t_i_o_n_._c_f_g file is required in directory  where  command
-              is run.
-
-       vvaalliiddaattee
-              Run  defined  features  scripts via SSH on the Virtualbox Guest.
-              Check whether new VM Guest has expected behaviour.  The  _d_e_f_i_n_i_-
-              _t_i_o_n_._c_f_g file is required in directory where command is run.
-
-       eexxppoorrtt Exports  the  Virtualbox Guest as a Vagrant base box (base image
-              for a future VMs) - _V_M___N_A_M_E_._b_o_x gzipped  file  is  created.  The
-              _d_e_f_i_n_i_t_i_o_n_._c_f_g  file  is  required in directory where command is
-              run.
-
-       uuppddaattee Updates attached VBoxGuestAdditions iso and runs defined  update
-              scripts via SSH on the Virtualbox Guest. The _d_e_f_i_n_i_t_i_o_n_._c_f_g file
-              is required in directory where command is run.
-
-       ddeessttrrooyy
-              Remove the guest machine from Virtualbox. Doing this  will  also
-              remove  the files containing the machine’s virtual hard disks if
-              they are not in use by another machine.
-
-       sssshh    SSH to the guest machine with  same  ssh  options  like  postin-
-              stall/validate/update.  The  _d_e_f_i_n_i_t_i_o_n_._c_f_g  file is required in
-              directory where command is run.
-
-       oonn     Turn on the guest machine.
-
-       sshhuuttddoowwnn
-              Turn off the guest machine using shutdown command  via  ssh.  If
-              this fail then the acpipower button is used and if necessery the
-              poweroff button. The _d_e_f_i_n_i_t_i_o_n_._c_f_g file is required  in  direc-
-              tory where command is run.
-
-
-       FFIILLEESS
-
-       /usr/local/bin/vbkick and /usr/local/bin/convert_2_scancode.py
-
-SSEEEE AALLSSOO
-       vboxmanage(1) bash(1) ssh(1) scp(1)
-
-AAUUTTHHOORR
-       Kamil Wilas (wilas.pl)
-
-CCOOPPYYRRIIGGHHTT
-       vbkick  is  distributed  under  the  MIT  License.  See LICENSE file in
-       https://github.com/wilas/vbkick for details.
-
-       The site includes also usage examples and other docs which are not cov-
-       ered by this manual page.
-
-
-
-0.6                             22 October 2013                         man(1)
+'\" t
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.TH "VBKICK" "1" "18 May 2014" "0.7" "vbkick man page"
+.SH "NAME"
+vbkick - automatic VirtualBox VMs and Vagrant Base Boxes builder.
+.SH "SYNOPSIS"
+.BI vbkick " <command> <vm_name> [args]"
+.SH "DESCRIPTION"
+.PP
+\fBvbkick\fR is an open source and easy in use tool for building and maintaining VirtualBox VMs described as a code in a single definition file (\fIdefinition.cfg\fP). \fBvbkick\fR is lightweigh and is written in bash with enabled POSIX mode.
+.PP
+There are only 1-2 actions needed to create and configure the new VM from scratch. The VM postinstall process could be supported by any of available configuration management software like puppet or cfengine. Repeatable virtual machine environments are perfect as a personal lab where you play and test various technologies.
+.PP
+Task is mostly about running VBoxManage command in proper order with proper options. To complete the job \fBvbkick\fR uses ssh and scp commands.
+.PP
+During the build kickstart and postinstall files are serve to VM via a local webserver started in the background. You can disable this by set up \fIwebserver_disabled=1\fR option in a definition file.
+.PP
+\fBvbkick\fR is supported by \fIconvert_2_scancode.py\fP tool, which helps enter key-strokes into a VM programmatically from the host.
+.PP
+.SH "COMMANDS"
+.TP 4
+.I <definition_file>
+Contains all crucial parameters like number of CPUs, memory size, OS type to build and tuning the new VM.
+If no definition file specify, \fBvbkick\fR search for \fIdefinition.cfg\fP in the current path. If none of expected definition files exists then program terminates with return code 1 and proper message.
+.TP
+.B build \fIvm_name\fR [definition_file]
+.br
+Creates and kickstart the new VM from the given definition file.
+.TP
+.B postinstall \fIvm_name\fR [definition_file]
+.br
+Run specify in definition file postinstall scripts via SSH on the VM.
+.TP
+.B validate \fIvm_name\fR [definition_file]
+.br
+Run specify in definition file validate scripts via SSH on the VM. Checks whether the new VM has expected behaviour.
+.TP
+.B update \fIvm_name\fR [definition_file]
+.br
+Updates attached VBoxGuestAdditions iso and run specify in definition file update scripts via SSH on the VM.
+.TP
+.B export \fIvm_name\fR [definition_file]
+.br
+Exports the VM as a Vagrant Base Box - \fIvm_name.box\fP gzipped file is created.
+.TP
+.B destroy \fIvm_name\fR
+.br
+Power off and deletes the VM from the VirtualBox and the filesystem.
+.TP
+.B ssh \fIvm_name\fR [definition_file]
+.br
+Connect to the VM via SSH.
+.TP
+.B on \fIvm_name\fR [definition_file]
+.br
+Turn on the VM.
+.TP
+.B shutdown \fIvm_name\fR [definition_file]
+.br
+Turn off the VM using shutdown command via SSH. If this fail then the acpipower button is used.
+.TP
+.B clone \fIvm_name\fR [clone_name]
+.br
+Clones the VM. If no clone name specify default one will be used - {VM_NAME}-clone{NR}, where {NR} is the next available number.
+.TP
+.B snap \fIvm_name\fR [snap_name]
+.br
+Takes the VM snapshot. If no snapshot name specify default one will be used - {VM_NAME}-snap{NR}, where {NR} is the next available number.
+.TP
+.B resnap \fIvm_name\fR [snap_name]
+.br
+Restore the VM snapshot. If no snapshot name specify, restore to the current snapshot.
+.TP
+.B delsnap \fIvm_name\fR [snap_name]
+.br
+Deletes the VM snapshot. If no snapshot name specify, deletes the current snapshot.
+.TP
+.B lssnap \fIvm_name\fR
+.br
+List all snapshots for a given VM.
+.TP
+.B list
+.br
+List all VirtualBox machines with the state. Format: "vm name:state"
+.TP
+.B version
+.br
+Print the \fBvbkick\fR version and exit.
+.TP
+.B help
+.br
+Print the help and exit.
+.PP
+.SH "EXAMPLES"
+.TP 4
+.B vbkick build \fImyVM definition-7.5-x86_64-noX.cfg\fR
+.br
+Builds \fImyVM\fR virtual machine defined in \fIdefinition-7.5-x86_64-noX.cfg\fR file.
+.TP
+.B vbkick postinstall \fImyVM definition-7.5-x86_64-noX.cfg\fR
+.br
+SCP to \fImyVM\fR and exec via SSH all postinstall scripts defined in \fIdefinition-7.5-x86_64-noX.cfg\fR file.
+.TP
+.B vbkick ssh \fImyVM\fR
+.br
+Works as only \fIdefinition.cfg\fR exists in the path where the command is run. A good manner is to create a \fIdefinition.cfg\fR as a symlink to the default definition file: \fIln -s definition-source-file.cfg definition.cfg\fR
+.TP
+.B vbkick snap \fImyVM mySnap01\fR
+.br
+Creates the new \fImySnap01\fR snapshot of the \fImyVM\fR. Use \fI`vbkick lssnap myVM`\fR to list it and \fI`vbkick delsnap myVM mySnap01`\fR to remove it.
+.PP
+.SH SEE ALSO
+.BR "vboxmanage"(1), " bash" (1), " ssh" (1), " scp" (1)
+.SH BUGS
+If you feel you have found a bug in \fBvbkick\fR, please create an issue report at https://github.com/wilas/vbkick/issues
+.SH AUTHOR
+Kamil Wilas (wilas.pl)
+.SH COPYRIGHT
+\fBvbkick\fR is distributed under the MIT License. See LICENSE file in https://github.com/wilas/vbkick for details.
+.PP
+The site includes also usage examples and other docs which are not covered by this manual page.
