@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eEu
+set -e -E -u -o pipefail; shopt -s failglob;
 
 # set environment variables if available
 [[ -s "adm_envrc" ]] && . "./adm_envrc"

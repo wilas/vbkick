@@ -13,13 +13,24 @@ fi
 
 # Installing the virtualbox guest additions
 # VBoxGuestAdditions iso is attached (by vbkick) to SATA Controller port 1 device 0
+mnt_point=/mnt
 if [[ -b /dev/sr1 ]]; then
-    mount /dev/sr1 /mnt
+    if grep -q /dev/sr1 /proc/mounts; then
+        mnt_point=$(printf $(grep /dev/sr1 /proc/mounts | cut -f2 -d' '))
+    else
+        mount /dev/sr1 "${mnt_point}"
+    fi
 elif [[ -b /dev/sr0 ]]; then
-    mount /dev/sr0 /mnt
+    if grep -q /dev/sr0 /proc/mounts; then
+        mnt_point=$(printf $(grep /dev/sr0 /proc/mounts | cut -f2 -d' '))
+    else
+        mount /dev/sr0 "${mnt_point}"
+    fi
 else
     exit 1
 fi
 # true because whene there is noX on the server additions_script return 1: "Installing the Window System drivers [FAILED]"
-sh /mnt/VBoxLinuxAdditions.run || true
-umount /mnt
+pushd "${mnt_point}"
+    sh VBoxLinuxAdditions.run || true
+popd
+umount "${mnt_point}"
