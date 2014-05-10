@@ -1203,7 +1203,7 @@ shutdown() {
 shutdown_monitoring() {
     # wait until VM is down or shutdown_timeout was reached
     local shutdown_counter=0
-    while is_running && [[ ${shutdown_counter} -le ${shutdown_timeout} ]]; do
+    while is_alive && [[ ${shutdown_counter} -le ${shutdown_timeout} ]]; do
         shutdown_counter=$((shutdown_counter+1))
         printf "."
         sleep 1
