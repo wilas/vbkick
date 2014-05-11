@@ -1,8 +1,6 @@
 # this is comment
 # Note: scripts are exec in order defined here
-base.sh
-repos.sh
-sudo.sh
-virtualbox.sh
-ruby.sh
-puppet.sh
+test_virtualbox.sh
+test_sudo.sh
+test_vagrant.sh
+test_docker.sh

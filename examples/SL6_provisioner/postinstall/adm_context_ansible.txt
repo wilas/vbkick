@@ -5,6 +5,3 @@ repos.sh
 sudo.sh
 virtualbox.sh
 ansible.sh
-nfs.sh
-cleanup.sh
-zerodisk.sh
