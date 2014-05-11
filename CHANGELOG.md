@@ -1,29 +1,29 @@
 ## Not released
 
 FEATURES
- - ansible and puppet provisioners examples were added
- - Fedora 20 template was added
+ - added ansible, puppet, docker provisioner examples
  - added ```nic_type``` option to allow change type of networking hardware
  - added ```boot_order``` option to allow choose boot devices
  - added ```version``` ACTION to display vbkick version
- - added ```lssnap``` ACTION
- - added ```snap``` ACTION
- - added ```resnap``` ACTION
- - added ```delsnap``` ACTION
- - added ```clone``` ACTION
+ - added ```lssnap``` ACTION to list all snapshots
+ - added ```snap``` ACTION to take a new snapshot
+ - added ```resnap``` ACTION to restore a snapshot
+ - added ```delsnap``` ACTION to delete a snapshot
+ - added ```clone``` ACTION to clone VM
 
 IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)
  - works when IPV6 is enabled and ```::1     localhost``` appear in ```/etc/hosts``` - [#33](../../issues/33)
  - checks curl status code
- - empty boot_file_src_checksum variable mean don't check checksum instead warning about wrong value
- - auto destroy VM during building if all requested VM settings weren't correctly setup - be a bit more atomic
+ - empty ```boot_file_src_checksum``` variable mean don't compare checksums instead of warning about wrong value
+ - auto destroy VM during building if all VM settings weren't correctly setup - be a bit more atomic
  - checks whether vm exist for the ```shutdown``` action
  - checks whether ```shutdown_cmd``` option is empty, if so use acpipowerbutton
- - checks whether machine is 'alive' not only a 'running' for some actions, e.g. 'paused' state is the 'alive' state but is not 'running' state
+ - checks more VM states like 'paused' instead of only 'running' and 'powered off'
+ - separate repos for templates were created: active, archived and experimental
 
 BUG FIXES
- - expand a special variables in paths e.g. ~ (tilde) is now not treated as a literal string "~" but expand to user home dir.
+ - expand a special variables in paths e.g. ```~``` (tilde) is now not treated as a literal string "~" but expand to user home dir.
 
 ## 0.6 (22-10-2013)
 
