@@ -155,6 +155,12 @@ load_default_settings() {
     # list of update commands
     update_launch=("")
 
+    # Play default settings
+    # list of files and directories to transport to guest
+    play_transport=("")
+    # list of play commands
+    play_launch=("")
+
     # Clean
     # list of files to autoupdate VBOX_VERSION value
     files_to_autoupdate_vbox_version=("")
@@ -198,6 +204,7 @@ usage() {
     printf "Common commands:\n"
     printf "\tbuild                 Build the new VM\n"
     printf "\tpostinstall           Run postinstall scripts via SSH\n"
+    printf "\tplay                  Run play commands via SSH\n"
     printf "\tvalidate              Run validate scripts via SSH\n"
     printf "\tupdate                Run update scripts via SSH\n"
     printf "\texport                Exports the VM and creates a Vagrant box - VM_NAME.box\n"
@@ -231,6 +238,9 @@ context_usage(){
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "postinstall")
             printf "Usage: vbkick postinstall <VM_NAME> [definition_file]\n"
+            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+        "play")
+            printf "Usage: vbkick play <VM_NAME> [definition_file]\n"
             printf "If no definition file specify 'definition.cfg' is used.\n" ;;
         "update")
             printf "Usage: vbkick update <VM_NAME> [definition_file]\n"
@@ -279,6 +289,7 @@ process_2_args() {
         "export") export_vm "${3:-}" ;;
         "validate") validate_vm "${3:-}" ;;
         "postinstall") lazy_postinstall "${3:-}" ;;
+        "play") lazy_play "${3:-}" ;;
         "update") lazy_update "${3:-}" ;;
         "ssh") lazy_ssh "${3:-}" ;;
         "on") turn_on "${3:-}" ;;
@@ -388,7 +399,10 @@ load_definition() {
         # In POSIX mode the '.' and 'source' builtins do not search the current directory
         # for the filename argument if it is not found by searching PATH.
         log_info "Loading \"${definition_fname}\" definition..."
-        . "./${definition_fname}"
+        if ! . "./${definition_fname}"; then
+            log_error "Loading failed."
+            return 1
+        fi
     else
         log_error "Not existing or empty \"${definition_fname}\" file in $(pwd). Terminating..."
         return 1
@@ -1282,6 +1296,16 @@ lazy_postinstall() {
     load_definition "${definition_fname}"
     # exec scripts on VM Guest via ssh
     ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}"
+    exit 0
+}
+
+#@action
+lazy_play() {
+    # load vm description/definition
+    local definition_fname="${1:-}"
+    load_definition "${definition_fname}"
+    # exec scripts on VM Guest via ssh
+    ssh_exec ${#play_transport[@]} "${play_transport[@]}" "${play_launch[@]}"
     exit 0
 }
 

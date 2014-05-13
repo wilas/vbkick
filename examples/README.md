@@ -63,8 +63,7 @@ boot_file_src_checksum=$(get_smartos_md5 USB.img.bz2)
 Note1: be carefull with creating too much and too big functions in a definition files - be simple
 
 Note2: If you have a bug in your definition file (e.g. syntax),
-then vbkick fails (cleanly terminates) during definition loading, what is good,
-but won’t tell you what exactly is wrong in your definition.
+then vbkick fails (cleanly terminates) during definition loading.
 
 ### create ENV variables
 
@@ -146,7 +145,7 @@ echo "y" | vbkick destroy VM
 when virtualbox additions are installed you can use shared directory instead of transporting scripts to VM via SCP
 ```
 # in definition.cfg
-postinstall_launch=("cd /shared_dir/postinstall && sudo bash adm_postinstall.sh")
+postinstall_launch=("cd /media/sf_vbkick/postinstall && sudo bash adm_postinstall.sh")
 postinstall_transport=("")
 
 # cmd line
