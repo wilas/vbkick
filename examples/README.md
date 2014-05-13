@@ -70,18 +70,18 @@ then vbkick fails (cleanly terminates) during definition loading.
 useful to run some random commands on VM without runing login shell
 ```
 # in definition.cfg
-postinstall_launch=(
+play_launch=(
 # this is a comment and won't be processed
-# "cd postinstall && sudo bash adm_postinstall.sh"
+  "sudo docker ps"
   "${SSH_CMD:-}"
 )
-postinstall_transport=("postinstall")
+play_transport=("play_docker")
 
 # cmd line
-$ SSH_CMD='ls -la' vbkick postinstall vm_name
-$ SSH_CMD='sudo docker pull busybox' vbkick postinstall vm_name
-$ SSH_CMD='sudo docker run busybox /bin/echo hello world' vbkick postinstall vm_name
-$ vbkick postinstall vm_name
+$ SSH_CMD='ls -la' vbkick play vm_name
+$ SSH_CMD='sudo docker pull busybox' vbkick play vm_name
+$ SSH_CMD='sudo docker run busybox /bin/echo hello world' vbkick play vm_name
+$ vbkick play vm_name
 ```
 
 useful to test multiple machines in the same time which were built from the same definition file

@@ -63,7 +63,7 @@ vagrant box list
 ```
 vbkick build vm_name                    # creates the new VM - this is usually the slowest part
 vbkick shutdown vm_name                 # to create clone VM must be powered off
-vbkick clone vm_name                    # creates a clone of the VM - for another hacking session
+vbkick clone vm_name                    # creates a clone (gold image) of the VM - for another hacking session
 vbkick on vm_name                       # turn on VM
 vbkick postinstall vm_name              # extra configuration of the new VM
 
@@ -77,8 +77,8 @@ vbkick shutdown vm_name                 # to restore snapshot VM must be powered
 vbkick resnap vm_name fresh-install     # restore saved work
 vbkick on vm_name                       # turn on VM
 
-vbkick ssh vm_name                      # hack
-vbkick snap vm_name my-third-hack       # save a work
+vbkick play vm_name                     # automate hack
+vbkick snap vm_name my-auto-hack        # save a work
 
 vbkick lssnap vm_name                   # list all snapshots
 ```
@@ -97,6 +97,7 @@ $ man vbkick or vbkick help
 vbkick  <action>     <vm_name>
 vbkick  build        VM_NAME        # build the new VM
 vbkick  postinstall  VM_NAME        # run postinstall scripts via SSH
+vbkick  play         VM_NAME        # run play scripts via SSH
 vbkick  validate     VM_NAME        # run validate scripts via SSH
 vbkick  update       VM_NAME        # run update scripts via SSH
 vbkick  export       VM_NAME        # exports the VM and creates Vagrant base box - VM_NAME.box

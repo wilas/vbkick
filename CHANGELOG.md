@@ -10,6 +10,7 @@ FEATURES
  - added ```resnap``` ACTION to restore a snapshot
  - added ```delsnap``` ACTION to delete a snapshot
  - added ```clone``` ACTION to clone VM
+ - added ```play``` ACTION to separate postinstall process from the tinkering
 
 IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)
