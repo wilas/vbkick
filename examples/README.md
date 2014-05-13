@@ -72,7 +72,7 @@ useful to run some random commands on VM without runing login shell
 # in definition.cfg
 play_launch=(
 # this is a comment and won't be processed
-  "sudo docker ps"
+  "sudo docker ps -a"
   "${SSH_CMD:-}"
 )
 play_transport=("play_docker")
@@ -89,8 +89,7 @@ useful to test multiple machines in the same time which were built from the same
 vbkick automatically reconfigure VM during runtime to use proper port mapping base on value of `ssh_host_port`
 ```
 # in definition.cfg
-: ${SSH_PORT:=2222}
-ssh_host_port=${SSH_PORT}
+ssh_host_port=${SSH_PORT:-2222}
 
 # cmd line
 $ SSH_PORT=2201 vbkick ssh vm_name1
@@ -100,8 +99,7 @@ $ SSH_PORT=2202 vbkick ssh vm_name2
 useful to build multiple machines in the same time from the same definition file, e.g. to test various kickstart files
 ```
 # in definition.cfg
-: ${KS_PORT:=7122}
-kickstart_port=${KS_PORT}
+kickstart_port=${KS_PORT:-7122}
 
 # cmd line
 $ KS_PORT=7101 vbkick ssh vm_name1

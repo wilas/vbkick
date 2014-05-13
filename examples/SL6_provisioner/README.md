@@ -25,6 +25,12 @@ vbkick resnap sl6
 
 vbkick on sl6
 vbkick postinstall sl6 definition-6.5-x86_64-docker.cfg
+vbkick snap sl6 fresh-docker
+vbkick play sl6 definition-6.5-x86_64-docker.cfg
+vbkick shutdown sl6
+vbkick resnap sl6
+vbkick on sl6
+vbkick play sl6 definition-6.5-x86_64-docker.cfg
 vbkick ssh sl6 definition-6.5-x86_64-docker.cfg
 
 vbkick destroy sl6
