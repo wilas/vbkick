@@ -21,25 +21,25 @@ shopt -s failglob;
 set -o posix
 
 # virtual machine name
-VM=""
+_Vm=""
 
 # For nice printing
 # name of constants should be uppercase
-GREEN="\e[1;32m"
-RED="\e[1;31m"
-YELLOW="\e[1;33m"
-NORMAL="\e[0m"
+_GREEN="\e[1;32m"
+_RED="\e[1;31m"
+_YELLOW="\e[1;33m"
+_NORMAL="\e[0m"
 log_info() {
     printf "[INFO] ${*}\n"
 }
 log_ginfo() {
-    printf "${GREEN}[INFO] ${*}${NORMAL}\n"
+    printf "${_GREEN}[INFO] ${*}${_NORMAL}\n"
 }
 log_warning() {
-    printf "${YELLOW}[WARNING] ${*}${NORMAL}\n"
+    printf "${_YELLOW}[WARNING] ${*}${_NORMAL}\n"
 }
 log_error() {
-    printf "${RED}[ERROR] ${*}${NORMAL}\n" >&2
+    printf "${_RED}[ERROR] ${*}${_NORMAL}\n" >&2
 }
 
 # default vm settings which may be overwritten by definition file
@@ -282,7 +282,7 @@ process_2_args() {
         context_usage "${1}"
         exit 0
     fi
-    VM="${2}"
+    _Vm="${2}"
     case "${1}" in
         "build") build_vm "${3:-}" ;;
         "destroy") destroy_vm ;;
@@ -422,26 +422,26 @@ get_vb_version() {
 }
 
 is_present() {
-    local pattern="${1:-\"${VM}\"}"
+    local pattern="${1:-\"${_Vm}\"}"
     VBoxManage list vms | grep -qw "${pattern}"
 }
 
 is_running() {
-    VBoxManage showvminfo "${VM}" | grep -q "State:\s\+running"
+    VBoxManage showvminfo "${_Vm}" | grep -q "State:\s\+running"
 }
 
 is_powered_off() {
-    VBoxManage showvminfo "${VM}" | grep -q "State:\s\+powered off"
+    VBoxManage showvminfo "${_Vm}" | grep -q "State:\s\+powered off"
 }
 
 is_paused() {
-    VBoxManage showvminfo "${VM}" | grep -q "State:\s\+paused"
+    VBoxManage showvminfo "${_Vm}" | grep -q "State:\s\+paused"
 }
 
 is_alive() {
     # Alive machine may be in paused|running state
-    # Useful to change state: VBoxManage controlvm "${VM}" pause|resume
-    local pattern="${1:-\"${VM}\"}"
+    # Useful to change state: VBoxManage controlvm "${_Vm}" pause|resume
+    local pattern="${1:-\"${_Vm}\"}"
     VBoxManage list runningvms | grep -qw "${pattern}"
 }
 
@@ -453,21 +453,21 @@ is_port_used() {
 
 is_port_present() {
     local port_name="${1}"
-    VBoxManage showvminfo "${VM}" | grep -w 'guest port' | grep -qw "${port_name}"
+    VBoxManage showvminfo "${_Vm}" | grep -w 'guest port' | grep -qw "${port_name}"
 }
 
 is_shared_folder_present() {
     local folder_name="${1}"
-    VBoxManage showvminfo "${VM}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"
+    VBoxManage showvminfo "${_Vm}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"
 }
 
 is_snapshot_present() {
     local snap_name="${1}"
-    VBoxManage snapshot "${VM}" list --machinereadable | grep -w "^SnapshotName\|SnapshotUUID" | grep -qw "${snap_name}"
+    VBoxManage snapshot "${_Vm}" list --machinereadable | grep -w "^SnapshotName\|SnapshotUUID" | grep -qw "${snap_name}"
 }
 
 has_snapshots() {
-    VBoxManage snapshot "${VM}" list --machinereadable | grep -qw "^SnapshotName"
+    VBoxManage snapshot "${_Vm}" list --machinereadable | grep -qw "^SnapshotName"
 }
 
 # checks whether port is not used by other proc
@@ -491,7 +491,7 @@ prepare_path() {
     path=${path//%PWD%/$(pwd)}
     # get homedir - $(getent passwd UID) doesn't work for MacOS; $HOME is less portable than ~
     path=${path//%HOME%/~}
-    path=${path//%NAME%/${VM}}
+    path=${path//%NAME%/${_Vm}}
     # expand a special variable - e.g. tilde (~) and
     # strips out > characters which could clobber a file during the eval
     path=$(eval echo "${path//>}")
@@ -680,7 +680,7 @@ get_priv_ssh_key() {
 build_vm() {
     # check whether VM already exist
     if is_present; then
-        log_error "'${VM}' already exist"
+        log_error "'${_Vm}' already exist"
         exit 1
     fi
     # load vm description/definition
@@ -699,9 +699,9 @@ build_vm() {
     local host_ip=10.0.2.2
     # start VM
     if [[ ${gui_enabled} -eq 1 ]]; then
-        VBoxManage startvm --type gui "${VM}"  && sleep ${boot_wait}
+        VBoxManage startvm --type gui "${_Vm}"  && sleep ${boot_wait}
     else
-        VBoxManage startvm --type headless "${VM}" && sleep ${boot_wait}
+        VBoxManage startvm --type headless "${_Vm}" && sleep ${boot_wait}
     fi
     # boot VM machine
     log_info "Sending keyboard scancodes:"
@@ -712,7 +712,7 @@ build_vm() {
         fi
         boot_cmd=${boot_cmd//%IP%/${host_ip}}
         boot_cmd=${boot_cmd//%PORT%/${kickstart_port}}
-        boot_cmd=${boot_cmd//%NAME%/${VM}}
+        boot_cmd=${boot_cmd//%NAME%/${_Vm}}
         log_info "${boot_cmd}"
         # converts string to scancode via external python script
         local boot_cmd_code=$(printf "${boot_cmd}" | convert_2_scancode.py)
@@ -722,7 +722,7 @@ build_vm() {
             if [[ "${code}" == "wait" ]]; then
                 sleep 1
             else
-                VBoxManage controlvm "${VM}" keyboardputscancode ${code}
+                VBoxManage controlvm "${_Vm}" keyboardputscancode ${code}
                 sleep 0.02
             fi
         done
@@ -740,7 +740,7 @@ build_vm() {
 
 create_box() {
     # Register vm
-    VBoxManage createvm --name "${VM}" --ostype "${os_type_id}" --register
+    VBoxManage createvm --name "${_Vm}" --ostype "${os_type_id}" --register
     _vm_creation_state=1
 
     # Creates disks
@@ -755,14 +755,14 @@ create_box() {
         return 1;
     fi
     if [[ "${_vb_version}" > "4.3.0" ]] || [[ "${_vb_version}" == "4.3.0" ]]; then
-        VBoxManage storagectl "${VM}" --name "SATA Controller"\
+        VBoxManage storagectl "${_Vm}" --name "SATA Controller"\
         --add sata --hostiocache ${hostiocache} --portcount $((${#disk_size[@]}+2))
     else
-        VBoxManage storagectl "${VM}" --name "SATA Controller"\
+        VBoxManage storagectl "${_Vm}" --name "SATA Controller"\
         --add sata --hostiocache ${hostiocache} --sataportcount $((${#disk_size[@]}+2))
     fi
     # SATA controller - add boot media
-    VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+    VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
     --type "${boot_file_type}" --port 0 --device 0 --medium "${boot_file}"
     # SATA controller - create and add hdd disks
     local port_nr=2
@@ -771,42 +771,42 @@ create_box() {
         if [[ -z "${disk}" ]]; then
             continue
         fi
-        VBoxManage createhd --filename "${location}/${VM}/${VM}-${port_nr}.${disk_format}"\
+        VBoxManage createhd --filename "${location}/${_Vm}/${_Vm}-${port_nr}.${disk_format}"\
         --size ${disk} --format "${disk_format}" --variant Standard
-        VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
-        --port ${port_nr} --device 0 --type hdd --medium "${location}/${VM}/${VM}-${port_nr}.${disk_format}"
+        VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
+        --port ${port_nr} --device 0 --type hdd --medium "${location}/${_Vm}/${_Vm}-${port_nr}.${disk_format}"
         local port_nr=$((port_nr+1))
     done
     # SATA controller - add VBoxGuestAdditions iso
     if [[ ${guest_additions_attach} -eq 1 ]]; then
         if [[ ! -z "${guest_additions_path}" ]]; then
             # custom VBoxGuestAdditions
-            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+            VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium "${guest_additions_path}/VBoxGuestAdditions_${_vb_version}.iso"
         else
             # default VBoxGuestAdditions
-            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+            VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium emptydrive
-            VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+            VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium additions
         fi
     fi
 
     # Tuning VM
     # setting cpu's
-    VBoxManage modifyvm "${VM}" --cpus ${cpu_count}
+    VBoxManage modifyvm "${_Vm}" --cpus ${cpu_count}
     # setting memory size
-    VBoxManage modifyvm "${VM}" --memory ${memory_size}
+    VBoxManage modifyvm "${_Vm}" --memory ${memory_size}
     # setting video memory size
-    VBoxManage modifyvm "${VM}" --vram ${video_memory_size}
+    VBoxManage modifyvm "${_Vm}" --vram ${video_memory_size}
     # setting bootorder
     local bo_idx=1
     local bo
     for bo in "${boot_order[@]}"; do
         if [[ -z "${bo}" ]]; then
-            VBoxManage modifyvm "${VM}" --boot${bo_idx} none
+            VBoxManage modifyvm "${_Vm}" --boot${bo_idx} none
         else
-            VBoxManage modifyvm "${VM}" --boot${bo_idx} ${bo}
+            VBoxManage modifyvm "${_Vm}" --boot${bo_idx} ${bo}
         fi
         local bo_idx=$((bo_idx+1))
         if [[ ${bo_idx} -eq 5 ]]; then
@@ -815,10 +815,10 @@ create_box() {
     done
     local i
     for ((i=${bo_idx}; i<=4; i++)); do
-        VBoxManage modifyvm "${VM}" --boot${i} none
+        VBoxManage modifyvm "${_Vm}" --boot${i} none
     done
     # setting networking
-    VBoxManage modifyvm "${VM}" --nic1 nat --nictype1 ${nic_type} --cableconnected1 on
+    VBoxManage modifyvm "${_Vm}" --nic1 nat --nictype1 ${nic_type} --cableconnected1 on
     # other settings
     local option
     for option in "${vm_options[@]}"; do
@@ -827,7 +827,7 @@ create_box() {
         fi
         local key="${option%%:*}"
         local value="${option##*:}"
-        VBoxManage modifyvm "${VM}" --"${key}" "${value}"
+        VBoxManage modifyvm "${_Vm}" --"${key}" "${value}"
     done
     # set extradata
     local extradata
@@ -837,12 +837,12 @@ create_box() {
         fi
         local key="${extradata%%:*}"
         local value="${extradata##*:}"
-        VBoxManage setextradata "${VM}" "${key}" "${value}"
+        VBoxManage setextradata "${_Vm}" "${key}" "${value}"
     done
 
     # ssh port NAT mapping; ssh port is a special one
     if ! is_port_present "${ssh_port_name}"; then
-        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+        VBoxManage controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
     # extra ports NAT mapping
@@ -872,7 +872,7 @@ add_extra_ports_mapping() {
         local port_guest="${port_info[2]}"
         # add only if port doesn't exist
         if ! is_port_present "${port_name}"; then
-            VBoxManage controlvm "${VM}" natpf1 "${port_name},tcp,,${port_host},,${port_guest}"
+            VBoxManage controlvm "${_Vm}" natpf1 "${port_name},tcp,,${port_host},,${port_guest}"
         fi
     done
 }
@@ -895,7 +895,7 @@ remove_extra_ports_mapping() {
         fi
         local port_name="${port_info[0]}"
         if is_port_present "${port_name}"; then
-            VBoxManage controlvm "${VM}" natpf1 delete "${port_name}"
+            VBoxManage controlvm "${_Vm}" natpf1 delete "${port_name}"
             # note which extra ports were removed by moving _extraports_removed_ptr
             _extraports_removed_ptr=$((_extraports_removed_ptr+1))
         fi
@@ -925,14 +925,14 @@ add_shared_folders() {
         fi
 
         if [[ ${#folder_info[@]} -eq 2 ]]; then
-            log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\""
-            VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}"
+            log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${folder_name}\" --hostpath \"${folder_path}\""
+            VBoxManage sharedfolder add "${_Vm}" --name "${folder_name}" --hostpath "${folder_path}"
         elif [[ ${#folder_info[@]} -eq 3 ]]; then
-            log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]}"
-            VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}"
+            log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]}"
+            VBoxManage sharedfolder add "${_Vm}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}"
         elif [[ ${#folder_info[@]} -eq 4 ]]; then
-            log_info "VBoxManage sharedfolder add  \"${VM}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]} --${folder_info[3]}"
-            VBoxManage sharedfolder add "${VM}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
+            log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]} --${folder_info[3]}"
+            VBoxManage sharedfolder add "${_Vm}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
         else
             log_error "too much options in one of the shared_folders."
             return 1
@@ -962,7 +962,7 @@ remove_shared_folders() {
         fi
         local folder_name="${folder_info[0]}"
         if is_shared_folder_present "${folder_name}"; then
-            VBoxManage sharedfolder remove "${VM}" --name "${folder_name}"
+            VBoxManage sharedfolder remove "${_Vm}" --name "${folder_name}"
             # note which shared folders were removed by moving _sharedfolders_removed_ptr
             _sharedfolders_removed_ptr=$((_sharedfolders_removed_ptr+1))
         fi
@@ -999,12 +999,12 @@ kickstart_monitoring() {
 destroy_vm() {
     # check whether VM already exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist"
+        log_error "'${_Vm}' doesn't exist"
         exit 1
     fi
 
     # destroy VM
-    log_info "Destroy '${VM}'"
+    log_info "Destroy '${_Vm}'"
     local ans
     read -r -p "Are you sure? [y/N]" ans
     if [[ ! ${ans} =~ ^[Yy]$ ]]; then
@@ -1013,13 +1013,13 @@ destroy_vm() {
 
     # check whether VM is alive
     if is_alive; then
-        log_info "Poweroff '${VM}'"
-        VBoxManage controlvm "${VM}" poweroff
+        log_info "Poweroff '${_Vm}'"
+        VBoxManage controlvm "${_Vm}" poweroff
         sleep 1
     fi
 
-    log_info "Destroying '${VM}'..."
-    VBoxManage unregistervm "${VM}" --delete
+    log_info "Destroying '${_Vm}'..."
+    VBoxManage unregistervm "${_Vm}" --delete
     exit 0
 }
 
@@ -1027,7 +1027,7 @@ destroy_vm() {
 export_vm() {
     #
     # basic replacement for that vagrant command:
-    # vagrant package --base "${VM}" --output "${VM}.box"
+    # vagrant package --base "${_Vm}" --output "${_Vm}.box"
     # if more customisation required use: vagrant package (--help)
     #
     # tar command is required, check whether is installed
@@ -1036,27 +1036,27 @@ export_vm() {
     local definition_fname="${1:-}"
     load_definition "${definition_fname}"
     # check whether VM_NAME.box exist in current dir
-    if [[ -f "${VM}.box" ]]; then
-        log_error "'${VM}.box' already exist in '$(pwd)'"
+    if [[ -f "${_Vm}.box" ]]; then
+        log_error "'${_Vm}.box' already exist in '$(pwd)'"
         exit 1
     fi
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist"
+        log_error "'${_Vm}' doesn't exist"
         exit 1
     fi
     # check whether VM is running and shutdown it
     shutdown
     if ! is_powered_off; then
-        log_error "'${VM}' is not powered off. Maybe has saved state."
-        log_error "You may need to run: 'vbkick on \"${VM}\"' and 'vbkick shutdown \"${VM}\"'"
-        log_error "To check '${VM}' state run: 'vbkick list | grep \"${VM}:\"'"
+        log_error "'${_Vm}' is not powered off. Maybe has saved state."
+        log_error "You may need to run: 'vbkick on \"${_Vm}\"' and 'vbkick shutdown \"${_Vm}\"'"
+        log_error "To check '${_Vm}' state run: 'vbkick list | grep \"${_Vm}:\"'"
         exit 1
     fi
 
     # clearing previously set port forwarding rules (only if exist)
     if is_port_present "${ssh_port_name}"; then
-        VBoxManage controlvm "${VM}" natpf1 delete "${ssh_port_name}"
+        VBoxManage controlvm "${_Vm}" natpf1 delete "${ssh_port_name}"
         _ssh_natmapping_was_removed=1
     fi
 
@@ -1069,9 +1069,9 @@ export_vm() {
     # create _tmp_dir for export data
     _tmp_dir=$(TMPDIR=. mktemp -d)
     # export VM to _tmp_dir
-    VBoxManage export "${VM}" --output "${_tmp_dir}/box.ovf"
+    VBoxManage export "${_Vm}" --output "${_tmp_dir}/box.ovf"
     # get VM MAC Address
-    local mac_address=$(VBoxManage showvminfo --details --machinereadable "${VM}"\
+    local mac_address=$(VBoxManage showvminfo --details --machinereadable "${_Vm}"\
     | grep macaddress1 | cut -d"=" -f 2)
     # add Vagrantfile
     printf "Vagrant.configure(\"2\") do |config|
@@ -1088,27 +1088,27 @@ export_vm() {
     printf "{\"provider\":\"virtualbox\"}\n" > "${_tmp_dir}/metadata.json"
     # create VM_NAME.box (gzip) file
     cd ${_tmp_dir}
-    tar -cvzf "${VM}.box" *
+    tar -cvzf "${_Vm}.box" *
     cd ..
-    mv "${_tmp_dir}/${VM}.box" .
+    mv "${_tmp_dir}/${_Vm}.box" .
     # remove _tmp_dir
     rm -rf ${_tmp_dir}
     # help recover some changes made on VM during exporting
     recover_vm_state
-    log_info "Done: '$(pwd)/${VM}.box'"
+    log_info "Done: '$(pwd)/${_Vm}.box'"
     exit 0
 }
 
 recover_vm_state() {
     # destroy VM as creation process was unsuccessful
     if [[ ${_vm_creation_state} -eq 1 ]]; then
-        log_info "Destroying not completed Virtual machine - '${VM}'"
-        VBoxManage unregistervm "${VM}" --delete
+        log_info "Destroying not completed Virtual machine - '${_Vm}'"
+        VBoxManage unregistervm "${_Vm}" --delete
         _vm_creation_state=0
     fi
     # add NAT mapping after exporting - only if exist prev.
     if [[ ${_ssh_natmapping_was_removed} -eq 1 ]]; then
-        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+        VBoxManage controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
         _ssh_natmapping_was_removed=0
     fi
     # add extra ports after exporting - only if exist prev.
@@ -1131,18 +1131,18 @@ recover_vm_state() {
 turn_on() {
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doese not exist. Use 'vbkick build' to create the new VM."
+        log_error "'${_Vm}' doese not exist. Use 'vbkick build' to create the new VM."
         exit 1
     fi
 
     # check whether VM is already running
     if is_running; then
         # nothing to do
-        log_ginfo "'${VM}' is already running..."
+        log_ginfo "'${_Vm}' is already running..."
         exit 0
     elif is_paused; then
-        VBoxManage controlvm "${VM}" resume
-        log_info "'${VM}' was resumed."
+        VBoxManage controlvm "${_Vm}" resume
+        log_info "'${_Vm}' was resumed."
         exit 0
     fi
 
@@ -1151,9 +1151,9 @@ turn_on() {
     load_definition "${definition_fname}"
 
     if [[ ${gui_enabled} -eq 1 ]]; then
-        VBoxManage startvm --type gui "${VM}"
+        VBoxManage startvm --type gui "${_Vm}"
     else
-        VBoxManage startvm --type headless "${VM}"
+        VBoxManage startvm --type headless "${_Vm}"
     fi
     exit 0
 }
@@ -1162,13 +1162,13 @@ turn_on() {
 turn_off() {
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doese not exist. Use 'vbkick build' to create the new VM."
+        log_error "'${_Vm}' doese not exist. Use 'vbkick build' to create the new VM."
         exit 1
     fi
 
     # check whether VM is alive
     if ! is_alive; then
-        log_ginfo "'${VM}' is already turn off."
+        log_ginfo "'${_Vm}' is already turn off."
         exit 0
     fi
 
@@ -1185,7 +1185,7 @@ shutdown() {
     # check whether VM is running and exec shutdown_cmd via SSH
     if [[ -n "${shutdown_cmd}" ]]; then
         if is_running; then
-            log_info "Shutting down '${VM}'."
+            log_info "Shutting down '${_Vm}'."
             fix_ssh_port
             ssh_do_launch "${shutdown_cmd}"
             shutdown_monitoring
@@ -1195,22 +1195,22 @@ shutdown() {
 
     # check whether VM is still running, if so use acpipowerbutton
     if is_running; then
-        VBoxManage controlvm "${VM}" acpipowerbutton
-        log_info "Shutting down '${VM}' via acpipowerbutton."
+        VBoxManage controlvm "${_Vm}" acpipowerbutton
+        log_info "Shutting down '${_Vm}' via acpipowerbutton."
         shutdown_monitoring
         sleep 3
     fi
 
     # check whether VM is still alive (e.g. paused), if so poweroff it using hard way.
     if is_alive; then
-        VBoxManage controlvm "${VM}" poweroff
-        log_info "'${VM}' was powered off."
+        VBoxManage controlvm "${_Vm}" poweroff
+        log_info "'${_Vm}' was powered off."
         sleep 3
     fi
     if is_powered_off; then
-        log_info "'${VM}' was shutdown cleanly."
+        log_info "'${_Vm}' was shutdown cleanly."
     else
-        log_warning "'${VM}' has different than 'powered off' state."
+        log_warning "'${_Vm}' has different than 'powered off' state."
     fi
 }
 
@@ -1228,13 +1228,13 @@ shutdown_monitoring() {
 update_guest_additions_media() {
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist. Use \"vbkick build\" to create the new VM."
+        log_error "'${_Vm}' doesn't exist. Use \"vbkick build\" to create the new VM."
         return 1
     fi
     # get current guest version
-    if VBoxManage guestproperty enumerate "${VM}" | grep -q "GuestAdd/Version"; then
+    if VBoxManage guestproperty enumerate "${_Vm}" | grep -q "GuestAdd/Version"; then
         # guest already exist, get current version
-        local guest_version=$(VBoxManage guestproperty get "${VM}" "/VirtualBox/GuestAdd/Version" | cut -f 2 -d " ")
+        local guest_version=$(VBoxManage guestproperty get "${_Vm}" "/VirtualBox/GuestAdd/Version" | cut -f 2 -d " ")
     else
         # guest doesn't exist
         local guest_version=""
@@ -1242,19 +1242,19 @@ update_guest_additions_media() {
 
     # check whether we need update or install VBoxGuestAdditions
     if [[ "${_vb_version}" == "${guest_version}" ]]; then
-        log_ginfo "VBoxGuestAdditions on '${VM}' is up-to-date - update media iso is not needed."
+        log_ginfo "VBoxGuestAdditions on '${_Vm}' is up-to-date - update media iso is not needed."
         return
     fi
     # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
     # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
-    if ! VBoxManage showvminfo "${VM}" | grep -qw "SATA Controller (1, 0)"; then
-        log_error "'SATA Controller (1, 0)' for '${VM}' doesn't exist."
+    if ! VBoxManage showvminfo "${_Vm}" | grep -qw "SATA Controller (1, 0)"; then
+        log_error "'SATA Controller (1, 0)' for '${_Vm}' doesn't exist."
         log_error "'SATA Controller' is sata controller name used by vbkick."
-        log_error "More: 'VBoxManage showvminfo \"${VM}\" | grep -w \"Controller\"'\n"
+        log_error "More: 'VBoxManage showvminfo \"${_Vm}\" | grep -w \"Controller\"'\n"
         log_error "To create proper controller use:"
-        log_error "'VBoxManage storagectl \"${VM}\" --name \"SATA Controller\" --add sata --hostiocache ${hostiocache} --portcount $((${#disk_size[@]}+2))'"
-        log_error "'VBoxManage storageattach \"${VM}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
-        log_error "To do this '${VM}' must be shutdown !!!"
+        log_error "'VBoxManage storagectl \"${_Vm}\" --name \"SATA Controller\" --add sata --hostiocache ${hostiocache} --portcount $((${#disk_size[@]}+2))'"
+        log_error "'VBoxManage storageattach \"${_Vm}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
+        log_error "To do this '${_Vm}' must be shutdown !!!"
         log_error "Remember - VM Guest may have only one sata controller."
         return 1
     fi
@@ -1263,11 +1263,11 @@ update_guest_additions_media() {
     if [[ ! -z "${guest_additions_path}" ]]; then
         # custom VBoxGuestAdditions
         download_guest_additions_media
-        VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+        VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
         --type dvddrive --port 1 --device 0 --medium "${guest_additions_path}/VBoxGuestAdditions_${_vb_version}.iso" --forceunmount
     else
         # default VBoxGuestAdditions
-        VBoxManage storageattach "${VM}" --storagectl "SATA Controller"\
+        VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
         --type dvddrive --port 1 --device 0 --medium additions --forceunmount
     fi
     # Note: Guest OS (Linux) does not support automatic Guest Additions updating:
@@ -1338,12 +1338,12 @@ ssh_exec() {
 
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist"
+        log_error "'${_Vm}' doesn't exist"
         return 1
     fi
     # check whether VM is running
     if ! is_running; then
-        log_error "'${VM}' is not running..."
+        log_error "'${_Vm}' is not running..."
         return 1
     fi
 
@@ -1378,13 +1378,13 @@ ssh_exec() {
 fix_ssh_port() {
     # port is not setup
     if ! is_port_present "${ssh_port_name}"; then
-        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+        VBoxManage controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
         return 0
     fi
     # port is setup, but host port and/or guest port are incorrect
     if ! is_port_present "${ssh_port_name}.*host port = ${ssh_host_port}.*guest port = ${ssh_guest_port}"; then
-        VBoxManage controlvm "${VM}" natpf1 delete "${ssh_port_name}"
-        VBoxManage controlvm "${VM}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+        VBoxManage controlvm "${_Vm}" natpf1 delete "${ssh_port_name}"
+        VBoxManage controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
     # everything is correct - nothing to do.
 }
@@ -1486,12 +1486,12 @@ ssh_do_cleanup() {
 lazy_ssh() {
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist"
+        log_error "'${_Vm}' doesn't exist"
         exit 1
     fi
     # check whether VM is running
     if ! is_running; then
-        log_error "'${VM}' is not running..."
+        log_error "'${_Vm}' is not running..."
         exit 1
     fi
     # load vm description/definition
@@ -1559,12 +1559,12 @@ auto_passwd_scp() {
 make_clone(){
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist"
+        log_error "'${_Vm}' doesn't exist"
         exit 1
     fi
 
     if is_alive; then
-        log_error "'${VM}' is alive. VM must be shut down to create clone."
+        log_error "'${_Vm}' is alive. VM must be shut down to create clone."
         exit 1
     fi
 
@@ -1576,19 +1576,19 @@ make_clone(){
             exit 1
         fi
     # clone_name is not provided, make the clone with auto generate name - {VM}-clone{NR++}
-    elif is_present "\"${VM}-clone[0-9]\+\""; then
+    elif is_present "\"${_Vm}-clone[0-9]\+\""; then
         # clone are numered, e.g.: vm_name:aa22-snap-aa11 -> clone_name:aa22-snap-aa11-snap1..999..
         # get all clones match our clone pattern, extract NR value from each clonename, get the highes NR
-        local last_clone_nr=$(VBoxManage list vms | cut -f 1 -d'{' | grep "\"${VM}-clone[0-9]\+\""\
-            | sed "s/${VM}-clone//;s/\"//g" | sort -gu | tail -1)
+        local last_clone_nr=$(VBoxManage list vms | cut -f 1 -d'{' | grep "\"${_Vm}-clone[0-9]\+\""\
+            | sed "s/${_Vm}-clone//;s/\"//g" | sort -gu | tail -1)
         last_clone_nr=$((last_clone_nr+1))
-        local clone_name="${VM}-clone${last_clone_nr}"
+        local clone_name="${_Vm}-clone${last_clone_nr}"
     # clone with the auto generate name doesn't exist, make the first one.
     else
-        local clone_name="${VM}-clone1"
+        local clone_name="${_Vm}-clone1"
     fi
-    VBoxManage clonevm "${VM}" --name "${clone_name}" --register
-    log_info "'${VM}' has been cloned as '${clone_name}'."
+    VBoxManage clonevm "${_Vm}" --name "${clone_name}" --register
+    log_info "'${_Vm}' has been cloned as '${clone_name}'."
     exit 0
 }
 
@@ -1596,7 +1596,7 @@ make_clone(){
 take_snapshot(){
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist"
+        log_error "'${_Vm}' doesn't exist"
         exit 1
     fi
 
@@ -1605,20 +1605,20 @@ take_snapshot(){
         # Note: VBox allow make multiple snapshots with the same name, they are identify by UUID
         local snap_name="${1:-}"
     # snap_name is not provided, take the snapshot with auto generate name - {VM}-snap{NR++}
-    elif is_snapshot_present "\"${VM}-snap[0-9]\+\""; then
+    elif is_snapshot_present "\"${_Vm}-snap[0-9]\+\""; then
         # it would be nice to use `date` but it isn't portable between linux/osx/freebsd
         # so that snapshot are numered, e.g.:
         # vm_name:aa22-snap-aa11 -> snap_name:aa22-snap-aa11-snap1..999..
         # get all snapshots match our snap pattern, extract NR value from each snapname, get the highes NR
-        local last_snap_nr=$(VBoxManage snapshot "${VM}" list --machinereadable | grep ^SnapshotName\
-            | cut -d"=" -f 2- | grep "\"${VM}-snap[0-9]\+\"" | sed "s/${VM}-snap//;s/\"//g" | sort -gu | tail -1)
+        local last_snap_nr=$(VBoxManage snapshot "${_Vm}" list --machinereadable | grep ^SnapshotName\
+            | cut -d"=" -f 2- | grep "\"${_Vm}-snap[0-9]\+\"" | sed "s/${_Vm}-snap//;s/\"//g" | sort -gu | tail -1)
         last_snap_nr=$((last_snap_nr+1))
-        local snap_name="${VM}-snap${last_snap_nr}"
+        local snap_name="${_Vm}-snap${last_snap_nr}"
     # snapshot with the auto generate name doesn't exist, make the first one.
     else
-        local snap_name="${VM}-snap1"
+        local snap_name="${_Vm}-snap1"
     fi
-    VBoxManage snapshot "${VM}" take "${snap_name}" --live
+    VBoxManage snapshot "${_Vm}" take "${snap_name}" --live
     log_info "'${snap_name}' snapshot was taken."
     exit 0
 }
@@ -1627,17 +1627,17 @@ take_snapshot(){
 restore_snapshot(){
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist"
+        log_error "'${_Vm}' doesn't exist"
         exit 1
     fi
 
     if ! has_snapshots; then
-        log_error "No snapshots found for the '${VM}'"
+        log_error "No snapshots found for the '${_Vm}'"
         exit 1
     fi
 
     if is_alive; then
-        log_error "'${VM}' is alive. VM must be shut down to restore snapshot."
+        log_error "'${_Vm}' is alive. VM must be shut down to restore snapshot."
         exit 1
     fi
 
@@ -1645,15 +1645,15 @@ restore_snapshot(){
     # check whether snap_name is provided and delete the requested snap_name
     if [[ -n "${snap_name}" ]]; then
         if ! is_snapshot_present "\"${snap_name}\""; then
-            log_error "'${snap_name}' snapshot doesn't exist for the '${VM}'"
-            log_error "Use 'vbkick lssnap \"${VM}\"' to list all available snapshots."
+            log_error "'${snap_name}' snapshot doesn't exist for the '${_Vm}'"
+            log_error "Use 'vbkick lssnap \"${_Vm}\"' to list all available snapshots."
             exit 1
         fi
-        VBoxManage snapshot "${VM}" restore "${snap_name}"
+        VBoxManage snapshot "${_Vm}" restore "${snap_name}"
         log_info "'${snap_name}' snapshot was restored."
         exit 0
     fi
-    VBoxManage snapshot "${VM}" restorecurrent
+    VBoxManage snapshot "${_Vm}" restorecurrent
     log_info "Current snapshot was restored."
     exit 0
 }
@@ -1662,28 +1662,28 @@ restore_snapshot(){
 delete_snapshot(){
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist"
+        log_error "'${_Vm}' doesn't exist"
         exit 1
     fi
 
     if ! has_snapshots; then
-        log_error "No snapshots found for the '${VM}'"
+        log_error "No snapshots found for the '${_Vm}'"
         exit 1
     fi
     local snap_name="${1:-}"
     # check whether snap_name is provided and delete the requested snap_name
     if [[ -n "${snap_name}" ]]; then
         if ! is_snapshot_present "\"${snap_name}\""; then
-            log_error "'${snap_name}' snapshot doesn't exist for the '${VM}'"
-            log_error "Use 'vbkick lssnap \"${VM}\"' to list all available snapshots."
+            log_error "'${snap_name}' snapshot doesn't exist for the '${_Vm}'"
+            log_error "Use 'vbkick lssnap \"${_Vm}\"' to list all available snapshots."
             exit 1
         fi
     # snap_name is not provided, remove the current snapshot
     else
-        snap_name=$(VBoxManage snapshot "${VM}" list --machinereadable | grep ^CurrentSnapshotUUID\
+        snap_name=$(VBoxManage snapshot "${_Vm}" list --machinereadable | grep ^CurrentSnapshotUUID\
             | cut -d"=" -f 2- | sed 's/"//g')
     fi
-    VBoxManage snapshot "${VM}" delete "${snap_name}"
+    VBoxManage snapshot "${_Vm}" delete "${snap_name}"
     log_info "'${snap_name}' snapshot was deleted."
     exit 0
 }
@@ -1692,15 +1692,15 @@ delete_snapshot(){
 list_snapshots(){
     # check whether VM exist
     if ! is_present; then
-        log_error "'${VM}' doesn't exist"
+        log_error "'${_Vm}' doesn't exist"
         exit 1
     fi
 
     if ! has_snapshots; then
-        log_error "No snapshots found for the '${VM}'"
+        log_error "No snapshots found for the '${_Vm}'"
         exit 1
     fi
-    VBoxManage snapshot "${VM}" list
+    VBoxManage snapshot "${_Vm}" list
     exit 0
 }
 
