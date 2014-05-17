@@ -324,45 +324,45 @@ _prog_version(){
 
 #@action
 _list_all_vms(){
-    local lc_vm
-    local lc_state
-    #list all vms and remove trailing spaces from the lc_vm name
-    VBoxManage list vms | cut -f 1 -d'{' | sed 's/\s*$//g' | while read -r lc_vm; do
-        # get the pure lc_vm name: "aa bb" -> aa bb
-        lc_vm="${lc_vm//\"/}"
+    local __lc_vm
+    local __lc_state
+    #list all vms and remove trailing spaces from the __lc_vm name
+    VBoxManage list vms | cut -f 1 -d'{' | sed 's/\s*$//g' | while read -r __lc_vm; do
+        # get the pure __lc_vm name: "aa bb" -> aa bb
+        __lc_vm="${__lc_vm//\"/}"
         # Example showvminfo output: "State:           powered off (since 2014-04-28T00:16:26.000000000)"
         # get only the state value and trim leading and trailing spaces
-        lc_state=$(VBoxManage showvminfo "${lc_vm}" | grep State: | cut -d' ' -f 2- | cut -d'(' -f 1 | sed 's/\s*$//g;s/^\s*//g')
-        printf "${lc_vm}:${lc_state}\n"
+        __lc_state=$(VBoxManage showvminfo "${__lc_vm}" | grep State: | cut -d' ' -f 2- | cut -d'(' -f 1 | sed 's/\s*$//g;s/^\s*//g')
+        printf "${__lc_vm}:${__lc_state}\n"
     done
     exit 0
 }
 
 # Help automatically update/maintain value of VBOX_VERSION in given files list
 __autoupdate_files_with_vbox_version() {
-    local file
-    for file in "${files_to_autoupdate_vbox_version[@]}"; do
-        # check whether file is an empty string
-        if [[ -z "${file}" ]]; then
+    local __file
+    for __file in "${files_to_autoupdate_vbox_version[@]}"; do
+        # check whether __file is an empty string
+        if [[ -z "${__file}" ]]; then
             continue
         fi
-        # check whether file exist
-        if [[ -s "${file}" ]]; then
+        # check whether __file exist
+        if [[ -s "${__file}" ]]; then
             # example value to update: VBOX_VERSION="4.2.12", but ignore comments
-            sed -r -i "/^#/!s/(VBOX_VERSION)=\"([0-9\.]+)\"/\1=\"${_vb_version}\"/g" "${file}"
+            sed -r -i "/^#/!s/(VBOX_VERSION)=\"([0-9\.]+)\"/\1=\"${_vb_version}\"/g" "${__file}"
         else
-            printf "VBOX_VERSION=\"${_vb_version}\"\n" > "${file}"
-            printf "export VBOX_VERSION" >> "${file}"
+            printf "VBOX_VERSION=\"${_vb_version}\"\n" > "${__file}"
+            printf "export VBOX_VERSION" >> "${__file}"
         fi
     done
 }
 
 __depend_check() {
-    local dep_cmd="${1}"
-    local dep_name="${2}"
-    # check whether dep_name is installed - dep_cmd command exist
-    if ! command -v ${dep_cmd} >/dev/null 2>&1; then
-        __log_error "${dep_cmd} command doesn't exist - install '${dep_name}' to continue."
+    local __dep_cmd="${1}"
+    local __dep_name="${2}"
+    # check whether __dep_name is installed - __dep_cmd command exist
+    if ! command -v ${__dep_cmd} >/dev/null 2>&1; then
+        __log_error "${__dep_cmd} command doesn't exist - install '${__dep_name}' to continue."
         return 1
     fi
 }
@@ -383,11 +383,11 @@ __dependencies_check() {
 }
 
 __check_required_settings() {
-    local opts=("boot_file" "boot_file_src" "os_type_id")
-    local opt
-    for opt in "${opts[@]}"; do
-        if [[ -z "${!opt+x}" ]]; then
-            __log_error "Required ${opt} option is not defined."
+    local __opts=("boot_file" "boot_file_src" "os_type_id")
+    local __opt
+    for __opt in "${__opts[@]}"; do
+        if [[ -z "${!__opt+x}" ]]; then
+            __log_error "Required ${__opt} option is not defined."
             return 1
         fi
     done
@@ -398,17 +398,17 @@ __load_definition() {
     __load_default_settings
     # definition.cfg is a default definition file
     # loading definition file overwrite default settings
-    local definition_fname="${1:-definition.cfg}"
-    if [[ -s "${definition_fname}" ]]; then
+    local __definition_fname="${1:-definition.cfg}"
+    if [[ -s "${__definition_fname}" ]]; then
         # In POSIX mode the '.' and 'source' builtins do not search the current directory
         # for the filename argument if it is not found by searching PATH.
-        __log_info "Loading \"${definition_fname}\" definition..."
-        if ! . "./${definition_fname}"; then
+        __log_info "Loading \"${__definition_fname}\" definition..."
+        if ! . "./${__definition_fname}"; then
             __log_error "Loading failed."
             return 1
         fi
     else
-        __log_error "Not existing or empty \"${definition_fname}\" file in $(pwd). Terminating..."
+        __log_error "Not existing or empty \"${__definition_fname}\" file in $(pwd). Terminating..."
         return 1
     fi
     # if someone overwrite them in definition file
@@ -420,15 +420,15 @@ __load_definition() {
 
 # Get virtualbox version
 __get_vb_version() {
-    local version=$(VBoxManage --version) # e.g. 4.2.12r84980
-    local pos=$(expr "${version}" : '[0-9.]\+')
-    version=${version:0:${pos}} #e.g. 4.2.12
-    printf "${version}"
+    local __version=$(VBoxManage --version) # e.g. 4.2.12r84980
+    local __pos=$(expr "${__version}" : '[0-9.]\+')
+    __version=${__version:0:${__pos}} #e.g. 4.2.12
+    printf "${__version}"
 }
 
 __is_present() {
-    local pattern="${1:-\"${_Vm}\"}"
-    VBoxManage list vms | grep -qw "${pattern}"
+    local __pattern="${1:-\"${_Vm}\"}"
+    VBoxManage list vms | grep -qw "${__pattern}"
 }
 
 __is_running() {
@@ -446,29 +446,29 @@ __is_paused() {
 __is_alive() {
     # Alive machine may be in paused|running state
     # Useful to change state: VBoxManage controlvm "${_Vm}" pause|resume
-    local pattern="${1:-\"${_Vm}\"}"
-    VBoxManage list runningvms | grep -qw "${pattern}"
+    local __pattern="${1:-\"${_Vm}\"}"
+    VBoxManage list runningvms | grep -qw "${__pattern}"
 }
 
 __is_port_used() {
-    local port_nr="${1}"
+    local __port_nr="${1}"
     # () is useful to be silent
-    (printf "" > /dev/tcp/127.0.0.1/${port_nr}) 2>/dev/null
+    (printf "" > /dev/tcp/127.0.0.1/${__port_nr}) 2>/dev/null
 }
 
 __is_port_present() {
-    local port_name="${1}"
-    VBoxManage showvminfo "${_Vm}" | grep -w 'guest port' | grep -qw "${port_name}"
+    local __port_name="${1}"
+    VBoxManage showvminfo "${_Vm}" | grep -w 'guest port' | grep -qw "${__port_name}"
 }
 
 __is_shared_folder_present() {
-    local folder_name="${1}"
-    VBoxManage showvminfo "${_Vm}" | grep -w 'machine mapping' | grep -qw "Name: '${folder_name}'"
+    local __folder_name="${1}"
+    VBoxManage showvminfo "${_Vm}" | grep -w 'machine mapping' | grep -qw "Name: '${__folder_name}'"
 }
 
 __is_snapshot_present() {
-    local snap_name="${1}"
-    VBoxManage snapshot "${_Vm}" list --machinereadable | grep -w "^SnapshotName\|SnapshotUUID" | grep -qw "${snap_name}"
+    local __snap_name="${1}"
+    VBoxManage snapshot "${_Vm}" list --machinereadable | grep -w "^SnapshotName\|SnapshotUUID" | grep -qw "${__snap_name}"
 }
 
 __has_snapshots() {
@@ -477,43 +477,43 @@ __has_snapshots() {
 
 # checks whether port is not used by other proc
 __check_port_usage() {
-    local port_nr="${1}"
-    local port_message="${2}"
-    if __is_port_used ${port_nr}; then
-        __log_error "${port_nr} port (${port_message}) is already used by an other process."
+    local __port_nr="${1}"
+    local __port_message="${2}"
+    if __is_port_used ${__port_nr}; then
+        __log_error "${__port_nr} port (${__port_message}) is already used by an other process."
         return 1
     fi
 }
 
 # Check whether given directory exist
 __prepare_path() {
-    local path="${1}"
-    local mkdir_path="${2}"
-    # Process special variables in path definition e.g. path="%VBOXFOLDER%/%NAME%"
-    local location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^\s*//g')
-    path=${path//%SRCPATH%/${boot_file_src_path}}
-    path=${path//%VBOXFOLDER%/${location}}
-    path=${path//%PWD%/$(pwd)}
+    local __path="${1}"
+    local __mkdir_path="${2}"
+    # Process special variables in path definition e.g. __path="%VBOXFOLDER%/%NAME%"
+    local __location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^\s*//g')
+    __path=${__path//%SRCPATH%/${boot_file_src_path}}
+    __path=${__path//%VBOXFOLDER%/${__location}}
+    __path=${__path//%PWD%/$(pwd)}
     # get homedir - $(getent passwd UID) doesn't work for MacOS; $HOME is less portable than ~
-    path=${path//%HOME%/~}
-    path=${path//%NAME%/${_Vm}}
+    __path=${__path//%HOME%/~}
+    __path=${__path//%NAME%/${_Vm}}
     # expand a special variable - e.g. tilde (~) and
     # strips out > characters which could clobber a file during the eval
-    path=$(eval echo "${path//>}")
+    __path=$(eval echo "${__path//>}")
     # Creates dir if necessary
-    if [[ ${mkdir_path} -eq 1 ]] && [[ ! -z "${path}" ]] && [[ ! -d "${path}" ]]; then
-        mkdir -p "${path}"
+    if [[ ${__mkdir_path} -eq 1 ]] && [[ ! -z "${__path}" ]] && [[ ! -d "${__path}" ]]; then
+        mkdir -p "${__path}"
     fi
-    # Return path
-    printf "${path}"
+    # Return __path
+    printf "${__path}"
 }
 
 __curl_safe() {
-    local src="${1}"
-    local dest="${2}"
-    local statuscode=$(curl -Lkfw "%{http_code}\n" "${src}" -o "${dest}")
-    if [[ ${statuscode} -ne 200 ]]; then
-        __log_error "${src} status code is ${statuscode}. Terminating..."
+    local __src="${1}"
+    local __dest="${2}"
+    local __statuscode=$(curl -Lkfw "%{http_code}\n" "${__src}" -o "${__dest}")
+    if [[ ${__statuscode} -ne 200 ]]; then
+        __log_error "${__src} status code is ${__statuscode}. Terminating..."
         return 1
     fi
 }
@@ -527,8 +527,8 @@ __download_guest_additions_media() {
     guest_additions_path=$(__prepare_path "${guest_additions_path}" 1)
     # check whether VBoxGuestAdditions exist
     if [[ ! -f "${guest_additions_path}/VBoxGuestAdditions_${_vb_version}.iso" ]]; then
-        local additions_url="http://download.virtualbox.org/virtualbox/${_vb_version}/VBoxGuestAdditions_${_vb_version}.iso"
-        __curl_safe "${additions_url}" "${guest_additions_path}/VBoxGuestAdditions_${_vb_version}.iso"
+        local __additions_url="http://download.virtualbox.org/virtualbox/${_vb_version}/VBoxGuestAdditions_${_vb_version}.iso"
+        __curl_safe "${__additions_url}" "${guest_additions_path}/VBoxGuestAdditions_${_vb_version}.iso"
     fi
     # rm useless images
     __remove_guest_additions_media
@@ -542,45 +542,45 @@ __remove_guest_additions_media() {
     fi
     guest_additions_path=$(__prepare_path "${guest_additions_path}" 0)
     # true is use to not fail whole cmd, and return empty string
-    local file_list=$(ls "${guest_additions_path}" | grep "GuestAdditions" | grep -v "${_vb_version}" || true)
+    local __file_list=$(ls "${guest_additions_path}" | grep "GuestAdditions" | grep -v "${_vb_version}" || true)
     # continue only if we have some files to remove
-    if [[ -z "${file_list}" ]]; then
+    if [[ -z "${__file_list}" ]]; then
         return
     fi
     __log_info "List of VBoxGuestAdditions files to remove:"
-    local file
-    for file in ${file_list}; do
-        printf "${guest_additions_path}/${file}\n"
+    local __file
+    for __file in ${__file_list}; do
+        printf "${guest_additions_path}/${__file}\n"
     done
     # to remove files ask about confirmation
-    local ans
-    read -r -p "Do you want remove above VBoxGuestAdditions files? [y/N]" ans
-    if [[ ${ans} =~ ^[Yy]$ ]]; then
-        for file in ${file_list}; do
-            printf "${guest_additions_path}/${file}\n"
-            rm -f "${guest_additions_path}/${file}"
+    local __ans
+    read -r -p "Do you want remove above VBoxGuestAdditions files? [y/N]" __ans
+    if [[ ${__ans} =~ ^[Yy]$ ]]; then
+        for __file in ${__file_list}; do
+            printf "${guest_additions_path}/${__file}\n"
+            rm -f "${guest_additions_path}/${__file}"
         done
     fi
 }
 
 # Prepare installation/boot media
 __download_boot_media() {
-    local boot_file_path=$(dirname "${boot_file}")
-    local boot_file_name=$(basename "${boot_file}")
-    boot_file_path=$(__prepare_path "${boot_file_path}" 1)
-    boot_file="${boot_file_path}/${boot_file_name}"
+    local __boot_file_path=$(dirname "${boot_file}")
+    local __boot_file_name=$(basename "${boot_file}")
+    __boot_file_path=$(__prepare_path "${__boot_file_path}" 1)
+    boot_file="${__boot_file_path}/${__boot_file_name}"
 
     # the temporary name for boot_file is last part from boot_file_src
-    local tmp_name=$(basename "${boot_file_src}")
+    local __tmp_name=$(basename "${boot_file_src}")
     boot_file_src_path=$(__prepare_path "${boot_file_src_path}" 1)
-    local boot_file_src_file="${boot_file_src_path}/${tmp_name}"
+    local __boot_file_src_file="${boot_file_src_path}/${__tmp_name}"
 
     # check whether boot file exist
     if [[ -f "${boot_file}" ]]; then
-        # if boot_file is the same as boot_file_src_file then we can verify checksum
+        # if boot_file is the same as __boot_file_src_file then we can verify checksum
         # NB: In definition provided is checksum for the boot_file_src which may be a different
         # than destination boot_file
-        if [[ "${boot_file}" == "${boot_file_src_file}" ]]; then
+        if [[ "${boot_file}" == "${__boot_file_src_file}" ]]; then
             __verify_boot_media_checksum "${boot_file}"
         fi
         # file exist, nothing to do
@@ -594,32 +594,32 @@ __download_boot_media() {
     fi
 
     # check whether boot_file_src exist
-    if [[ ! -f "${boot_file_src_file}" ]]; then
-        __curl_safe "${boot_file_src}" "${boot_file_src_file}"
+    if [[ ! -f "${__boot_file_src_file}" ]]; then
+        __curl_safe "${boot_file_src}" "${__boot_file_src_file}"
     fi
-    __verify_boot_media_checksum "${boot_file_src_file}"
+    __verify_boot_media_checksum "${__boot_file_src_file}"
 
     # process unpack
     if [[ ! -z "${boot_file_unpack_cmd}" ]]; then
         __unpack_boot_media
-        local boot_file_src_file="${boot_file_unpack_name}"
+        __boot_file_src_file="${boot_file_unpack_name}"
     fi
 
-    __deploy_boot_media_file "${boot_file_src_file}"
+    __deploy_boot_media_file "${__boot_file_src_file}"
 }
 
 __verify_boot_media_checksum(){
-    local boot_file_src_file="${1}"
+    local __boot_file_src_file="${1}"
     # verify boot_file_src checksum if boot_file_src_checksum is provided
     if [[ -z "${boot_file_src_checksum}" ]]; then
         return
     fi
-    local get_checksum=$(openssl "${boot_file_checksum_type}" "${boot_file_src_file}" | cut -d" " -f 2)
-    if [[ "${boot_file_src_checksum}" != "${get_checksum}" ]]; then
+    local __get_checksum=$(openssl "${boot_file_checksum_type}" "${__boot_file_src_file}" | cut -d" " -f 2)
+    if [[ "${boot_file_src_checksum}" != "${__get_checksum}" ]]; then
         __log_warning "CHECKSUM is different than expected !"
-        local ans
-        read -r -p "Do you want continue? [y/N]" ans
-        if [[ ! ${ans} =~ ^[Yy]$ ]]; then
+        local __ans
+        read -r -p "Do you want continue? [y/N]" __ans
+        if [[ ! ${__ans} =~ ^[Yy]$ ]]; then
             return 1
         fi
     else
@@ -645,23 +645,23 @@ __unpack_boot_media(){
 }
 
 __deploy_boot_media_file(){
-    local boot_file_src_file="${1}"
+    local __boot_file_src_file="${1}"
     # process convert from raw if necessary
     if [[ ${boot_file_convert_from_raw} -eq 1 ]]; then
-        VBoxManage convertfromraw "${boot_file_src_file}" "${boot_file}" --format "${disk_format}"
+        VBoxManage convertfromraw "${__boot_file_src_file}" "${boot_file}" --format "${disk_format}"
         if [[ ${keep_boot_src_file} -eq 0 ]]; then
-            rm -f "${boot_file_src_file}"
+            rm -f "${__boot_file_src_file}"
         fi
     else
-        # check whether full path to boot_file_src_file is same as boot_file and boot_file was already created
+        # check whether full path to __boot_file_src_file is same as boot_file and boot_file was already created
         if [[ -f "${boot_file}" ]]; then
             return
         fi
-        # check whether cp or mv; mv mean don't keep boot_file_src_file; keep only boot_file
+        # check whether cp or mv; mv mean don't keep __boot_file_src_file; keep only boot_file
         if [[ ${keep_boot_src_file} -eq 0 ]]; then
-            mv -f "${boot_file_src_file}" "${boot_file}"
+            mv -f "${__boot_file_src_file}" "${boot_file}"
         else
-            cp "${boot_file_src_file}" "${boot_file}"
+            cp "${__boot_file_src_file}" "${boot_file}"
         fi
     fi
 }
@@ -689,8 +689,8 @@ _build_vm() {
         exit 1
     fi
     # load vm description/definition
-    local definition_fname="${1:-}"
-    __load_definition "${definition_fname}"
+    local __definition_fname="${1:-}"
+    __load_definition "${__definition_fname}"
     # check SSH port usage
     __check_port_usage ${ssh_host_port} "SSH host"
     # start simple webserver (in background)
@@ -701,7 +701,7 @@ _build_vm() {
     # create VM box with given settings
     __create_box
     # host ip to connect from guest
-    local host_ip=10.0.2.2
+    local __host_ip=10.0.2.2
     # start VM
     if [[ ${gui_enabled} -eq 1 ]]; then
         VBoxManage startvm --type gui "${_Vm}"  && sleep ${boot_wait}
@@ -710,24 +710,24 @@ _build_vm() {
     fi
     # boot VM machine
     __log_info "Sending keyboard scancodes:"
-    local boot_cmd
-    for boot_cmd in "${boot_cmd_sequence[@]}"; do
-        if [[ -z "${boot_cmd}" ]]; then
+    local __boot_cmd
+    for __boot_cmd in "${boot_cmd_sequence[@]}"; do
+        if [[ -z "${__boot_cmd}" ]]; then
             continue
         fi
-        boot_cmd=${boot_cmd//%IP%/${host_ip}}
-        boot_cmd=${boot_cmd//%PORT%/${kickstart_port}}
-        boot_cmd=${boot_cmd//%NAME%/${_Vm}}
-        __log_info "${boot_cmd}"
+        __boot_cmd=${__boot_cmd//%IP%/${__host_ip}}
+        __boot_cmd=${__boot_cmd//%PORT%/${kickstart_port}}
+        __boot_cmd=${__boot_cmd//%NAME%/${_Vm}}
+        __log_info "${__boot_cmd}"
         # converts string to scancode via external python script
-        local boot_cmd_code=$(printf "${boot_cmd}" | convert_2_scancode.py)
+        local __boot_cmd_code=$(printf "${__boot_cmd}" | convert_2_scancode.py)
         # sends code to VM
-        local code
-        for code in ${boot_cmd_code}; do
-            if [[ "${code}" == "wait" ]]; then
+        local __code
+        for __code in ${__boot_cmd_code}; do
+            if [[ "${__code}" == "wait" ]]; then
                 sleep 1
             else
-                VBoxManage controlvm "${_Vm}" keyboardputscancode ${code}
+                VBoxManage controlvm "${_Vm}" keyboardputscancode ${__code}
                 sleep 0.02
             fi
         done
@@ -750,7 +750,7 @@ __create_box() {
 
     # Creates disks
     # Get default location for disks
-    local location=$(VBoxManage list systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^\s*//g')
+    local __location=$(VBoxManage list systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^\s*//g')
 
     # SATA controller - place for hdd and iso files
     # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media and port 1 for guest additions
@@ -770,17 +770,17 @@ __create_box() {
     VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
     --type "${boot_file_type}" --port 0 --device 0 --medium "${boot_file}"
     # SATA controller - create and add hdd disks
-    local port_nr=2
-    local disk
-    for disk in "${disk_size[@]}"; do
-        if [[ -z "${disk}" ]]; then
+    local __port_nr=2
+    local __disk
+    for __disk in "${disk_size[@]}"; do
+        if [[ -z "${__disk}" ]]; then
             continue
         fi
-        VBoxManage createhd --filename "${location}/${_Vm}/${_Vm}-${port_nr}.${disk_format}"\
-        --size ${disk} --format "${disk_format}" --variant Standard
+        VBoxManage createhd --filename "${__location}/${_Vm}/${_Vm}-${__port_nr}.${disk_format}"\
+        --size ${__disk} --format "${disk_format}" --variant Standard
         VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
-        --port ${port_nr} --device 0 --type hdd --medium "${location}/${_Vm}/${_Vm}-${port_nr}.${disk_format}"
-        local port_nr=$((port_nr+1))
+        --port ${__port_nr} --device 0 --type hdd --medium "${__location}/${_Vm}/${_Vm}-${__port_nr}.${disk_format}"
+        __port_nr=$((__port_nr+1))
     done
     # SATA controller - add VBoxGuestAdditions iso
     if [[ ${guest_additions_attach} -eq 1 ]]; then
@@ -805,44 +805,44 @@ __create_box() {
     # setting video memory size
     VBoxManage modifyvm "${_Vm}" --vram ${video_memory_size}
     # setting bootorder
-    local bo_idx=1
-    local bo
-    for bo in "${boot_order[@]}"; do
-        if [[ -z "${bo}" ]]; then
-            VBoxManage modifyvm "${_Vm}" --boot${bo_idx} none
+    local __bo_idx=1
+    local __bo
+    for __bo in "${boot_order[@]}"; do
+        if [[ -z "${__bo}" ]]; then
+            VBoxManage modifyvm "${_Vm}" --boot${__bo_idx} none
         else
-            VBoxManage modifyvm "${_Vm}" --boot${bo_idx} ${bo}
+            VBoxManage modifyvm "${_Vm}" --boot${__bo_idx} ${__bo}
         fi
-        local bo_idx=$((bo_idx+1))
-        if [[ ${bo_idx} -eq 5 ]]; then
+        local __bo_idx=$((__bo_idx+1))
+        if [[ ${__bo_idx} -eq 5 ]]; then
             break
         fi
     done
-    local i
-    for ((i=${bo_idx}; i<=4; i++)); do
-        VBoxManage modifyvm "${_Vm}" --boot${i} none
+    local __i
+    for ((__i=${__bo_idx}; __i<=4; __i++)); do
+        VBoxManage modifyvm "${_Vm}" --boot${__i} none
     done
     # setting networking
     VBoxManage modifyvm "${_Vm}" --nic1 nat --nictype1 ${nic_type} --cableconnected1 on
     # other settings
-    local option
-    for option in "${vm_options[@]}"; do
-        if [[ -z "${option}" ]]; then
+    local __option
+    for __option in "${vm_options[@]}"; do
+        if [[ -z "${__option}" ]]; then
             continue
         fi
-        local key="${option%%:*}"
-        local value="${option##*:}"
-        VBoxManage modifyvm "${_Vm}" --"${key}" "${value}"
+        local __key="${__option%%:*}"
+        local __value="${__option##*:}"
+        VBoxManage modifyvm "${_Vm}" --"${__key}" "${__value}"
     done
     # set extradata
-    local extradata
-    for extradata in "${vm_extradata[@]}"; do
-        if [[ -z "${extradata}" ]]; then
+    local __extradata
+    for __extradata in "${vm_extradata[@]}"; do
+        if [[ -z "${__extradata}" ]]; then
             continue
         fi
-        local key="${extradata%%:*}"
-        local value="${extradata##*:}"
-        VBoxManage setextradata "${_Vm}" "${key}" "${value}"
+        local __key="${__extradata%%:*}"
+        local __value="${__extradata##*:}"
+        VBoxManage setextradata "${_Vm}" "${__key}" "${__value}"
     done
 
     # ssh port NAT mapping; ssh port is a special one
@@ -859,48 +859,48 @@ __create_box() {
 }
 
 __add_extra_ports_mapping() {
-    local lc_extra_ports=("${@}")
-    local port
-    for port in "${lc_extra_ports[@]}"; do
-        if [[ -z "${port}" ]]; then
+    local __lc_extra_ports=("${@}")
+    local __port
+    for __port in "${__lc_extra_ports[@]}"; do
+        if [[ -z "${__port}" ]]; then
             continue
         fi
 
         local IFS=':'
-        local port_info=(${port})
-        if [[ ${#port_info[@]} -ne 3 ]]; then
+        local __port_info=(${__port})
+        if [[ ${#__port_info[@]} -ne 3 ]]; then
             __log_error "one of the ports in extra_ports has invalid format."
             return 1
         fi
-        local port_name="${port_info[0]}"
-        local port_host="${port_info[1]}"
-        local port_guest="${port_info[2]}"
+        local __port_name="${__port_info[0]}"
+        local __port_host="${__port_info[1]}"
+        local __port_guest="${__port_info[2]}"
         # add only if port doesn't exist
-        if ! __is_port_present "${port_name}"; then
-            VBoxManage controlvm "${_Vm}" natpf1 "${port_name},tcp,,${port_host},,${port_guest}"
+        if ! __is_port_present "${__port_name}"; then
+            VBoxManage controlvm "${_Vm}" natpf1 "${__port_name},tcp,,${__port_host},,${__port_guest}"
         fi
     done
 }
 
 __remove_extra_ports_mapping() {
-    local lc_extra_ports=("${@}")
-    local port
-    for port in "${lc_extra_ports[@]}"; do
-        if [[ -z "${port}" ]]; then
+    local __lc_extra_ports=("${@}")
+    local __port
+    for __port in "${__lc_extra_ports[@]}"; do
+        if [[ -z "${__port}" ]]; then
             # note which extra ports were removed by moving _extraports_removed_ptr
             _extraports_removed_ptr=$((_extraports_removed_ptr+1))
             continue
         fi
 
         local IFS=':'
-        local port_info=(${port})
-        if [[ ${#port_info[@]} -ne 3 ]]; then
+        local __port_info=(${__port})
+        if [[ ${#__port_info[@]} -ne 3 ]]; then
             __log_error "one of the ports in extra_ports has invalid format."
             return 1
         fi
-        local port_name="${port_info[0]}"
-        if __is_port_present "${port_name}"; then
-            VBoxManage controlvm "${_Vm}" natpf1 delete "${port_name}"
+        local __port_name="${__port_info[0]}"
+        if __is_port_present "${__port_name}"; then
+            VBoxManage controlvm "${_Vm}" natpf1 delete "${__port_name}"
             # note which extra ports were removed by moving _extraports_removed_ptr
             _extraports_removed_ptr=$((_extraports_removed_ptr+1))
         fi
@@ -908,36 +908,36 @@ __remove_extra_ports_mapping() {
 }
 
 __add_shared_folders() {
-    local lc_shared_folders=("${@}")
-    local folder
-    for folder in "${lc_shared_folders[@]}"; do
-        if [[ -z "${folder}" ]]; then
+    local __lc_shared_folders=("${@}")
+    local __folder
+    for __folder in "${__lc_shared_folders[@]}"; do
+        if [[ -z "${__folder}" ]]; then
             continue
         fi
 
         local IFS=':'
-        local folder_info=(${folder})
-        if [[ ${#folder_info[@]} -lt 2 ]]; then
+        local __folder_info=(${__folder})
+        if [[ ${#__folder_info[@]} -lt 2 ]]; then
             __log_error "one of the folders in shared_folders has no info about path."
             return 1
         fi
-        local folder_name="${folder_info[0]}"
-        local folder_path=$(__prepare_path "${folder_info[1]}" 1)
+        local __folder_name="${__folder_info[0]}"
+        local __folder_path=$(__prepare_path "${__folder_info[1]}" 1)
 
         # check whether shared_folder already exist
-        if __is_shared_folder_present "${folder_name}"; then
+        if __is_shared_folder_present "${__folder_name}"; then
             continue
         fi
 
-        if [[ ${#folder_info[@]} -eq 2 ]]; then
-            __log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${folder_name}\" --hostpath \"${folder_path}\""
-            VBoxManage sharedfolder add "${_Vm}" --name "${folder_name}" --hostpath "${folder_path}"
-        elif [[ ${#folder_info[@]} -eq 3 ]]; then
-            __log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]}"
-            VBoxManage sharedfolder add "${_Vm}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}"
-        elif [[ ${#folder_info[@]} -eq 4 ]]; then
-            __log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${folder_name}\" --hostpath \"${folder_path}\" --${folder_info[2]} --${folder_info[3]}"
-            VBoxManage sharedfolder add "${_Vm}" --name "${folder_name}" --hostpath "${folder_path}" --"${folder_info[2]}" --"${folder_info[3]}"
+        if [[ ${#__folder_info[@]} -eq 2 ]]; then
+            __log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\""
+            VBoxManage sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}"
+        elif [[ ${#__folder_info[@]} -eq 3 ]]; then
+            __log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\" --${__folder_info[2]}"
+            VBoxManage sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}" --"${__folder_info[2]}"
+        elif [[ ${#__folder_info[@]} -eq 4 ]]; then
+            __log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\" --${__folder_info[2]} --${__folder_info[3]}"
+            VBoxManage sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}" --"${__folder_info[2]}" --"${__folder_info[3]}"
         else
             __log_error "too much options in one of the shared_folders."
             return 1
@@ -946,28 +946,28 @@ __add_shared_folders() {
 }
 
 __remove_shared_folders() {
-    local lc_shared_folders=("${@}")
-    local folder
-    for folder in "${lc_shared_folders[@]}"; do
-        if [[ -z "${folder}" ]]; then
+    local __lc_shared_folders=("${@}")
+    local __folder
+    for __folder in "${__lc_shared_folders[@]}"; do
+        if [[ -z "${__folder}" ]]; then
             # note which shared folders were removed by moving _sharedfolders_removed_ptr
             _sharedfolders_removed_ptr=$((_sharedfolders_removed_ptr+1))
             continue
         fi
 
         local IFS=':'
-        local folder_info=(${folder})
-        if [[ ${#folder_info[@]} -lt 2 ]]; then
+        local __folder_info=(${__folder})
+        if [[ ${#__folder_info[@]} -lt 2 ]]; then
             __log_error "one of the folders in shared_folders has no info about path."
             return 1
         fi
-        if [[ ${#folder_info[@]} -gt 4 ]]; then
+        if [[ ${#__folder_info[@]} -gt 4 ]]; then
             __log_error "too much options in one of the shared_folders."
             return 1
         fi
-        local folder_name="${folder_info[0]}"
-        if __is_shared_folder_present "${folder_name}"; then
-            VBoxManage sharedfolder remove "${_Vm}" --name "${folder_name}"
+        local __folder_name="${__folder_info[0]}"
+        if __is_shared_folder_present "${__folder_name}"; then
+            VBoxManage sharedfolder remove "${_Vm}" --name "${__folder_name}"
             # note which shared folders were removed by moving _sharedfolders_removed_ptr
             _sharedfolders_removed_ptr=$((_sharedfolders_removed_ptr+1))
         fi
@@ -976,19 +976,19 @@ __remove_shared_folders() {
 
 # Check whether machine was kickstarted before timeout
 __kickstart_monitoring() {
-    local kickstart_counter=0
-    local extra_ssh_options="-o ConnectionAttempts=1 -o ConnectTimeout=1"
+    local __kickstart_counter=0
+    local __extra_ssh_options="-o ConnectionAttempts=1 -o ConnectTimeout=1"
     # ssh key authentication enabled
     if [[ ${ssh_keys_enabled} -eq 1 ]]; then
         # create path to ssh private key
         __get_priv_ssh_key
-        local key_path="${ssh_keys_path}/${ssh_priv_key}"
+        local __key_path="${ssh_keys_path}/${ssh_priv_key}"
         printf "\n"
         __log_info "Waiting for ssh login with user ${ssh_user} to 127.0.0.1:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec"
         # wait until ssh start working (communication chanel with VM) or kickstart_timeout was reached
-        while ! ssh "${ssh_user}@127.0.0.1" -q -t -i "${key_path}" -p ${ssh_host_port} ${ssh_options} ${extra_ssh_options} -C "echo"\
-            && [[ ${kickstart_counter} -le ${kickstart_timeout} ]]; do
-            kickstart_counter=$((kickstart_counter+1))
+        while ! ssh "${ssh_user}@127.0.0.1" -q -t -i "${__key_path}" -p ${ssh_host_port} ${ssh_options} ${__extra_ssh_options} -C "echo"\
+            && [[ ${__kickstart_counter} -le ${kickstart_timeout} ]]; do
+            __kickstart_counter=$((__kickstart_counter+1))
             printf "."
             sleep 1
         done
@@ -1010,9 +1010,9 @@ _destroy_vm() {
 
     # destroy VM
     __log_info "Destroy '${_Vm}'"
-    local ans
-    read -r -p "Are you sure? [y/N]" ans
-    if [[ ! ${ans} =~ ^[Yy]$ ]]; then
+    local __ans
+    read -r -p "Are you sure? [y/N]" __ans
+    if [[ ! ${__ans} =~ ^[Yy]$ ]]; then
         exit 1
     fi
 
@@ -1038,8 +1038,8 @@ _export_vm() {
     # tar command is required, check whether is installed
     __depend_check "tar" "tar"
     # load vm description/definition
-    local definition_fname="${1:-}"
-    __load_definition "${definition_fname}"
+    local __definition_fname="${1:-}"
+    __load_definition "${__definition_fname}"
     # check whether VM_NAME.box exist in current dir
     if [[ -f "${_Vm}.box" ]]; then
         __log_error "'${_Vm}.box' already exist in '$(pwd)'"
@@ -1076,14 +1076,14 @@ _export_vm() {
     # export VM to _tmp_dir
     VBoxManage export "${_Vm}" --output "${_tmp_dir}/box.ovf"
     # get VM MAC Address
-    local mac_address=$(VBoxManage showvminfo --details --machinereadable "${_Vm}"\
+    local __mac_address=$(VBoxManage showvminfo --details --machinereadable "${_Vm}"\
     | grep macaddress1 | cut -d"=" -f 2)
     # add Vagrantfile
     printf "Vagrant.configure(\"2\") do |config|
     \t# This Vagrantfile is auto-generated by \`vbkick export\` to contain
     \t# the MAC address of the box. Custom configuration should be placed in
     \t# the actual \`Vagrantfile\` in this box.
-    \tconfig.vm.base_mac = ${mac_address}
+    \tconfig.vm.base_mac = ${__mac_address}
     end\n
     # Load include vagrant file if it exists after the auto-generated
     # so it can override any of the settings
@@ -1119,15 +1119,15 @@ __recover_vm_state() {
     # add extra ports after exporting - only if exist prev.
     if [[ ${_extraports_removed_ptr} -gt 0 ]]; then
         # add only folders which were removed, skip others (useful when SIGINT)
-        local lc_extra_ports=("${extra_ports[@]:0:${_extraports_removed_ptr}}")
-        __add_extra_ports_mapping "${lc_extra_ports[@]}"
+        local __lc_extra_ports=("${extra_ports[@]:0:${_extraports_removed_ptr}}")
+        __add_extra_ports_mapping "${__lc_extra_ports[@]}"
         _extraports_removed_ptr=0
     fi
     # add shared folder after exporting - only if exist prev.
     if [[ ${_sharedfolders_removed_ptr} -gt 0 ]]; then
         # add only folders which were removed, skip others (useful when SIGINT)
-        local lc_shared_folders=("${shared_folders[@]:0:${_sharedfolders_removed_ptr}}")
-        __add_shared_folders "${lc_shared_folders[@]}"
+        local __lc_shared_folders=("${shared_folders[@]:0:${_sharedfolders_removed_ptr}}")
+        __add_shared_folders "${__lc_shared_folders[@]}"
         _sharedfolders_removed_ptr=0
     fi
 }
@@ -1152,8 +1152,8 @@ _turn_on() {
     fi
 
     # load vm description/definition - needed for gui or headless
-    local definition_fname="${1:-}"
-    __load_definition "${definition_fname}"
+    local __definition_fname="${1:-}"
+    __load_definition "${__definition_fname}"
 
     if [[ ${gui_enabled} -eq 1 ]]; then
         VBoxManage startvm --type gui "${_Vm}"
@@ -1178,8 +1178,8 @@ _turn_off() {
     fi
 
     # load vm description/definition
-    local definition_fname="${1:-}"
-    __load_definition "${definition_fname}"
+    local __definition_fname="${1:-}"
+    __load_definition "${__definition_fname}"
 
     #exec shutdown
     __shutdown
@@ -1221,9 +1221,9 @@ __shutdown() {
 
 __shutdown_monitoring() {
     # wait until VM is down or shutdown_timeout was reached
-    local shutdown_counter=0
-    while __is_alive && [[ ${shutdown_counter} -le ${shutdown_timeout} ]]; do
-        shutdown_counter=$((shutdown_counter+1))
+    local __shutdown_counter=0
+    while __is_alive && [[ ${__shutdown_counter} -le ${shutdown_timeout} ]]; do
+        __shutdown_counter=$((__shutdown_counter+1))
         printf "."
         sleep 1
     done
@@ -1239,14 +1239,14 @@ __update_guest_additions_media() {
     # get current guest version
     if VBoxManage guestproperty enumerate "${_Vm}" | grep -q "GuestAdd/Version"; then
         # guest already exist, get current version
-        local guest_version=$(VBoxManage guestproperty get "${_Vm}" "/VirtualBox/GuestAdd/Version" | cut -f 2 -d " ")
+        local __guest_version=$(VBoxManage guestproperty get "${_Vm}" "/VirtualBox/GuestAdd/Version" | cut -f 2 -d " ")
     else
         # guest doesn't exist
-        local guest_version=""
+        local __guest_version=""
     fi
 
     # check whether we need update or install VBoxGuestAdditions
-    if [[ "${_vb_version}" == "${guest_version}" ]]; then
+    if [[ "${_vb_version}" == "${__guest_version}" ]]; then
         __log_ginfo "VBoxGuestAdditions on '${_Vm}' is up-to-date - update media iso is not needed."
         return
     fi
@@ -1287,8 +1287,8 @@ _validate_vm() {
     # e.g. If I don't need chef, don't test whether I have chef
     #
     # load vm description/definition
-    local definition_fname="${1:-}"
-    __load_definition "${definition_fname}"
+    local __definition_fname="${1:-}"
+    __load_definition "${__definition_fname}"
     # exec scripts on VM Guest via ssh
     __ssh_exec ${#validate_transport[@]} "${validate_transport[@]}" "${validate_launch[@]}"
     exit 0
@@ -1297,8 +1297,8 @@ _validate_vm() {
 #@action
 _lazy_postinstall() {
     # load vm description/definition
-    local definition_fname="${1:-}"
-    __load_definition "${definition_fname}"
+    local __definition_fname="${1:-}"
+    __load_definition "${__definition_fname}"
     # exec scripts on VM Guest via ssh
     __ssh_exec ${#postinstall_transport[@]} "${postinstall_transport[@]}" "${postinstall_launch[@]}"
     exit 0
@@ -1307,8 +1307,8 @@ _lazy_postinstall() {
 #@action
 _lazy_play() {
     # load vm description/definition
-    local definition_fname="${1:-}"
-    __load_definition "${definition_fname}"
+    local __definition_fname="${1:-}"
+    __load_definition "${__definition_fname}"
     # exec scripts on VM Guest via ssh
     __ssh_exec ${#play_transport[@]} "${play_transport[@]}" "${play_launch[@]}"
     exit 0
@@ -1317,8 +1317,8 @@ _lazy_play() {
 #@action
 _lazy_update() {
     # load vm description/definition
-    local definition_fname="${1:-}"
-    __load_definition "${definition_fname}"
+    local __definition_fname="${1:-}"
+    __load_definition "${__definition_fname}"
     # Check whether VBoxGuestAdditions should be installed. If not then not update additions.
     if [[ ${guest_additions_attach} -eq 1 ]]; then
         __update_guest_additions_media
@@ -1333,13 +1333,13 @@ __ssh_exec() {
     # transport scripts to VM Guest via SCP and exec them via SSH
     #
     # get number of transport files/directories; transport array length
-    local pos=${1}
+    local __pos=${1}
     shift
-    # get transport array; everything to $pos
-    local transport=("${@:1:${pos}}")
-    shift ${pos}
+    # get transport array; everything to ${__pos}
+    local __transport=("${@:1:${__pos}}")
+    shift ${__pos}
     # get launch array;
-    local launch=("${@}")
+    local __launch=("${@}")
 
     # check whether VM exist
     if ! __is_present; then
@@ -1357,13 +1357,13 @@ __ssh_exec() {
 
     # check whether all pkt can by transported, before starting transporting -
     # - be a bit more atomic
-    local pkt
-    for pkt in "${transport[@]}"; do
-        if [[ -z "${pkt}" ]] || [[ -d "${pkt}" ]] || [[ -f "${pkt}" ]]; then
+    local __pkt
+    for __pkt in "${__transport[@]}"; do
+        if [[ -z "${__pkt}" ]] || [[ -d "${__pkt}" ]] || [[ -f "${__pkt}" ]]; then
             continue
         else
-            # pkt is neither file nor directory
-            __log_error "${pkt} is neither file nor directory"
+            # __pkt is neither file nor directory
+            __log_error "${__pkt} is neither file nor directory"
             return 1
         fi
     done
@@ -1371,12 +1371,12 @@ __ssh_exec() {
     # complex function shouldn't be check by 'if'; it has big consequence how function definition is processed
     # whole body of function will be executed even error occur (e.g. one of the subfunctions exit with error code 1)
     # I'm aware of this and here it's fine to check __ssh_do_transport
-    if ! __ssh_do_transport "${transport[@]}"; then
-        __ssh_do_cleanup "${transport[@]}"
+    if ! __ssh_do_transport "${__transport[@]}"; then
+        __ssh_do_cleanup "${__transport[@]}"
         return 1
     fi
-    __ssh_do_launch "${launch[@]}"
-    __ssh_do_cleanup "${transport[@]}"
+    __ssh_do_launch "${__launch[@]}"
+    __ssh_do_cleanup "${__transport[@]}"
 }
 
 # try change ssh_host_port if is used a different than already configured (e.g. env variables where used)
@@ -1395,36 +1395,36 @@ __fix_ssh_port() {
 }
 
 __ssh_do_transport() {
-    local transport=("${@}")
-    local pkt
+    local __transport=("${@}")
+    local __pkt
     # transport scripts to guest
-    for pkt in "${transport[@]}"; do
-        if [[ -z "${pkt}" ]]; then
+    for __pkt in "${__transport[@]}"; do
+        if [[ -z "${__pkt}" ]]; then
             continue
         fi
-        __log_info "Scp: ${pkt}"
-        # check whether pkt is file or dir
-        if [[ -d "${pkt}" ]]; then
-            # pkt is directory
+        __log_info "Scp: ${__pkt}"
+        # check whether __pkt is file or dir
+        if [[ -d "${__pkt}" ]]; then
+            # __pkt is directory
             if [[ ${ssh_keys_enabled} -eq 1 ]]; then
                 # create path to ssh private key
                 __get_priv_ssh_key
-                local key_path="${ssh_keys_path}/${ssh_priv_key}"
-                scp -q -P ${ssh_host_port} -i "${key_path}" ${ssh_options} -r "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
+                local __key_path="${ssh_keys_path}/${ssh_priv_key}"
+                scp -q -P ${ssh_host_port} -i "${__key_path}" ${ssh_options} -r "${__pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
                 # 1 mean scp directory (recursive)
-                __auto_passwd_scp "${pkt}" 1
+                __auto_passwd_scp "${__pkt}" 1
             fi
-        elif [[ -f "${pkt}" ]]; then
-            # pkt is file
+        elif [[ -f "${__pkt}" ]]; then
+            # __pkt is file
             if [[ ${ssh_keys_enabled} -eq 1 ]]; then
                 # create path to ssh private key
                 __get_priv_ssh_key
-                local key_path="${ssh_keys_path}/${ssh_priv_key}"
-                scp -q -P ${ssh_host_port} -i "${key_path}" ${ssh_options} "${pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
+                local __key_path="${ssh_keys_path}/${ssh_priv_key}"
+                scp -q -P ${ssh_host_port} -i "${__key_path}" ${ssh_options} "${__pkt}" "${ssh_user}@127.0.0.1:~${ssh_user}"
             else
                 # 0 mean scp file
-                __auto_passwd_scp "${pkt}" 0
+                __auto_passwd_scp "${__pkt}" 0
             fi
         fi
         sleep 1
@@ -1432,31 +1432,31 @@ __ssh_do_transport() {
 }
 
 __ssh_do_launch() {
-    local launch=("${@}")
-    local cmd
+    local __launch=("${@}")
+    local __cmd
     # run commands via ssh
-    for cmd in "${launch[@]}"; do
-        if [[ -z "${cmd}" ]]; then
+    for __cmd in "${__launch[@]}"; do
+        if [[ -z "${__cmd}" ]]; then
             continue
         fi
         # %HOST% tag - check whether command should be executed on host (not guest)
-        if [[ "${cmd}" =~ ^\ *%HOST% ]]; then
+        if [[ "${__cmd}" =~ ^\ *%HOST% ]]; then
             # extract command
-            cmd=${cmd//%HOST%/}
+            __cmd=${__cmd//%HOST%/}
             # process defined/template variables
-            cmd=$(__prepare_path "${cmd}" 0)
-            __log_info "Exec (on host): ${cmd}"
-            eval "${cmd}"
+            __cmd=$(__prepare_path "${__cmd}" 0)
+            __log_info "Exec (on host): ${__cmd}"
+            eval "${__cmd}"
             continue
         fi
-        __log_info "Exec: ${cmd}"
+        __log_info "Exec: ${__cmd}"
         if [[ ${ssh_keys_enabled} -eq 1 ]]; then
             # create path to ssh private key
             __get_priv_ssh_key
-            local key_path="${ssh_keys_path}/${ssh_priv_key}"
-            ssh -q "${ssh_user}@127.0.0.1" -t -i "${key_path}" -p ${ssh_host_port} ${ssh_options} -C "${cmd}"
+            local __key_path="${ssh_keys_path}/${ssh_priv_key}"
+            ssh -q "${ssh_user}@127.0.0.1" -t -i "${__key_path}" -p ${ssh_host_port} ${ssh_options} -C "${__cmd}"
         else
-            __auto_passwd_ssh "${cmd}"
+            __auto_passwd_ssh "${__cmd}"
         fi
         sleep 1
     done
@@ -1466,22 +1466,22 @@ __ssh_do_cleanup() {
     if [[ ${clean_transported} -eq 0 ]]; then
         return
     fi
-    local transport=("${@}")
-    local pkt
+    local __transport=("${@}")
+    local __pkt
     # clean after scp by rm transported media/scripts
-    for pkt in "${transport[@]}"; do
-        if [[ -z "${pkt}" ]]; then
+    for __pkt in "${__transport[@]}"; do
+        if [[ -z "${__pkt}" ]]; then
             continue
         fi
-        __log_info "Clean transported: ${pkt}"
-        local pkt_to_clean=$(basename "${pkt}")
+        __log_info "Clean transported: ${__pkt}"
+        local __pkt_to_clean=$(basename "${__pkt}")
         if [[ ${ssh_keys_enabled} -eq 1 ]]; then
             # create path to ssh private key
             __get_priv_ssh_key
-            local key_path="${ssh_keys_path}/${ssh_priv_key}"
-            ssh -q "${ssh_user}@127.0.0.1" -t -i "${key_path}" -p ${ssh_host_port} ${ssh_options} -C "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
+            local __key_path="${ssh_keys_path}/${ssh_priv_key}"
+            ssh -q "${ssh_user}@127.0.0.1" -t -i "${__key_path}" -p ${ssh_host_port} ${ssh_options} -C "cd ~${ssh_user} && rm -rf ${__pkt_to_clean}"
         else
-            __auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${pkt_to_clean}"
+            __auto_passwd_ssh "cd ~${ssh_user} && rm -rf ${__pkt_to_clean}"
         fi
         sleep 1
     done
@@ -1500,15 +1500,15 @@ _lazy_ssh() {
         exit 1
     fi
     # load vm description/definition
-    local definition_fname="${1:-}"
-    __load_definition "${definition_fname}"
+    local __definition_fname="${1:-}"
+    __load_definition "${__definition_fname}"
 
     __fix_ssh_port
     if [[ ${ssh_keys_enabled} -eq 1 ]]; then
         # create path to ssh private key
         __get_priv_ssh_key
-        local key_path="${ssh_keys_path}/${ssh_priv_key}"
-        ssh -q "${ssh_user}@127.0.0.1" -t -i "${key_path}" -p ${ssh_host_port} ${ssh_options}
+        local __key_path="${ssh_keys_path}/${ssh_priv_key}"
+        ssh -q "${ssh_user}@127.0.0.1" -t -i "${__key_path}" -p ${ssh_host_port} ${ssh_options}
     else
         __auto_passwd_ssh ""
     fi
@@ -1516,46 +1516,46 @@ _lazy_ssh() {
 }
 
 __auto_passwd_ssh() {
-    local cmd="${1}"
+    local __cmd="${1}"
     if command -v expect >/dev/null 2>&1; then
-        if [[ -z "${cmd}" ]]; then
+        if [[ -z "${__cmd}" ]]; then
             # No cmd to exec, interactive shell
-            local expect_cmd="ssh -q \"${ssh_user}@127.0.0.1\" -t -p ${ssh_host_port} ${ssh_options}"
+            local __expect_cmd="ssh -q \"${ssh_user}@127.0.0.1\" -t -p ${ssh_host_port} ${ssh_options}"
         else
-            local expect_cmd="ssh -q \"${ssh_user}@127.0.0.1\" -t -p ${ssh_host_port} ${ssh_options} -C \"${cmd}\""
+            local __expect_cmd="ssh -q \"${ssh_user}@127.0.0.1\" -t -p ${ssh_host_port} ${ssh_options} -C \"${__cmd}\""
         fi
-        expect -c "log_user 0; spawn ${expect_cmd}; expect password; send \"${ssh_password}\r\"; interact; catch wait reason; exit [lindex \$reason 3]"
+        expect -c "log_user 0; spawn ${__expect_cmd}; expect password; send \"${ssh_password}\r\"; interact; catch wait reason; exit [lindex \$reason 3]"
     else
         __log_warning "'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key."
         __log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your definition file."
         # Process without expect
-        if [[ -z "${cmd}" ]]; then
+        if [[ -z "${__cmd}" ]]; then
             # No cmd to exec, interactive shell
             ssh -q "${ssh_user}@127.0.0.1" -t -p ${ssh_host_port} ${ssh_options}
         else
-            ssh -q "${ssh_user}@127.0.0.1" -t -p ${ssh_host_port} ${ssh_options} -C "${cmd}"
+            ssh -q "${ssh_user}@127.0.0.1" -t -p ${ssh_host_port} ${ssh_options} -C "${__cmd}"
         fi
     fi
 }
 
 __auto_passwd_scp() {
-    local src="${1}"
-    local recursive="${2}"
+    local __src="${1}"
+    local __recursive="${2}"
     if command -v expect >/dev/null 2>&1; then
-        if [[ ${recursive} -eq 1 ]]; then
-            local expect_cmd="scp -q -P ${ssh_host_port} ${ssh_options} -r \"${src}\" \"${ssh_user}@127.0.0.1:~${ssh_user}\""
+        if [[ ${__recursive} -eq 1 ]]; then
+            local __expect_cmd="scp -q -P ${ssh_host_port} ${ssh_options} -r \"${__src}\" \"${ssh_user}@127.0.0.1:~${ssh_user}\""
         else
-            local expect_cmd="scp -q -P ${ssh_host_port} ${ssh_options} \"${src}\" \"${ssh_user}@127.0.0.1:~${ssh_user}\""
+            local __expect_cmd="scp -q -P ${ssh_host_port} ${ssh_options} \"${__src}\" \"${ssh_user}@127.0.0.1:~${ssh_user}\""
         fi
-        expect -c "log_user 0; spawn ${expect_cmd}; expect password; send \"${ssh_password}\r\"; expect eof; catch wait reason; exit [lindex \$reason 3]"
+        expect -c "log_user 0; spawn ${__expect_cmd}; expect password; send \"${ssh_password}\r\"; expect eof; catch wait reason; exit [lindex \$reason 3]"
     else
         __log_warning "'expect' command not exist - install 'expect (tcl)' to automate ssh authentication without ssh_key."
         __log_warning "To use ssh_key authentication setup ssh_keys_enabled=1 in your definition file."
         # Process without expect
-        if [[ ${recursive} -eq 1 ]]; then
-            scp -q -P ${ssh_host_port} ${ssh_options} -r "${src}" "${ssh_user}@127.0.0.1:~${ssh_user}"
+        if [[ ${__recursive} -eq 1 ]]; then
+            scp -q -P ${ssh_host_port} ${ssh_options} -r "${__src}" "${ssh_user}@127.0.0.1:~${ssh_user}"
         else
-            scp -q -P ${ssh_host_port} ${ssh_options} "${src}" "${ssh_user}@127.0.0.1:~${ssh_user}"
+            scp -q -P ${ssh_host_port} ${ssh_options} "${__src}" "${ssh_user}@127.0.0.1:~${ssh_user}"
         fi
     fi
 }
@@ -1575,25 +1575,25 @@ _make_clone(){
 
     # check whether clone_name is provided and take the snapshot with this name
     if [[ -n "${1:-}" ]]; then
-        local clone_name="${1:-}"
-        if __is_present "${clone_name}"; then
-            __log_error "'${clone_name}' already exists."
+        local __clone_name="${1:-}"
+        if __is_present "${__clone_name}"; then
+            __log_error "'${__clone_name}' already exists."
             exit 1
         fi
     # clone_name is not provided, make the clone with auto generate name - {VM}-clone{NR++}
     elif __is_present "\"${_Vm}-clone[0-9]\+\""; then
         # clone are numered, e.g.: vm_name:aa22-snap-aa11 -> clone_name:aa22-snap-aa11-snap1..999..
         # get all clones match our clone pattern, extract NR value from each clonename, get the highes NR
-        local last_clone_nr=$(VBoxManage list vms | cut -f 1 -d'{' | grep "\"${_Vm}-clone[0-9]\+\""\
+        local __last_clone_nr=$(VBoxManage list vms | cut -f 1 -d'{' | grep "\"${_Vm}-clone[0-9]\+\""\
             | sed "s/${_Vm}-clone//;s/\"//g" | sort -gu | tail -1)
-        last_clone_nr=$((last_clone_nr+1))
-        local clone_name="${_Vm}-clone${last_clone_nr}"
+        __last_clone_nr=$((__last_clone_nr+1))
+        local __clone_name="${_Vm}-clone${__last_clone_nr}"
     # clone with the auto generate name doesn't exist, make the first one.
     else
-        local clone_name="${_Vm}-clone1"
+        local __clone_name="${_Vm}-clone1"
     fi
-    VBoxManage clonevm "${_Vm}" --name "${clone_name}" --register
-    __log_info "'${_Vm}' has been cloned as '${clone_name}'."
+    VBoxManage clonevm "${_Vm}" --name "${__clone_name}" --register
+    __log_info "'${_Vm}' has been cloned as '${__clone_name}'."
     exit 0
 }
 
@@ -1608,23 +1608,23 @@ _take_snapshot(){
     # check whether snap_name is provided and take the snapshot with this name
     if [[ -n "${1:-}" ]]; then
         # NB: VBox allow make multiple snapshots with the same name, they are identify by UUID
-        local snap_name="${1:-}"
+        local __snap_name="${1:-}"
     # snap_name is not provided, take the snapshot with auto generate name - {VM}-snap{NR++}
     elif __is_snapshot_present "\"${_Vm}-snap[0-9]\+\""; then
         # it would be nice to use `date` but it isn't portable between linux/osx/freebsd
         # so that snapshot are numered, e.g.:
         # vm_name:aa22-snap-aa11 -> snap_name:aa22-snap-aa11-snap1..999..
         # get all snapshots match our snap pattern, extract NR value from each snapname, get the highes NR
-        local last_snap_nr=$(VBoxManage snapshot "${_Vm}" list --machinereadable | grep ^SnapshotName\
+        local __last_snap_nr=$(VBoxManage snapshot "${_Vm}" list --machinereadable | grep ^SnapshotName\
             | cut -d"=" -f 2- | grep "\"${_Vm}-snap[0-9]\+\"" | sed "s/${_Vm}-snap//;s/\"//g" | sort -gu | tail -1)
-        last_snap_nr=$((last_snap_nr+1))
-        local snap_name="${_Vm}-snap${last_snap_nr}"
+        __last_snap_nr=$((__last_snap_nr+1))
+        local __snap_name="${_Vm}-snap${__last_snap_nr}"
     # snapshot with the auto generate name doesn't exist, make the first one.
     else
-        local snap_name="${_Vm}-snap1"
+        local __snap_name="${_Vm}-snap1"
     fi
-    VBoxManage snapshot "${_Vm}" take "${snap_name}" --live
-    __log_info "'${snap_name}' snapshot was taken."
+    VBoxManage snapshot "${_Vm}" take "${__snap_name}" --live
+    __log_info "'${__snap_name}' snapshot was taken."
     exit 0
 }
 
@@ -1646,16 +1646,16 @@ _restore_snapshot(){
         exit 1
     fi
 
-    local snap_name="${1:-}"
+    local __snap_name="${1:-}"
     # check whether snap_name is provided and delete the requested snap_name
-    if [[ -n "${snap_name}" ]]; then
-        if ! __is_snapshot_present "\"${snap_name}\""; then
-            __log_error "'${snap_name}' snapshot doesn't exist for the '${_Vm}'"
+    if [[ -n "${__snap_name}" ]]; then
+        if ! __is_snapshot_present "\"${__snap_name}\""; then
+            __log_error "'${__snap_name}' snapshot doesn't exist for the '${_Vm}'"
             __log_error "Use 'vbkick lssnap \"${_Vm}\"' to list all available snapshots."
             exit 1
         fi
-        VBoxManage snapshot "${_Vm}" restore "${snap_name}"
-        __log_info "'${snap_name}' snapshot was restored."
+        VBoxManage snapshot "${_Vm}" restore "${__snap_name}"
+        __log_info "'${__snap_name}' snapshot was restored."
         exit 0
     fi
     VBoxManage snapshot "${_Vm}" restorecurrent
@@ -1675,21 +1675,21 @@ _delete_snapshot(){
         __log_error "No snapshots found for the '${_Vm}'"
         exit 1
     fi
-    local snap_name="${1:-}"
+    local __snap_name="${1:-}"
     # check whether snap_name is provided and delete the requested snap_name
-    if [[ -n "${snap_name}" ]]; then
-        if ! __is_snapshot_present "\"${snap_name}\""; then
-            __log_error "'${snap_name}' snapshot doesn't exist for the '${_Vm}'"
+    if [[ -n "${__snap_name}" ]]; then
+        if ! __is_snapshot_present "\"${__snap_name}\""; then
+            __log_error "'${__snap_name}' snapshot doesn't exist for the '${_Vm}'"
             __log_error "Use 'vbkick lssnap \"${_Vm}\"' to list all available snapshots."
             exit 1
         fi
     # snap_name is not provided, remove the current snapshot
     else
-        snap_name=$(VBoxManage snapshot "${_Vm}" list --machinereadable | grep ^CurrentSnapshotUUID\
+        __snap_name=$(VBoxManage snapshot "${_Vm}" list --machinereadable | grep ^CurrentSnapshotUUID\
             | cut -d"=" -f 2- | sed 's/"//g')
     fi
-    VBoxManage snapshot "${_Vm}" delete "${snap_name}"
-    __log_info "'${snap_name}' snapshot was deleted."
+    VBoxManage snapshot "${_Vm}" delete "${__snap_name}"
+    __log_info "'${__snap_name}' snapshot was deleted."
     exit 0
 }
 
@@ -1717,10 +1717,10 @@ __start_web_server() {
     # check whether port is not used by other proc
     __check_port_usage ${kickstart_port} "kickstart"
     # start simple webserver serving files in background
-    local py_version=$(python -V 2>&1 | cut -d' ' -f 2 | cut -d'.' -f 1)
-    if [[ ${py_version} -eq 2 ]]; then
+    local __py_version=$(python -V 2>&1 | cut -d' ' -f 2 | cut -d'.' -f 1)
+    if [[ ${__py_version} -eq 2 ]]; then
         _webserver_module="SimpleHTTPServer"
-    elif [[ ${py_version} -eq 3 ]]; then
+    elif [[ ${__py_version} -eq 3 ]]; then
         _webserver_module="http.server"
     else
         __log_error "Unknown python version."
@@ -1798,13 +1798,13 @@ _on_exit(){
 
 #@special
 _main() {
-    local args_num=$#
+    local __args_num=$#
     __init_global_variables
-    if [[ ${args_num} -eq 1 ]]; then
+    if [[ ${__args_num} -eq 1 ]]; then
         # check whether we have everything to start with vbkick
         __dependencies_check
         _process_1_args "${1}"
-    elif [[ ${args_num} -eq 2 ]] || [[ ${args_num} -eq 3 ]]; then
+    elif [[ ${__args_num} -eq 2 ]] || [[ ${__args_num} -eq 3 ]]; then
         # check whether we have everything to start with vbkick
         __dependencies_check
         _vb_version=$(__get_vb_version)
