@@ -12,11 +12,10 @@ else
 fi
 
 # Each script is separate feature
-while read -r script; do
-    # don't process comments
-    [[ "${script}" =~ ^#.*$ ]] && continue
+# don't process comments
+grep -v '^\s*#' "${context_file}" | while read -r script; do
     if [[ -s "${script}" ]]; then
         # true is used because it's ok when tested command fail
         bash "${script}" || true
     fi
-done < "${context_file}"
+done
