@@ -4,7 +4,7 @@ set -e -E -u -o pipefail; shopt -s failglob;
 # Vagrant specific
 # Create vagrant user and group
 /usr/sbin/groupadd vagrant
-/usr/sbin/useradd vagrant -g vagrant -G wheel -d /home/vagrant -c "Vagrant box user"
+/usr/sbin/useradd vagrant -g vagrant -G wheel -d /home/vagrant -c "vagrant"
 # set password
 echo "vagrant" | passwd --stdin vagrant
 # give sudo access (grants all permissions to user vagrant)
