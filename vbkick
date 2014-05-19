@@ -20,11 +20,7 @@ shopt -s failglob;
 # http://www.gnu.org/software/bash/manual/html_node/Bash-POSIX-Mode.html
 set -o posix
 
-# virtual machine name
-_Vm=""
-
 # For nice printing
-# name of constants should be uppercase
 _GREEN="\e[1;32m"
 _RED="\e[1;31m"
 _YELLOW="\e[1;33m"
@@ -1799,6 +1795,8 @@ _on_exit(){
 #@special
 _main() {
     local __args_num=$#
+    # virtual machine name
+    _Vm=""
     __init_global_state_variables
     if [[ ${__args_num} -eq 1 ]]; then
         # check whether we have everything to start with vbkick
