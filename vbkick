@@ -174,7 +174,7 @@ __load_default_settings() {
 
 # Global variables - do not use it in definition file (will be overwrite during program runtime)
 # name of global "private" variables should start with underscore
-__init_global_variables(){
+__init_global_state_variables(){
     # 0 - webserver is not running or kill isn't able to stop it
     _webserver_state=0
     # 0 - webserver was killed cleanly or we didn't try kill it yet
@@ -412,7 +412,7 @@ __load_definition() {
         return 1
     fi
     # if someone overwrite them in definition file
-    __init_global_variables
+    __init_global_state_variables
     _vb_version=$(__get_vb_version)
     __check_required_settings
     __autoupdate_files_with_vbox_version
@@ -1799,7 +1799,7 @@ _on_exit(){
 #@special
 _main() {
     local __args_num=$#
-    __init_global_variables
+    __init_global_state_variables
     if [[ ${__args_num} -eq 1 ]]; then
         # check whether we have everything to start with vbkick
         __dependencies_check
