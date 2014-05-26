@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# The MIT License - https://github.com/wilas/vbkick/blob/master/LICENSE
+# The BSD License - https://github.com/wilas/vbkick/blob/master/LICENSE
 
 # Example usage:
 # echo 'Hello World!' | python convert_2_scancode.py

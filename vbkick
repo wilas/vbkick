@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# The MIT License - https://github.com/wilas/vbkick/blob/master/LICENSE
+# The BSD License - https://github.com/wilas/vbkick/blob/master/LICENSE
 
 # Helps build Virtualbox guest VMs and Vagrant base boxes.
 
