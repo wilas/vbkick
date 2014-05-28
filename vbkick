@@ -348,7 +348,7 @@ __autoupdate_files_with_vbox_version() {
         # check whether __file exist
         if [[ -s "${__file}" ]]; then
             # example value to update: VBOX_VERSION="4.2.12", but ignore comments
-            sed -r -i "/^#/!s/(VBOX_VERSION)=\"([0-9\.]+)\"/\1=\"${_vb_version}\"/g" "${__file}"
+            sed -i "/^#/!s/\(VBOX_VERSION\)=\"\([0-9\.]\+\)\"/\1=\"${_vb_version}\"/g" "${__file}"
         else
             printf "VBOX_VERSION=\"${_vb_version}\"\n" > "${__file}"
             printf "export VBOX_VERSION" >> "${__file}"
@@ -420,8 +420,8 @@ __load_definition() {
 # Get virtualbox version
 __get_vb_version() {
     local __version=$(VBoxManage --version) # e.g. 4.2.12r84980
-    __version=$(printf "${__version}" | sed 's/\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')
-    printf "${__version}" | cut -d' ' -f1
+    __version=$(printf "${__version}" | sed 's/\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p' | head -1)
+    printf "${__version}"
 }
 
 __is_present() {
