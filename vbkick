@@ -420,7 +420,8 @@ __load_definition() {
 # Get virtualbox version
 __get_vb_version() {
     local __version=$(VBoxManage --version) # e.g. 4.2.12r84980
-    printf "${__version}" | sed -n 's/\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p'
+    __version=$(printf "${__version}" | sed 's/\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')
+    printf "${__version}" | cut -d' ' -f1
 }
 
 __is_present() {
