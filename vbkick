@@ -348,7 +348,7 @@ __autoupdate_files_with_vbox_version() {
         # check whether __file exist
         if [[ -s "${__file}" ]]; then
             # example value to update: VBOX_VERSION="4.2.12", but ignore comments
-            sed -i "/^#/!s/\(VBOX_VERSION\)=\"\([0-9\.]\+\)\"/\1=\"${_vb_version}\"/g" "${__file}"
+            sed -i'' "/^#/!s/\(VBOX_VERSION\)=\"\([0-9\.]\+\)\"/\1=\"${_vb_version}\"/g" "${__file}"
         else
             printf "VBOX_VERSION=\"${_vb_version}\"\n" > "${__file}"
             printf "export VBOX_VERSION" >> "${__file}"
