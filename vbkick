@@ -430,15 +430,15 @@ __is_present() {
 }
 
 __is_running() {
-    VBoxManage showvminfo "${_Vm}" | grep -q "State:\s\+running"
+    VBoxManage showvminfo "${_Vm}" | grep -q "State:[[:space:]]\+running"
 }
 
 __is_powered_off() {
-    VBoxManage showvminfo "${_Vm}" | grep -q "State:\s\+powered off"
+    VBoxManage showvminfo "${_Vm}" | grep -q "State:[[:space:]]\+powered off"
 }
 
 __is_paused() {
-    VBoxManage showvminfo "${_Vm}" | grep -q "State:\s\+paused"
+    VBoxManage showvminfo "${_Vm}" | grep -q "State:[[:space:]]\+paused"
 }
 
 __is_alive() {
