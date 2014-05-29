@@ -326,12 +326,12 @@ _list_all_vms(){
     local __lc_vm
     local __lc_state
     #list all vms and remove trailing spaces from the __lc_vm name
-    VBoxManage list vms | cut -f 1 -d'{' | sed 's/\s*$//g' | while read -r __lc_vm; do
+    VBoxManage list vms | cut -f 1 -d'{' | sed 's/[[:space:]]*$//g' | while read -r __lc_vm; do
         # get the pure __lc_vm name: "aa bb" -> aa bb
         __lc_vm="${__lc_vm//\"/}"
         # Example showvminfo output: "State:           powered off (since 2014-04-28T00:16:26.000000000)"
         # get only the state value and trim leading and trailing spaces
-        __lc_state=$(VBoxManage showvminfo "${__lc_vm}" | grep State: | cut -d' ' -f 2- | cut -d'(' -f 1 | sed 's/\s*$//g;s/^\s*//g')
+        __lc_state=$(VBoxManage showvminfo "${__lc_vm}" | grep State: | cut -d' ' -f 2- | cut -d'(' -f 1 | sed 's/[[:space:]]*$//g;s/^[[:space:]]*//g')
         printf "${__lc_vm}:${__lc_state}\n"
     done
     exit 0
@@ -420,7 +420,7 @@ __load_definition() {
 # Get virtualbox version
 __get_vb_version() {
     local __version=$(VBoxManage --version) # e.g. 4.2.12r84980
-    __version=$(printf "${__version}" | sed 's/\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p' | head -1)
+    __version=$(printf "${__version}" | sed 's/\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p' | tail -1)
     printf "${__version}"
 }
 
@@ -488,7 +488,7 @@ __prepare_path() {
     local __path="${1}"
     local __mkdir_path="${2}"
     # Process special variables in path definition e.g. __path="%VBOXFOLDER%/%NAME%"
-    local __location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^\s*//g')
+    local __location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^[[:space:]]*//g')
     __path=${__path//%SRCPATH%/${boot_file_src_path}}
     __path=${__path//%VBOXFOLDER%/${__location}}
     __path=${__path//%PWD%/$(pwd)}
@@ -748,7 +748,7 @@ __create_box() {
 
     # Creates disks
     # Get default location for disks
-    local __location=$(VBoxManage list systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^\s*//g')
+    local __location=$(VBoxManage list systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^[[:space:]]*//g')
 
     # SATA controller - place for hdd and iso files
     # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media and port 1 for guest additions
