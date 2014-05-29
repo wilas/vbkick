@@ -1799,7 +1799,6 @@ _main() {
     local __args_num=$#
     # virtual machine name
     _Vm=""
-    __init_global_state_variables
     if [[ ${__args_num} -eq 1 ]]; then
         # check whether we have everything to start with vbkick
         __dependencies_check
@@ -1820,4 +1819,11 @@ _main() {
 # signals and errors handler
 trap _clean_up SIGHUP SIGINT SIGTERM ERR
 trap _on_exit EXIT
+
+__init_global_state_variables
+if [[ $# -eq 0 ]]; then
+    # no arguments
+    _usage
+    exit 1
+fi
 _main "${@}"
