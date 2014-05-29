@@ -1070,7 +1070,7 @@ _export_vm() {
     __remove_shared_folders "${shared_folders[@]}"
 
     # create _tmp_dir for export data
-    _tmp_dir=$(TMPDIR=. mktemp -d)
+    _tmp_dir=$(TMPDIR=. mktemp -d  -t 'vbkick.XXXXXXXXXX')
     # export VM to _tmp_dir
     VBoxManage export "${_Vm}" --output "${_tmp_dir}/box.ovf"
     # get VM MAC Address
