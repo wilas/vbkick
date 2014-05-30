@@ -22,6 +22,8 @@ shopt -s failglob;
 # enable POSIX mode
 # http://www.gnu.org/software/bash/manual/html_node/Bash-POSIX-Mode.html
 set -o posix
+# Turn off history expansion
+set +o histexpand
 
 # For nice printing
 _GREEN="\e[1;32m"
@@ -385,6 +387,7 @@ __check_required_settings() {
     local __opts=("boot_file" "boot_file_src" "os_type_id")
     local __opt
     for __opt in "${__opts[@]}"; do
+        # evaluates to the null if value of __opt is unset and substitutes the string "x" otherwise
         if [[ -z "${!__opt+x}" ]]; then
             __log_error "Required ${__opt} option is not defined."
             return 1
