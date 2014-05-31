@@ -616,6 +616,7 @@ __verify_boot_media_checksum(){
     if [[ -z "${boot_file_src_checksum}" ]]; then
         return
     fi
+    # NB. openssl always returns 0 even if command fail e.g. not supporting digest command
     local __get_checksum=$(openssl "${boot_file_checksum_type}" "${__boot_file_src_file}" | cut -d" " -f 2)
     if [[ "${boot_file_src_checksum}" != "${__get_checksum}" ]]; then
         __log_warning "CHECKSUM is different than expected !"
