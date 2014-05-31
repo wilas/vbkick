@@ -6,6 +6,8 @@ Vbkick is a simple bash tool for building and maintaining VirtualBox VMs and Vag
 
 ## Install/Uninstall
 
+Note: GNU make is required to install from git, you may need to install `gmake` on your system.
+
 using git
 ```
 git clone git@github.com:wilas/vbkick.git

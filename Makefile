@@ -1,5 +1,12 @@
+#
 # Makefile for vbkick and convert_2_scancode.py scripts (bash & python)
 # src: https://github.com/wilas/vbkick
+#
+# Copyright (c) 2013-2014, Kamil Wilas (wilas.pl)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
 .PHONY: all
 
 # where place files
