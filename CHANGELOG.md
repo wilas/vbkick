@@ -22,6 +22,7 @@ IMPROVEMENTS
  - checks whether ```shutdown_cmd``` option is empty, if so use acpipowerbutton
  - checks more VM states like 'paused' instead of only 'running' and 'powered off'
  - separate repos for templates were created: active, archived and experimental
+ - `md5` as a default checksum type - not everywhere openssl has `sha256` digest command
 
 BUG FIXES
  - expand a special variables in paths e.g. ```~``` (tilde) is now not treated as a literal string "~" but expand to user home dir.

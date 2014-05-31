@@ -89,8 +89,8 @@ __load_default_settings() {
     boot_file_src_path="iso"
     # by default checksum is empty - checksum is not check
     boot_file_src_checksum=""
-    # default cheksum type is sha256
-    boot_file_checksum_type="sha256"
+    # default cheksum type is md5
+    boot_file_checksum_type="md5"
     # by default unpacke is not needed
     boot_file_unpack_cmd=""
     # where is the path and the filename after unpack
