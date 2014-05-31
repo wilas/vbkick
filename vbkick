@@ -328,12 +328,12 @@ _list_all_vms(){
     local __lc_vm
     local __lc_state
     #list all vms and remove trailing spaces from the __lc_vm name
-    VBoxManage list vms | cut -f 1 -d'{' | sed 's/[ ]*$//g' | while read -r __lc_vm; do
+    "${_VBoxManage}" list vms | cut -f 1 -d'{' | sed 's/[ ]*$//g' | while read -r __lc_vm; do
         # get the pure __lc_vm name: "aa bb" -> aa bb
         __lc_vm="${__lc_vm//\"/}"
         # Example showvminfo output: "State:           powered off (since 2014-04-28T00:16:26.000000000)"
         # get only the state value and trim leading and trailing spaces
-        __lc_state=$(VBoxManage showvminfo "${__lc_vm}" | grep "State:" | cut -d' ' -f 2- | cut -d'(' -f 1 | sed 's/[ ]*$//g;s/^[ ]*//g')
+        __lc_state=$("${_VBoxManage}" showvminfo "${__lc_vm}" | grep "State:" | cut -d' ' -f 2- | cut -d'(' -f 1 | sed 's/[ ]*$//g;s/^[ ]*//g')
         printf "${__lc_vm}:${__lc_state}\n"
     done
     exit 0
@@ -369,7 +369,7 @@ __depend_check() {
 }
 
 __dependencies_check() {
-    __depend_check "VBoxManage" "Virtualbox"
+    __depend_check "${_VBoxManage}" "Virtualbox"
     __depend_check "curl" "curl"
     __depend_check "ssh" "ssh-client (e.g. openssh-client)"
     __depend_check "scp" "scp-client (e.g. openssh-client)"
@@ -422,7 +422,7 @@ __load_definition() {
 
 # Get virtualbox version
 __get_vb_version() {
-    local __version=$(VBoxManage --version) # e.g. 4.2.12r84980
+    local __version=$("${_VBoxManage}" --version) # e.g. 4.2.12r84980
     __version=$(printf "${__version}\n" | sed -n 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p')
     #__version=$(printf "${__version}\n" | sed 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' | tail -1)
     printf "${__version}"
@@ -430,26 +430,26 @@ __get_vb_version() {
 
 __is_present() {
     local __pattern="${1:-\"${_Vm}\"}"
-    VBoxManage list vms | grep -qw "${__pattern}"
+    "${_VBoxManage}" list vms | grep -qw "${__pattern}"
 }
 
 __is_running() {
-    VBoxManage showvminfo "${_Vm}" | grep -q "State:[ ][ ]*running"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep -q "State:[ ][ ]*running"
 }
 
 __is_powered_off() {
-    VBoxManage showvminfo "${_Vm}" | grep -q "State:[ ][ ]*powered off"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep -q "State:[ ][ ]*powered off"
 }
 
 __is_paused() {
-    VBoxManage showvminfo "${_Vm}" | grep -q "State:[ ][ ]*paused"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep -q "State:[ ][ ]*paused"
 }
 
 __is_alive() {
     # Alive machine may be in paused|running state
-    # Useful to change state: VBoxManage controlvm "${_Vm}" pause|resume
+    # Useful to change state: "${_VBoxManage}" controlvm "${_Vm}" pause|resume
     local __pattern="${1:-\"${_Vm}\"}"
-    VBoxManage list runningvms | grep -qw "${__pattern}"
+    "${_VBoxManage}" list runningvms | grep -qw "${__pattern}"
 }
 
 __is_port_used() {
@@ -460,21 +460,21 @@ __is_port_used() {
 
 __is_port_present() {
     local __port_name="${1}"
-    VBoxManage showvminfo "${_Vm}" | grep -w 'guest port' | grep -qw "${__port_name}"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep -w 'guest port' | grep -qw "${__port_name}"
 }
 
 __is_shared_folder_present() {
     local __folder_name="${1}"
-    VBoxManage showvminfo "${_Vm}" | grep -w 'machine mapping' | grep -qw "Name: '${__folder_name}'"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep -w 'machine mapping' | grep -qw "Name: '${__folder_name}'"
 }
 
 __is_snapshot_present() {
     local __snap_name="${1}"
-    VBoxManage snapshot "${_Vm}" list --machinereadable | grep -w "^SnapshotName\|SnapshotUUID" | grep -qw "${__snap_name}"
+    "${_VBoxManage}" snapshot "${_Vm}" list --machinereadable | grep -w "^SnapshotName\|SnapshotUUID" | grep -qw "${__snap_name}"
 }
 
 __has_snapshots() {
-    VBoxManage snapshot "${_Vm}" list --machinereadable | grep -qw "^SnapshotName"
+    "${_VBoxManage}" snapshot "${_Vm}" list --machinereadable | grep -qw "^SnapshotName"
 }
 
 # checks whether port is not used by other proc
@@ -492,7 +492,7 @@ __prepare_path() {
     local __path="${1}"
     local __mkdir_path="${2}"
     # Process special variables in path definition e.g. __path="%VBOXFOLDER%/%NAME%"
-    local __location=$(VBoxManage list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^[ ]*//g')
+    local __location=$("${_VBoxManage}" list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^[ ]*//g')
     __path=${__path//%SRCPATH%/${boot_file_src_path}}
     __path=${__path//%VBOXFOLDER%/${__location}}
     __path=${__path//%PWD%/$(pwd)}
@@ -650,7 +650,7 @@ __deploy_boot_media_file(){
     local __boot_file_src_file="${1}"
     # process convert from raw if necessary
     if [[ ${boot_file_convert_from_raw} -eq 1 ]]; then
-        VBoxManage convertfromraw "${__boot_file_src_file}" "${boot_file}" --format "${disk_format}"
+        "${_VBoxManage}" convertfromraw "${__boot_file_src_file}" "${boot_file}" --format "${disk_format}"
         if [[ ${keep_boot_src_file} -eq 0 ]]; then
             rm -f "${__boot_file_src_file}"
         fi
@@ -706,9 +706,9 @@ _build_vm() {
     local __host_ip=10.0.2.2
     # start VM
     if [[ ${gui_enabled} -eq 1 ]]; then
-        VBoxManage startvm --type gui "${_Vm}"  && sleep ${boot_wait}
+        "${_VBoxManage}" startvm --type gui "${_Vm}"  && sleep ${boot_wait}
     else
-        VBoxManage startvm --type headless "${_Vm}" && sleep ${boot_wait}
+        "${_VBoxManage}" startvm --type headless "${_Vm}" && sleep ${boot_wait}
     fi
     # boot VM machine
     __log_info "Sending keyboard scancodes:"
@@ -729,7 +729,7 @@ _build_vm() {
             if [[ "${__code}" == "wait" ]]; then
                 sleep 1
             else
-                VBoxManage controlvm "${_Vm}" keyboardputscancode ${__code}
+                "${_VBoxManage}" controlvm "${_Vm}" keyboardputscancode ${__code}
                 sleep 0.02
             fi
         done
@@ -747,12 +747,12 @@ _build_vm() {
 
 __create_box() {
     # Register vm
-    VBoxManage createvm --name "${_Vm}" --ostype "${os_type_id}" --register
+    "${_VBoxManage}" createvm --name "${_Vm}" --ostype "${os_type_id}" --register
     _vm_creation_state=1
 
     # Creates disks
     # Get default location for disks
-    local __location=$(VBoxManage list systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^[ ]*//g')
+    local __location=$("${_VBoxManage}" list systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^[ ]*//g')
 
     # SATA controller - place for hdd and iso files
     # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media and port 1 for guest additions
@@ -762,14 +762,14 @@ __create_box() {
         return 1;
     fi
     if [[ "${_vb_version}" > "4.3.0" ]] || [[ "${_vb_version}" == "4.3.0" ]]; then
-        VBoxManage storagectl "${_Vm}" --name "SATA Controller"\
+        "${_VBoxManage}" storagectl "${_Vm}" --name "SATA Controller"\
         --add sata --hostiocache ${hostiocache} --portcount $((${#disk_size[@]}+2))
     else
-        VBoxManage storagectl "${_Vm}" --name "SATA Controller"\
+        "${_VBoxManage}" storagectl "${_Vm}" --name "SATA Controller"\
         --add sata --hostiocache ${hostiocache} --sataportcount $((${#disk_size[@]}+2))
     fi
     # SATA controller - add boot media
-    VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
+    "${_VBoxManage}" storageattach "${_Vm}" --storagectl "SATA Controller"\
     --type "${boot_file_type}" --port 0 --device 0 --medium "${boot_file}"
     # SATA controller - create and add hdd disks
     local __port_nr=2
@@ -778,9 +778,9 @@ __create_box() {
         if [[ -z "${__disk}" ]]; then
             continue
         fi
-        VBoxManage createhd --filename "${__location}/${_Vm}/${_Vm}-${__port_nr}.${disk_format}"\
+        "${_VBoxManage}" createhd --filename "${__location}/${_Vm}/${_Vm}-${__port_nr}.${disk_format}"\
         --size ${__disk} --format "${disk_format}" --variant Standard
-        VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
+        "${_VBoxManage}" storageattach "${_Vm}" --storagectl "SATA Controller"\
         --port ${__port_nr} --device 0 --type hdd --medium "${__location}/${_Vm}/${_Vm}-${__port_nr}.${disk_format}"
         __port_nr=$((__port_nr+1))
     done
@@ -788,32 +788,32 @@ __create_box() {
     if [[ ${guest_additions_attach} -eq 1 ]]; then
         if [[ ! -z "${guest_additions_path}" ]]; then
             # custom VBoxGuestAdditions
-            VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
+            "${_VBoxManage}" storageattach "${_Vm}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium "${guest_additions_path}/VBoxGuestAdditions_${_vb_version}.iso"
         else
             # default VBoxGuestAdditions
-            VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
+            "${_VBoxManage}" storageattach "${_Vm}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium emptydrive
-            VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
+            "${_VBoxManage}" storageattach "${_Vm}" --storagectl "SATA Controller"\
             --type dvddrive --port 1 --device 0 --medium additions
         fi
     fi
 
     # Tuning VM
     # setting cpu's
-    VBoxManage modifyvm "${_Vm}" --cpus ${cpu_count}
+    "${_VBoxManage}" modifyvm "${_Vm}" --cpus ${cpu_count}
     # setting memory size
-    VBoxManage modifyvm "${_Vm}" --memory ${memory_size}
+    "${_VBoxManage}" modifyvm "${_Vm}" --memory ${memory_size}
     # setting video memory size
-    VBoxManage modifyvm "${_Vm}" --vram ${video_memory_size}
+    "${_VBoxManage}" modifyvm "${_Vm}" --vram ${video_memory_size}
     # setting bootorder
     local __bo_idx=1
     local __bo
     for __bo in "${boot_order[@]}"; do
         if [[ -z "${__bo}" ]]; then
-            VBoxManage modifyvm "${_Vm}" --boot${__bo_idx} none
+            "${_VBoxManage}" modifyvm "${_Vm}" --boot${__bo_idx} none
         else
-            VBoxManage modifyvm "${_Vm}" --boot${__bo_idx} ${__bo}
+            "${_VBoxManage}" modifyvm "${_Vm}" --boot${__bo_idx} ${__bo}
         fi
         local __bo_idx=$((__bo_idx+1))
         if [[ ${__bo_idx} -eq 5 ]]; then
@@ -822,10 +822,10 @@ __create_box() {
     done
     local __i
     for ((__i=${__bo_idx}; __i<=4; __i++)); do
-        VBoxManage modifyvm "${_Vm}" --boot${__i} none
+        "${_VBoxManage}" modifyvm "${_Vm}" --boot${__i} none
     done
     # setting networking
-    VBoxManage modifyvm "${_Vm}" --nic1 nat --nictype1 ${nic_type} --cableconnected1 on
+    "${_VBoxManage}" modifyvm "${_Vm}" --nic1 nat --nictype1 ${nic_type} --cableconnected1 on
     # other settings
     local __option
     for __option in "${vm_options[@]}"; do
@@ -834,7 +834,7 @@ __create_box() {
         fi
         local __key="${__option%%:*}"
         local __value="${__option##*:}"
-        VBoxManage modifyvm "${_Vm}" --"${__key}" "${__value}"
+        "${_VBoxManage}" modifyvm "${_Vm}" --"${__key}" "${__value}"
     done
     # set extradata
     local __extradata
@@ -844,12 +844,12 @@ __create_box() {
         fi
         local __key="${__extradata%%:*}"
         local __value="${__extradata##*:}"
-        VBoxManage setextradata "${_Vm}" "${__key}" "${__value}"
+        "${_VBoxManage}" setextradata "${_Vm}" "${__key}" "${__value}"
     done
 
     # ssh port NAT mapping; ssh port is a special one
     if ! __is_port_present "${ssh_port_name}"; then
-        VBoxManage controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+        "${_VBoxManage}" controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
 
     # extra ports NAT mapping
@@ -879,7 +879,7 @@ __add_extra_ports_mapping() {
         local __port_guest="${__port_info[2]}"
         # add only if port doesn't exist
         if ! __is_port_present "${__port_name}"; then
-            VBoxManage controlvm "${_Vm}" natpf1 "${__port_name},tcp,,${__port_host},,${__port_guest}"
+            "${_VBoxManage}" controlvm "${_Vm}" natpf1 "${__port_name},tcp,,${__port_host},,${__port_guest}"
         fi
     done
 }
@@ -902,7 +902,7 @@ __remove_extra_ports_mapping() {
         fi
         local __port_name="${__port_info[0]}"
         if __is_port_present "${__port_name}"; then
-            VBoxManage controlvm "${_Vm}" natpf1 delete "${__port_name}"
+            "${_VBoxManage}" controlvm "${_Vm}" natpf1 delete "${__port_name}"
             # note which extra ports were removed by moving _extraports_removed_ptr
             _extraports_removed_ptr=$((_extraports_removed_ptr+1))
         fi
@@ -932,14 +932,14 @@ __add_shared_folders() {
         fi
 
         if [[ ${#__folder_info[@]} -eq 2 ]]; then
-            __log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\""
-            VBoxManage sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}"
+            __log_info "${_VBoxManage} sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\""
+            "${_VBoxManage}" sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}"
         elif [[ ${#__folder_info[@]} -eq 3 ]]; then
-            __log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\" --${__folder_info[2]}"
-            VBoxManage sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}" --"${__folder_info[2]}"
+            __log_info "${_VBoxManage} sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\" --${__folder_info[2]}"
+            "${_VBoxManage}" sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}" --"${__folder_info[2]}"
         elif [[ ${#__folder_info[@]} -eq 4 ]]; then
-            __log_info "VBoxManage sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\" --${__folder_info[2]} --${__folder_info[3]}"
-            VBoxManage sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}" --"${__folder_info[2]}" --"${__folder_info[3]}"
+            __log_info "${_VBoxManage} sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\" --${__folder_info[2]} --${__folder_info[3]}"
+            "${_VBoxManage}" sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}" --"${__folder_info[2]}" --"${__folder_info[3]}"
         else
             __log_error "too much options in one of the shared_folders."
             return 1
@@ -969,7 +969,7 @@ __remove_shared_folders() {
         fi
         local __folder_name="${__folder_info[0]}"
         if __is_shared_folder_present "${__folder_name}"; then
-            VBoxManage sharedfolder remove "${_Vm}" --name "${__folder_name}"
+            "${_VBoxManage}" sharedfolder remove "${_Vm}" --name "${__folder_name}"
             # note which shared folders were removed by moving _sharedfolders_removed_ptr
             _sharedfolders_removed_ptr=$((_sharedfolders_removed_ptr+1))
         fi
@@ -1021,12 +1021,12 @@ _destroy_vm() {
     # check whether VM is alive
     if __is_alive; then
         __log_info "Poweroff '${_Vm}'"
-        VBoxManage controlvm "${_Vm}" poweroff
+        "${_VBoxManage}" controlvm "${_Vm}" poweroff
         sleep 1
     fi
 
     __log_info "Destroying '${_Vm}'..."
-    VBoxManage unregistervm "${_Vm}" --delete
+    "${_VBoxManage}" unregistervm "${_Vm}" --delete
     exit 0
 }
 
@@ -1063,7 +1063,7 @@ _export_vm() {
 
     # clearing previously set port forwarding rules (only if exist)
     if __is_port_present "${ssh_port_name}"; then
-        VBoxManage controlvm "${_Vm}" natpf1 delete "${ssh_port_name}"
+        "${_VBoxManage}" controlvm "${_Vm}" natpf1 delete "${ssh_port_name}"
         _ssh_natmapping_was_removed=1
     fi
 
@@ -1076,9 +1076,9 @@ _export_vm() {
     # create _tmp_dir for export data
     _tmp_dir=$(TMPDIR=. mktemp -d  -t 'vbkick.XXXXXXXXXX')
     # export VM to _tmp_dir
-    VBoxManage export "${_Vm}" --output "${_tmp_dir}/box.ovf"
+    "${_VBoxManage}" export "${_Vm}" --output "${_tmp_dir}/box.ovf"
     # get VM MAC Address
-    local __mac_address=$(VBoxManage showvminfo --details --machinereadable "${_Vm}"\
+    local __mac_address=$("${_VBoxManage}" showvminfo --details --machinereadable "${_Vm}"\
     | grep "macaddress1" | cut -d"=" -f 2)
     # add Vagrantfile
     printf "Vagrant.configure(\"2\") do |config|
@@ -1110,12 +1110,12 @@ __recover_vm_state() {
     # destroy VM as creation process was unsuccessful
     if [[ ${_vm_creation_state} -eq 1 ]]; then
         __log_info "Destroying not completed Virtual machine - '${_Vm}'"
-        VBoxManage unregistervm "${_Vm}" --delete
+        "${_VBoxManage}" unregistervm "${_Vm}" --delete
         _vm_creation_state=0
     fi
     # add NAT mapping after exporting - only if exist prev.
     if [[ ${_ssh_natmapping_was_removed} -eq 1 ]]; then
-        VBoxManage controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+        "${_VBoxManage}" controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
         _ssh_natmapping_was_removed=0
     fi
     # add extra ports after exporting - only if exist prev.
@@ -1148,7 +1148,7 @@ _turn_on() {
         __log_ginfo "'${_Vm}' is already running..."
         exit 0
     elif __is_paused; then
-        VBoxManage controlvm "${_Vm}" resume
+        "${_VBoxManage}" controlvm "${_Vm}" resume
         __log_info "'${_Vm}' was resumed."
         exit 0
     fi
@@ -1158,9 +1158,9 @@ _turn_on() {
     __load_definition "${__definition_fname}"
 
     if [[ ${gui_enabled} -eq 1 ]]; then
-        VBoxManage startvm --type gui "${_Vm}"
+        "${_VBoxManage}" startvm --type gui "${_Vm}"
     else
-        VBoxManage startvm --type headless "${_Vm}"
+        "${_VBoxManage}" startvm --type headless "${_Vm}"
     fi
     exit 0
 }
@@ -1202,7 +1202,7 @@ __shutdown() {
 
     # check whether VM is still running, if so use acpipowerbutton
     if __is_running; then
-        VBoxManage controlvm "${_Vm}" acpipowerbutton
+        "${_VBoxManage}" controlvm "${_Vm}" acpipowerbutton
         __log_info "Shutting down '${_Vm}' via acpipowerbutton."
         __shutdown_monitoring
         sleep 3
@@ -1210,7 +1210,7 @@ __shutdown() {
 
     # check whether VM is still alive (e.g. paused), if so poweroff it using hard way.
     if __is_alive; then
-        VBoxManage controlvm "${_Vm}" poweroff
+        "${_VBoxManage}" controlvm "${_Vm}" poweroff
         __log_info "'${_Vm}' was powered off."
         sleep 3
     fi
@@ -1239,9 +1239,9 @@ __update_guest_additions_media() {
         return 1
     fi
     # get current guest version
-    if VBoxManage guestproperty enumerate "${_Vm}" | grep -q "GuestAdd/Version"; then
+    if "${_VBoxManage}" guestproperty enumerate "${_Vm}" | grep -q "GuestAdd/Version"; then
         # guest already exist, get current version
-        local __guest_version=$(VBoxManage guestproperty get "${_Vm}" "/VirtualBox/GuestAdd/Version" | cut -f 2 -d " ")
+        local __guest_version=$("${_VBoxManage}" guestproperty get "${_Vm}" "/VirtualBox/GuestAdd/Version" | cut -f 2 -d " ")
     else
         # guest doesn't exist
         local __guest_version=""
@@ -1254,13 +1254,13 @@ __update_guest_additions_media() {
     fi
     # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
     # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
-    if ! VBoxManage showvminfo "${_Vm}" | grep -qw "SATA Controller (1, 0)"; then
+    if ! "${_VBoxManage}" showvminfo "${_Vm}" | grep -qw "SATA Controller (1, 0)"; then
         __log_error "'SATA Controller (1, 0)' for '${_Vm}' doesn't exist."
         __log_error "'SATA Controller' is sata controller name used by vbkick."
-        __log_error "More: 'VBoxManage showvminfo \"${_Vm}\" | grep -w \"Controller\"'\n"
+        __log_error "More: '${_VBoxManage} showvminfo \"${_Vm}\" | grep -w \"Controller\"'\n"
         __log_error "To create proper controller use:"
-        __log_error "'VBoxManage storagectl \"${_Vm}\" --name \"SATA Controller\" --add sata --hostiocache ${hostiocache} --portcount $((${#disk_size[@]}+2))'"
-        __log_error "'VBoxManage storageattach \"${_Vm}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
+        __log_error "'${_VBoxManage} storagectl \"${_Vm}\" --name \"SATA Controller\" --add sata --hostiocache ${hostiocache} --portcount $((${#disk_size[@]}+2))'"
+        __log_error "'${_VBoxManage} storageattach \"${_Vm}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
         __log_error "To do this '${_Vm}' must be shutdown !!!"
         __log_error "Remember - VM Guest may have only one sata controller."
         return 1
@@ -1270,15 +1270,15 @@ __update_guest_additions_media() {
     if [[ ! -z "${guest_additions_path}" ]]; then
         # custom VBoxGuestAdditions
         __download_guest_additions_media
-        VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
+        "${_VBoxManage}" storageattach "${_Vm}" --storagectl "SATA Controller"\
         --type dvddrive --port 1 --device 0 --medium "${guest_additions_path}/VBoxGuestAdditions_${_vb_version}.iso" --forceunmount
     else
         # default VBoxGuestAdditions
-        VBoxManage storageattach "${_Vm}" --storagectl "SATA Controller"\
+        "${_VBoxManage}" storageattach "${_Vm}" --storagectl "SATA Controller"\
         --type dvddrive --port 1 --device 0 --medium additions --forceunmount
     fi
     # NB: Guest OS (Linux) does not support automatic Guest Additions updating:
-    # VBoxManage guestcontrol <vmname>|<uuid> updateadditions
+    # "${_VBoxManage}" guestcontrol <vmname>|<uuid> updateadditions
     # Manuall Guest Additions update/installation is required (via _lazy_update cmd).
 }
 
@@ -1385,13 +1385,13 @@ __ssh_exec() {
 __fix_ssh_port() {
     # port is not setup
     if ! __is_port_present "${ssh_port_name}"; then
-        VBoxManage controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+        "${_VBoxManage}" controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
         return 0
     fi
     # port is setup, but host port and/or guest port are incorrect
     if ! __is_port_present "${ssh_port_name}.*host port = ${ssh_host_port}.*guest port = ${ssh_guest_port}"; then
-        VBoxManage controlvm "${_Vm}" natpf1 delete "${ssh_port_name}"
-        VBoxManage controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
+        "${_VBoxManage}" controlvm "${_Vm}" natpf1 delete "${ssh_port_name}"
+        "${_VBoxManage}" controlvm "${_Vm}" natpf1 "${ssh_port_name},tcp,,${ssh_host_port},,${ssh_guest_port}"
     fi
     # everything is correct - nothing to do.
 }
@@ -1586,7 +1586,7 @@ _make_clone(){
     elif __is_present "\"${_Vm}-clone[0-9]\+\""; then
         # clone are numered, e.g.: vm_name:aa22-snap-aa11 -> clone_name:aa22-snap-aa11-snap1..999..
         # get all clones match our clone pattern, extract NR value from each clonename, get the highes NR
-        local __last_clone_nr=$(VBoxManage list vms | cut -f 1 -d'{' | grep "\"${_Vm}-clone[0-9][0-9]*\""\
+        local __last_clone_nr=$("${_VBoxManage}" list vms | cut -f 1 -d'{' | grep "\"${_Vm}-clone[0-9][0-9]*\""\
             | sed "s/${_Vm}-clone//;s/\"//g" | sort -gu | tail -1)
         __last_clone_nr=$((__last_clone_nr+1))
         local __clone_name="${_Vm}-clone${__last_clone_nr}"
@@ -1594,7 +1594,7 @@ _make_clone(){
     else
         local __clone_name="${_Vm}-clone1"
     fi
-    VBoxManage clonevm "${_Vm}" --name "${__clone_name}" --register
+    "${_VBoxManage}" clonevm "${_Vm}" --name "${__clone_name}" --register
     __log_info "'${_Vm}' has been cloned as '${__clone_name}'."
     exit 0
 }
@@ -1617,7 +1617,7 @@ _take_snapshot(){
         # so that snapshot are numered, e.g.:
         # vm_name:aa22-snap-aa11 -> snap_name:aa22-snap-aa11-snap1..999..
         # get all snapshots match our snap pattern, extract NR value from each snapname, get the highes NR
-        local __last_snap_nr=$(VBoxManage snapshot "${_Vm}" list --machinereadable | grep "^SnapshotName"\
+        local __last_snap_nr=$("${_VBoxManage}" snapshot "${_Vm}" list --machinereadable | grep "^SnapshotName"\
             | cut -d"=" -f 2- | grep "\"${_Vm}-snap[0-9][0-9]*\"" | sed "s/${_Vm}-snap//;s/\"//g" | sort -gu | tail -1)
         __last_snap_nr=$((__last_snap_nr+1))
         local __snap_name="${_Vm}-snap${__last_snap_nr}"
@@ -1625,7 +1625,7 @@ _take_snapshot(){
     else
         local __snap_name="${_Vm}-snap1"
     fi
-    VBoxManage snapshot "${_Vm}" take "${__snap_name}" --live
+    "${_VBoxManage}" snapshot "${_Vm}" take "${__snap_name}" --live
     __log_info "'${__snap_name}' snapshot was taken."
     exit 0
 }
@@ -1656,11 +1656,11 @@ _restore_snapshot(){
             __log_error "Use 'vbkick lssnap \"${_Vm}\"' to list all available snapshots."
             exit 1
         fi
-        VBoxManage snapshot "${_Vm}" restore "${__snap_name}"
+        "${_VBoxManage}" snapshot "${_Vm}" restore "${__snap_name}"
         __log_info "'${__snap_name}' snapshot was restored."
         exit 0
     fi
-    VBoxManage snapshot "${_Vm}" restorecurrent
+    "${_VBoxManage}" snapshot "${_Vm}" restorecurrent
     __log_info "Current snapshot was restored."
     exit 0
 }
@@ -1687,10 +1687,10 @@ _delete_snapshot(){
         fi
     # snap_name is not provided, remove the current snapshot
     else
-        __snap_name=$(VBoxManage snapshot "${_Vm}" list --machinereadable | grep "^CurrentSnapshotUUID"\
+        __snap_name=$("${_VBoxManage}" snapshot "${_Vm}" list --machinereadable | grep "^CurrentSnapshotUUID"\
             | cut -d"=" -f 2- | sed 's/"//g')
     fi
-    VBoxManage snapshot "${_Vm}" delete "${__snap_name}"
+    "${_VBoxManage}" snapshot "${_Vm}" delete "${__snap_name}"
     __log_info "'${__snap_name}' snapshot was deleted."
     exit 0
 }
@@ -1707,7 +1707,7 @@ _list_snapshots(){
         __log_error "No snapshots found for the '${_Vm}'"
         exit 1
     fi
-    VBoxManage snapshot "${_Vm}" list
+    "${_VBoxManage}" snapshot "${_Vm}" list
     exit 0
 }
 
@@ -1803,6 +1803,8 @@ _main() {
     local __args_num=$#
     # virtual machine name
     _Vm=""
+    # VBoxManage binary, by default VBoxManage but could be change via VBOX_MANAGE_PATH env variable.
+    _VBoxManage="${VBOX_MANAGE_PATH:-VBoxManage}"
     if [[ ${__args_num} -eq 1 ]]; then
         # check whether we have everything to start with vbkick
         __dependencies_check
