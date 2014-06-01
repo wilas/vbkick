@@ -36,6 +36,8 @@ BUILD_DIR=$(mktemp -d -t 'vbkick_build.XXXXXXXXXX')
 
 # Do you want install or uninstall software, by default install.
 : ${UNINSTALL:=0}
+# Do you want stable or dev version, by default stable.
+: ${STABLE:=1}
 
 # what scripts install/uninstall
 BASH_TARGET="vbkick"
@@ -43,12 +45,16 @@ PY_TARGET="convert_2_scancode.py"
 MAN_TARGET="vbkick.1"
 
 install_bins(){
+    local branch="stable"
+    if [[ ${STABLE} -ne 1 ]]; then
+        branch="master"
+    fi
 	mkdir -p "${BUILD_DIR}"
-    curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/master/${PY_TARGET}" -o "${BUILD_DIR}/${PY_TARGET}.curl" ||\
+    curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/${PY_TARGET}" -o "${BUILD_DIR}/${PY_TARGET}.curl" ||\
         (log_error "download convert_2_scancode.py bin failed." && return 1)
-    curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/master/${BASH_TARGET}" -o "${BUILD_DIR}/${BASH_TARGET}.curl" ||\
+    curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/${BASH_TARGET}" -o "${BUILD_DIR}/${BASH_TARGET}.curl" ||\
         (log_error "download vbkick bin failed." && return 1)
-    curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/master/docs/man/${MAN_TARGET}" -o "${BUILD_DIR}/${MAN_TARGET}.curl" ||\
+    curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/docs/man/${MAN_TARGET}" -o "${BUILD_DIR}/${MAN_TARGET}.curl" ||\
         (log_error "download vbkick man page failed." && return 1)
 	sed "1,1 s:#"'!'"/usr/bin/python:#!${PY_SHEBANG}:; 1,1 s:\"::g" "${BUILD_DIR}/${PY_TARGET}.curl" > "${BUILD_DIR}/${PY_TARGET}.tmp"
 	sed "1,1 s:#"'!'"/bin/bash:#!${BASH_SHEBANG}:; 1,1 s:\"::g" "${BUILD_DIR}/${BASH_TARGET}.curl" > "${BUILD_DIR}/${BASH_TARGET}.tmp"
