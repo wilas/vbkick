@@ -1,6 +1,6 @@
 # Description
 
-Vbkick is a simple bash tool for building and maintaining VirtualBox VMs and Vagrant Base Boxes described as a code in a single definition file (*definition.cfg*). Vbkick is a replacement to [Veewee](https://github.com/jedi4ever/veewee) - you can read [why](docs/WHY.md). Vbkick works on Linux, FreeBSD, MacOSX and has [minimal dependencies](docs/REQUIREMENTS.md).
+Vbkick is a simple bash tool for building and maintaining VirtualBox VMs and Vagrant Base Boxes described as a code in a single definition file (*definition.cfg*). Vbkick is a replacement to [Veewee](https://github.com/jedi4ever/veewee) - you may want read [why](docs/WHY.md). Vbkick works on Linux, FreeBSD, MacOSX and has [minimal dependencies](docs/REQUIREMENTS.md).
 
 # Getting Started
 
@@ -24,16 +24,22 @@ sudo PREFIX="$HOME/bin" make uninstall
 ```
 or using curl
 ```
+# stable version
 url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo bash
 url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash
 
+# development version
+url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo STABLE=0 bash
+url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash
+
+# custom location
 # url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo PREFIX="$HOME/bin" bash
-# url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash PREFIX="$HOME/bin" bash
+# url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 PREFIX="$HOME/bin" bash
 ```
 
 ## Create own box definition
 
- - look into [templates](templates) and choose OS (learn also how to organize own definitions)
+ - look into [templates](https://github.com/wilas/vbkick-templates) and choose OS (learn also how to organize own definitions)
  - look into [examples](examples) and customize your box
  - read about [available options](docs/DEFINITION_CFG.md) in definition.cfg
  - read about [VMs validation](docs/VALIDATE.md)

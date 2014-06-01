@@ -11,21 +11,23 @@ FEATURES
  - added ```delsnap``` ACTION to delete a snapshot
  - added ```clone``` ACTION to clone VM
  - added ```play``` ACTION to separate postinstall process from the tinkering
+ - added curl installer
 
 IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)
  - works when IPV6 is enabled and ```::1     localhost``` appear in ```/etc/hosts``` - [#33](../../issues/33)
  - checks curl status code
- - empty ```boot_file_src_checksum``` variable mean don't compare checksums instead of warning about wrong value
+ - empty ```boot_file_src_checksum``` variable mean don't compare checksums
  - auto destroy VM during building if all VM settings weren't correctly setup - be a bit more atomic
  - checks whether vm exist for the ```shutdown``` action
  - checks whether ```shutdown_cmd``` option is empty, if so use acpipowerbutton
  - checks more VM states like 'paused' instead of only 'running' and 'powered off'
- - separate repos for templates were created: active, archived and experimental
+ - separate repos for templates were created
  - `md5` as a default checksum type - not everywhere openssl has `sha256` digest command
 
 BUG FIXES
  - expand a special variables in paths e.g. ```~``` (tilde) is now not treated as a literal string "~" but expand to user home dir.
+ - portable ```sed```
 
 ## 0.6 (22-10-2013)
 
