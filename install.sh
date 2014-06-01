@@ -49,26 +49,26 @@ install_bins(){
     if [[ ${STABLE} -ne 1 ]]; then
         branch="master"
     fi
-	mkdir -p "${BUILD_DIR}"
+    mkdir -p "${BUILD_DIR}"
     curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/${PY_TARGET}" -o "${BUILD_DIR}/${PY_TARGET}.curl" ||\
         (log_error "download convert_2_scancode.py bin failed." && return 1)
     curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/${BASH_TARGET}" -o "${BUILD_DIR}/${BASH_TARGET}.curl" ||\
         (log_error "download vbkick bin failed." && return 1)
     curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/docs/man/${MAN_TARGET}" -o "${BUILD_DIR}/${MAN_TARGET}.curl" ||\
         (log_error "download vbkick man page failed." && return 1)
-	sed "1,1 s:#"'!'"/usr/bin/python:#!${PY_SHEBANG}:; 1,1 s:\"::g" "${BUILD_DIR}/${PY_TARGET}.curl" > "${BUILD_DIR}/${PY_TARGET}.tmp"
-	sed "1,1 s:#"'!'"/bin/bash:#!${BASH_SHEBANG}:; 1,1 s:\"::g" "${BUILD_DIR}/${BASH_TARGET}.curl" > "${BUILD_DIR}/${BASH_TARGET}.tmp"
-	${INSTALL} -m 0755 -d "${PREFIX}"
-	${INSTALL} -m 0755 -p "${BUILD_DIR}/${PY_TARGET}.tmp" "${PREFIX}/${PY_TARGET}"
-	${INSTALL} -m 0755 -p "${BUILD_DIR}/${BASH_TARGET}.tmp" "${PREFIX}/${BASH_TARGET}"
-	${INSTALL} -m 0755 -d "${MANDIR}"
-	${INSTALL} -g 0 -o 0 -m 0644 -p "${BUILD_DIR}/${MAN_TARGET}.curl" "${MANDIR}/${MAN_TARGET}"
-	rm -rf "${BUILD_DIR}"
+    sed "1,1 s:#"'!'"/usr/bin/python:#!${PY_SHEBANG}:; 1,1 s:\"::g" "${BUILD_DIR}/${PY_TARGET}.curl" > "${BUILD_DIR}/${PY_TARGET}.tmp"
+    sed "1,1 s:#"'!'"/bin/bash:#!${BASH_SHEBANG}:; 1,1 s:\"::g" "${BUILD_DIR}/${BASH_TARGET}.curl" > "${BUILD_DIR}/${BASH_TARGET}.tmp"
+    ${INSTALL} -m 0755 -d "${PREFIX}"
+    ${INSTALL} -m 0755 -p "${BUILD_DIR}/${PY_TARGET}.tmp" "${PREFIX}/${PY_TARGET}"
+    ${INSTALL} -m 0755 -p "${BUILD_DIR}/${BASH_TARGET}.tmp" "${PREFIX}/${BASH_TARGET}"
+    ${INSTALL} -m 0755 -d "${MANDIR}"
+    ${INSTALL} -g 0 -o 0 -m 0644 -p "${BUILD_DIR}/${MAN_TARGET}.curl" "${MANDIR}/${MAN_TARGET}"
+    rm -rf "${BUILD_DIR}"
 }
 
 uninstall_bins(){
-	cd "${PREFIX}" && rm -f "${BASH_TARGET}" && rm -f "${PY_TARGET}"
-	cd "${MANDIR}" && rm -f "${MAN_TARGET}"
+    cd "${PREFIX}" && rm -f "${BASH_TARGET}" && rm -f "${PY_TARGET}"
+    cd "${MANDIR}" && rm -f "${MAN_TARGET}"
 }
 
 fail_guard(){
