@@ -18,15 +18,17 @@ sudo make uninstall
 or advance via git
 ```
 git clone git@github.com:wilas/vbkick.git
-# sudo BASH_SHEBANG="/usr/bin/env bash" PY_SHEBANG="/usr/bin/env python" PREFIX="/tmp/testme/bin" make install
-sudo PREFIX="/tmp/testme/bin" make install
-sudo PREFIX="/tmp/testme/bin" make uninstall
+# sudo BASH_SHEBANG="/usr/bin/env bash" PY_SHEBANG="/usr/bin/env python" PREFIX="$HOME/bin" make install
+sudo PREFIX="$HOME/bin" make install
+sudo PREFIX="$HOME/bin" make uninstall
 ```
 or using curl
 ```
-curl https://raw.githubusercontent.com/wilas/vbkick/master/vbkick > /usr/local/bin/vbkick
-curl https://raw.githubusercontent.com/wilas/vbkick/master/convert_2_scancode.py > /usr/local/bin/convert_2_scancode.py
-chmod +x /usr/local/bin/vbkick /usr/local/bin/convert_2_scancode.py
+url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo bash
+url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash
+
+# url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo PREFIX="$HOME/bin" bash
+# url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash PREFIX="$HOME/bin" bash
 ```
 
 ## Create own box definition
