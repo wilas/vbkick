@@ -25,16 +25,16 @@ sudo PREFIX="$HOME/bin" make uninstall
 or using curl
 ```
 # stable version
-url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo bash
-url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash
+curl -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo bash
+curl -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash
 
 # development version
-url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo STABLE=0 bash
-url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash
+curl -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo STABLE=0 bash
+curl -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash
 
 # custom location
-# url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo PREFIX="$HOME/bin" bash
-# url -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 PREFIX="$HOME/bin" bash
+# curl -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo PREFIX="$HOME/bin" bash
+# curl -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 PREFIX="$HOME/bin" bash
 ```
 
 ## Create own box definition
