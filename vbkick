@@ -492,7 +492,7 @@ __prepare_path() {
     local __path="${1}"
     local __mkdir_path="${2}"
     # Process special variables in path definition e.g. __path="%VBOXFOLDER%/%NAME%"
-    local __location=$("${_VBoxManage}" list  systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^[ ]*//g')
+    local __location=$("${_VBoxManage}" list  systemproperties | grep "Default machine folder" | cut -d':' -f 2- | sed 's/^[ ]*//g')
     __path=${__path//%SRCPATH%/${boot_file_src_path}}
     __path=${__path//%VBOXFOLDER%/${__location}}
     __path=${__path//%PWD%/$(pwd)}
@@ -753,7 +753,7 @@ __create_box() {
 
     # Creates disks
     # Get default location for disks
-    local __location=$("${_VBoxManage}" list systemproperties | grep "Default machine folder" | cut -d':' -f 2 | sed 's/^[ ]*//g')
+    local __location=$("${_VBoxManage}" list systemproperties | grep "Default machine folder" | cut -d':' -f 2- | sed 's/^[ ]*//g')
 
     # SATA controller - place for hdd and iso files
     # SATA controller allow add 30 disks, but vbkick reserve port 0 for boot media and port 1 for guest additions
