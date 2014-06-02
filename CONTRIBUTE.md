@@ -47,6 +47,9 @@ Simply: don't use names with leading underscore.
 ### other rules
 
  - only "action" and "special" functions can use `exit` other can use `return` if necessary
+ - don't use [shorthand character classes](http://www.regular-expressions.info/shorthand.html) in regular expressions
+ - use brackets expressions `[0-9]` instead of POSIX character classes `[:digit:]` - POSIX not always mean portable (feel free to check that on Solaris - `echo "State:  running " | grep "State:[[:space:]][[:space:]]*running"`).
+ - use Basic Regular Expressions [BRE](http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap09.html#tag_09_03_06) instead of ERE - `GNU sed` has a different option than `BSD sed` to turn on Extended Regular Expressions.
 
 ## Python Coding Style Guide
 
