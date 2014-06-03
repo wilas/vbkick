@@ -12,8 +12,8 @@ All examples use Scientific Linux as an OS.
 
 Starting
  - creates own definition based on selected template
- - cmd: `vim definition-6.5-x86_64-my_custom.cfg`
- - cmd: `ln -fs definition-6.5-x86_64-my_custom.cfg definition.cfg`
+ - cmd: `vim vbmachine-6.5-x86_64-my_custom.cfg`
+ - cmd: `ln -fs vbmachine-6.5-x86_64-my_custom.cfg vbmachine.cfg`
 
 Building - `vbkick build VM_NAME`
  - creates a new VM
@@ -37,13 +37,13 @@ Updating - `vbkick update VM_NAME`
 
 ## Hints
 
-definition.cfg file is a pure bash, so we can benefit from this.
+vbmachine.cfg file is a pure bash, so we can benefit from this.
 
 ### create a simple functions
 
 useful to e.g. automatically download checksum
 ```
-# in definition.cfg
+# in vbmachine.cfg
 get_smartos_md5() {
     local img_type="${1}"
     local latest_nr=$(get_smartos_latest_nr)
@@ -69,7 +69,7 @@ then vbkick fails (cleanly terminates) during definition loading.
 
 useful to run some random commands on VM without runing login shell
 ```
-# in definition.cfg
+# in vbmachine.cfg
 play_launch=(
 # this is a comment and won't be processed
   "sudo docker ps -a"
@@ -88,7 +88,7 @@ useful to test multiple machines in the same time which were built from the same
 
 vbkick automatically reconfigure VM during runtime to use proper port mapping base on value of `ssh_host_port`
 ```
-# in definition.cfg
+# in vbmachine.cfg
 ssh_host_port=${SSH_PORT:-2222}
 
 # cmd line
@@ -98,7 +98,7 @@ $ SSH_PORT=2202 vbkick ssh vm_name2
 
 useful to build multiple machines in the same time from the same definition file, e.g. to test various kickstart files
 ```
-# in definition.cfg
+# in vbmachine.cfg
 kickstart_port=${KS_PORT:-7122}
 
 # cmd line
@@ -114,7 +114,7 @@ Note2: if you use injection postinstall method don't forget update PORT value in
 
 useful to create hierarchy of definitions and don't repeate the same settings
 ```
-# in definition-6.5-i386-desktop.cfg
+# in vbmachine-6.5-i386-desktop.cfg
 . ./common.cfg
 . ./common-desktop.cfg
 ...
@@ -123,13 +123,13 @@ useful to create hierarchy of definitions and don't repeate the same settings
 $ ls
 common.cfg
 common-desktop.cfg
-definition-6.5-i386-desktop.cfg
-definition-6.5-x86_64-desktop.cfg
-definition-6.5-x86_64-docker.cfg
-definition-6.5-i386-noX.cfg
-definition-6.5-x86_64-noX.cfg
-definition-6.6-i386-noX.cfg
-definition-6.6-x86_64-noX.cfg
+vbmachine-6.5-i386-desktop.cfg
+vbmachine-6.5-x86_64-desktop.cfg
+vbmachine-6.5-x86_64-docker.cfg
+vbmachine-6.5-i386-noX.cfg
+vbmachine-6.5-x86_64-noX.cfg
+vbmachine-6.6-i386-noX.cfg
+vbmachine-6.6-x86_64-noX.cfg
 ```
 
 ### send something to stdin
@@ -142,7 +142,7 @@ echo "y" | vbkick destroy VM
 
 when virtualbox additions are installed you can use shared directory instead of transporting scripts to VM via SCP
 ```
-# in definition.cfg
+# in vbmachine.cfg
 postinstall_launch=("cd /media/sf_vbkick/postinstall && sudo bash adm_postinstall.sh")
 postinstall_transport=("")
 
@@ -163,7 +163,7 @@ ctrl-c is your friend - send SIGINT when you think vbkick did a job for you,
 e.g.: kickstart file was successfully loaded by the VM (GET.. HTTP.. 200) then ctrl+c to stop vbkick as VM will be installed independently.
 ```
 $ vbkick build sl6
-[INFO] Loading "definition.cfg" definition...
+[INFO] Loading "vbmachine.cfg" definition...
 Serving HTTP on 0.0.0.0 port 7122 ...
 [INFO] webserver has been started (pid 3325)
 [INFO] CHECKSUM:0ce79ca56c8d959cd81d068d1831c1975ac9d8bb8814fcbde444e7e8581e7029 is valid.

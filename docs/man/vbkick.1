@@ -16,7 +16,7 @@ vbkick - automatic VirtualBox VMs and Vagrant Base Boxes builder.
 .BI vbkick " <command> <vm_name> [args]"
 .SH "DESCRIPTION"
 .PP
-\fBvbkick\fR is an open source and easy in use tool for building and maintaining VirtualBox VMs described as a code in a single definition file (\fIdefinition.cfg\fP). \fBvbkick\fR is lightweigh and is written in bash with enabled POSIX mode.
+\fBvbkick\fR is an open source and easy in use tool for building and maintaining VirtualBox VMs described as a code in a single definition file (\fIvbmachine.cfg\fP). \fBvbkick\fR is lightweigh and is written in bash with enabled POSIX mode.
 .PP
 There are only 1-2 actions needed to create and configure the new VM from scratch. The VM postinstall process could be supported by any of available configuration management software like puppet or cfengine. Repeatable virtual machine environments are perfect as a personal lab where you play and test various technologies.
 .PP
@@ -30,7 +30,7 @@ During the build kickstart and postinstall files are serve to VM via a local web
 .TP 4
 .I <definition_file>
 Contains all crucial parameters like number of CPUs, memory size, OS type to build and tuning the new VM.
-If no definition file specify, \fBvbkick\fR search for \fIdefinition.cfg\fP in the current path. If none of expected definition files exists then program terminates with return code 1 and proper message.
+If no definition file specify, \fBvbkick\fR search for \fIvbmachine.cfg\fP in the current path. If none of expected definition files exists then program terminates with return code 1 and proper message.
 .TP
 .B build \fIvm_name\fR [definition_file]
 .br
@@ -106,17 +106,17 @@ Print the help and exit.
 .PP
 .SH "EXAMPLES"
 .TP 4
-.B vbkick build \fImyVM definition-7.5-x86_64-noX.cfg\fR
+.B vbkick build \fImyVM vbmachine-7.5-x86_64-noX.cfg\fR
 .br
-Builds \fImyVM\fR virtual machine defined in \fIdefinition-7.5-x86_64-noX.cfg\fR file.
+Builds \fImyVM\fR virtual machine defined in \fIvbmachine-7.5-x86_64-noX.cfg\fR file.
 .TP
-.B vbkick postinstall \fImyVM definition-7.5-x86_64-noX.cfg\fR
+.B vbkick postinstall \fImyVM vbmachine-7.5-x86_64-noX.cfg\fR
 .br
-SCP to \fImyVM\fR and exec via SSH all postinstall scripts defined in \fIdefinition-7.5-x86_64-noX.cfg\fR file.
+SCP to \fImyVM\fR and exec via SSH all postinstall scripts defined in \fIvbmachine-7.5-x86_64-noX.cfg\fR file.
 .TP
 .B vbkick ssh \fImyVM\fR
 .br
-Works as only \fIdefinition.cfg\fR exists in the path where the command is run. A good manner is to create a \fIdefinition.cfg\fR as a symlink to the default definition file: \fIln -s definition-source-file.cfg definition.cfg\fR
+Works as only \fIvbmachine.cfg\fR exists in the path where the command is run. A good manner is to create a \fIvbmachine.cfg\fR as a symlink to the default definition file: \fIln -s vbmachine-definition-source-file.cfg vbmachine.cfg\fR
 .TP
 .B vbkick snap \fImyVM mySnap01\fR
 .br

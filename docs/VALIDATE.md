@@ -46,7 +46,7 @@ $ cat validate/*.sh | grep -E "^# (Feature|Scenario|And|Given|When|Then)"
 # Then I expect success
 # Feature: sudoers has disabled requiretty
 # Given /etc/sudoers file
-# When I grep /etc/sudoers file 
+# When I grep /etc/sudoers file
 # Then requiretty is disabled
 # Feature: vagrant user
 # Given vagrant user

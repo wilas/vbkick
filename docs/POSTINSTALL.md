@@ -14,7 +14,7 @@ This method is already used by *Veewee* and *Vagrant*.
 Kickstart process creates a base machine and configure SSH connection (creates user, copy SSH keys, configure sudo, etc.).
 Postinstall scripts are later (after machine reboot) transported (via SCP) to already created box and exec there (via SSH).
 
-postinstall_transport and postinstall_launch parameters in the definition.cfg are required in this method:
+postinstall_transport and postinstall_launch parameters in the vbmachine.cfg are required in this method:
 ```
 postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh")
 postinstall_transport=("postinstall")
@@ -43,7 +43,7 @@ vagrant box list
 
 Run postinstall scripts during kickstarting process in chroot environment.
 
-postinstall_transport and postinstall_launch options in the definition.cfg are not required in this method:
+postinstall_transport and postinstall_launch options in the vbmachine.cfg are not required in this method:
 ```
 postinstall_launch=("")
 postinstall_transport=("")
@@ -57,7 +57,7 @@ It is ok to remove these options from definition as well, default value from vbk
  - cons: may not work for every OS
  - cons: postinstall commands are exec only once, if something fail then you need to build your machine again (may be slow)
  - cons: debugging in chroot env.
- - cons: kickstart_port is setup in 2 places for injection postinstall method: kickstart/kickstart_file.cfg, definition.cfg (not true if you use external webserver, git clone, etc.)
+ - cons: kickstart_port is setup in 2 places for injection postinstall method: kickstart/kickstart_file.cfg, vbmachine.cfg (not true if you use external webserver, git clone, etc.)
 
 
 ### Use Case flow:
@@ -82,7 +82,7 @@ adm_postinstall.sh      # take care about exec other scripts
 
 Use adm_postinstall.sh is a convenient manner (help reduce number of ssh authentications), but not mandatory.
 
-Simply, you can use below options in definition.cfg
+Simply, you can use below options in vbmachine.cfg
 
 ```
 postinstall_launch=("cd postinstall && sudo bash adm_postinstall.sh")

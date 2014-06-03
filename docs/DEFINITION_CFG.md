@@ -1,4 +1,4 @@
-# Available options in definition.cfg
+# Available options in vbmachine.cfg
 
 More details soon.
 

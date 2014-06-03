@@ -230,33 +230,33 @@ _context_usage(){
     case "${1}" in
         "build")
             printf "Usage: vbkick build <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "destroy")
             printf "Usage: vbkick destroy <VM_NAME>\n" ;;
         "export")
             printf "Usage: vbkick export <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "validate")
             printf "Usage: vbkick validate <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "postinstall")
             printf "Usage: vbkick postinstall <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "play")
             printf "Usage: vbkick play <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "update")
             printf "Usage: vbkick update <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "ssh")
             printf "Usage: vbkick ssh <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "on")
             printf "Usage: vbkick on <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "shutdown")
             printf "Usage: vbkick shutdown <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'definition.cfg' is used.\n" ;;
+            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "clone")
             printf "Usage: vbkick clone <VM_NAME> [clone_name]\n"
             printf "If no clone name specify default one will be used - {VM_NAME}-clone{NR},\n"
@@ -398,9 +398,9 @@ __check_required_settings() {
 # Every action which requires vm settings must use this function to load them.
 __load_definition() {
     __load_default_settings
-    # definition.cfg is a default definition file
+    # vbmachine.cfg is a default definition file
     # loading definition file overwrite default settings
-    local __definition_fname="${1:-definition.cfg}"
+    local __definition_fname="${1:-vbmachine.cfg}"
     if [[ -s "${__definition_fname}" ]]; then
         # In POSIX mode the '.' and 'source' builtins do not search the current directory
         # for the filename argument if it is not found by searching PATH.
