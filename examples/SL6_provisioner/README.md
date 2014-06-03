@@ -9,29 +9,29 @@ vbkick shutdown sl6
 vbkick clone sl6
 
 vbkick on sl6
-vbkick postinstall sl6 definition-6.5-x86_64-ansible.cfg
-SSH_CMD="ls -la" vbkick postinstall sl6 definition-6.5-x86_64-ansible.cfg
-vbkick ssh sl6 definition-6.5-x86_64-ansible.cfg
+vbkick postinstall sl6 vbmachine-6.5-x86_64-ansible.cfg
+SSH_CMD="ls -la" vbkick postinstall sl6 vbmachine-6.5-x86_64-ansible.cfg
+vbkick ssh sl6 vbmachine-6.5-x86_64-ansible.cfg
 
 vbkick shutdown sl6
 vbkick resnap sl6
 
 vbkick on sl6
-vbkick postinstall sl6 definition-6.5-x86_64-puppet.cfg
-vbkick ssh sl6 definition-6.5-x86_64-puppet.cfg
+vbkick postinstall sl6 vbmachine-6.5-x86_64-puppet.cfg
+vbkick ssh sl6 vbmachine-6.5-x86_64-puppet.cfg
 
 vbkick shutdown sl6
 vbkick resnap sl6
 
 vbkick on sl6
-vbkick postinstall sl6 definition-6.5-x86_64-docker.cfg
+vbkick postinstall sl6 vbmachine-6.5-x86_64-docker.cfg
 vbkick snap sl6 fresh-docker
-vbkick play sl6 definition-6.5-x86_64-docker.cfg
+vbkick play sl6 vbmachine-6.5-x86_64-docker.cfg
 vbkick shutdown sl6
 vbkick resnap sl6
 vbkick on sl6
-vbkick play sl6 definition-6.5-x86_64-docker.cfg
-vbkick ssh sl6 definition-6.5-x86_64-docker.cfg
+vbkick play sl6 vbmachine-6.5-x86_64-docker.cfg
+vbkick ssh sl6 vbmachine-6.5-x86_64-docker.cfg
 
 vbkick destroy sl6
 ```
