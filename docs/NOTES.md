@@ -49,24 +49,24 @@ Required steps (not tested yet):
  - install virtualbox: https://www.virtualbox.org/wiki/Downloads
  - start git-bash
  - update $PATH inside **git-bash** with path to virtualbox and python.
-    ```
+```
     # this is simple example which requires improvements
     vim ~/.bashrc
     PATH=$PATH:/c/Python27:/c/Program\ Files/Oracle/VirtualBox
     # source bashrc to update PATH or relaunch git-bash
     . ~/.bashrc
-    ```
+```
  - test commands
-    ```
+```
     python -V
     VBoxManage -v
-    ```
+```
  - install vbkick and convert_2_scancode.py to `/bin` within **git-bash**
-    ```
+```
     git clone https://github.com/wilas/vbkick
     cd vbkick
     PREFIX=/bin make install
-    ```
+```
 
 # Contribute - priorities:
  - LOW - (cosmetic problem, nothing important but nice to have) [COULD, WOULD]
