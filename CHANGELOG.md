@@ -12,6 +12,8 @@ FEATURES
  - added ```clone``` ACTION to clone VM
  - added ```play``` ACTION to separate postinstall process from the tinkering
  - added curl installer
+ - path to the VBoxManage can be changed now by VBOX_MANAGE_PATH env. variable
+ - vbkick tries update SSH host port in the NAT configuration if is used a different than already setup
 
 IMPROVEMENTS
  - works with Virtualbox 4.3 - [#32](../../issues/32)
@@ -24,6 +26,7 @@ IMPROVEMENTS
  - checks more VM states like 'paused' instead of only 'running' and 'powered off'
  - separate repos for templates were created
  - `md5` as a default checksum type - not everywhere openssl has `sha256` digest command
+ - added shutdown time monitoring for the acpipowerbutton
 
 BUG FIXES
  - expand a special variables in paths e.g. ```~``` (tilde) is now not treated as a literal string "~" but expand to user home dir.

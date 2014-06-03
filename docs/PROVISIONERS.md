@@ -39,7 +39,7 @@ postinstall_transport=(
 
 ![provisioners-puppet](screens/provisioners-puppet.png)
 
-# Tips
+# Hints
  - do not overdesigne special for small jobs (save time and resources)
  - think about team - not everyone is expert or cares
  - postinstall scripts must be simple, bootstrat minimum to pass tasks to configuration management (or other tools like docker)
