@@ -1,4 +1,4 @@
-## Not released
+## 0.7 (04-06-2014)
 
 FEATURES
  - added ansible, puppet, docker provisioner examples
