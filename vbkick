@@ -319,7 +319,7 @@ _process_1_args() {
 
 #@action
 _prog_version(){
-    printf "0.7.0-dev\n"
+    printf "0.7.0\n"
     exit 0
 }
 
