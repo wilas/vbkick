@@ -1,4 +1,4 @@
-# Description 
+# Description
 
 Place for various random notes.
 
@@ -9,7 +9,7 @@ Some bits needed to extend support for other platforms.
 ## Solaris
 
 ### sort command
- 
+
 GNU: `sort -gu`
 Solaris: `sort -u`
 
@@ -45,23 +45,21 @@ Solution: use `[ ]` if possible or cheat with `${TAB}` variable. At the moment e
 
 Required steps (not tested yet):
  - install git-bash: http://git-scm.com/downloads
- - install python: https://www.python.org/downloads/
  - install virtualbox: https://www.virtualbox.org/wiki/Downloads
  - start git-bash
- - update $PATH inside **git-bash** with path to virtualbox and python.
+ - update $PATH inside **git-bash** with path to virtualbox.
 ```
     # this is simple example which requires improvements
     vim ~/.bashrc
-    PATH=$PATH:/c/Python27:/c/Program\ Files/Oracle/VirtualBox
+    PATH=$PATH:/c/Program\ Files/Oracle/VirtualBox
     # source bashrc to update PATH or relaunch git-bash
     . ~/.bashrc
 ```
- - test commands
+ - test command
 ```
-    python -V
     VBoxManage -v
 ```
- - install vbkick and convert_2_scancode.py to `/bin` within **git-bash**
+ - install vbkick to `/bin` within **git-bash**
 ```
     git clone https://github.com/wilas/vbkick
     cd vbkick
