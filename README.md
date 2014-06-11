@@ -18,15 +18,15 @@ sudo make uninstall
 or advance via git
 ```
 git clone git@github.com:wilas/vbkick.git
-# sudo BASH_SHEBANG="/usr/bin/env bash" PY_SHEBANG="/usr/bin/env python" PREFIX="$HOME/bin" make install
+# sudo BASH_SHEBANG="/usr/bin/env bash" PL_SHEBANG="/usr/bin/env perl" PREFIX="$HOME/bin" make install
 sudo PREFIX="$HOME/bin" make install
 sudo PREFIX="$HOME/bin" make uninstall
 ```
 or using curl
 ```
 # stable version
-curl -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo bash
-curl -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo UNINSTALL=1 bash
+curl -Lk https://raw.githubusercontent.com/wilas/vbkick/stable/install.sh | sudo bash
+curl -Lk https://raw.githubusercontent.com/wilas/vbkick/stable/install.sh | sudo UNINSTALL=1 bash
 
 # development version
 curl -Lk https://raw.githubusercontent.com/wilas/vbkick/master/install.sh | sudo STABLE=0 bash
@@ -125,28 +125,26 @@ vbkick  version                     # print the version and exit
 vbkick  help                        # print help
 ```
 
-## convert_2_scancode.py
+## vbtyper.pl
 
 Helps enter key-strokes into a VirtualBox VMs programmatically from the host.
 It is a [filter](http://en.wikipedia.org/wiki/Filter_%28Unix%29) - handle input from pipe or file.
 
-Works in both python 2.6+ and python 3.
-
 Example:
 ```
-$ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello VM" | convert_2_scancode.py)
-$ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "<Multiply(Hello, 3)> VM" | convert_2_scancode.py)
+$ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello VM" | vbtyper.pl)
+$ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "<Multiply(Hello, 3)> VM" | vbtyper.pl)
 ```
 
 Example keyboard scancodes:
 ```
-$ printf "Hello VM" | convert_2_scancode.py
+$ printf "Hello VM" | vbtyper.pl
 2a 23 a3 aa 12 92 26 a6 26 a6 18 98 39 b9 2a 2f af aa 2a 32 b2 aa
 
-$ printf "<Multiply(H,3)>" | convert_2_scancode.py
+$ printf "<Multiply(H,3)>" | vbtyper.pl
 2a 23 a3 aa 2a 23 a3 aa 2a 23 a3 aa
 
-$ printf "<Multiply(<Wait>,3)>" | convert_2_scancode.py
+$ printf "<Multiply(<Wait>,3)>" | vbtyper.pl
 wait wait wait
 ```
 
@@ -155,7 +153,7 @@ Special keys:
 `<Wait>` -  help control boot flow within vbkick (FYI: can not be use directly with VBoxManage)
 
 ```
-$ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello <Wait> VM" | convert_2_scancode.py)
+$ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello <Wait> VM" | vbtyper.pl)
 VBoxManage: error: Error: 'wait' is not a hex byte!
 ```
 
@@ -167,6 +165,5 @@ VBoxManage: error: Error: 'wait' is not a hex byte!
  - [VirtualBox manual](http://www.virtualbox.org/manual/ch08.html)
  - [The UNIX Philosophy](http://en.wikipedia.org/wiki/Unix_philosophy#Mike_Gancarz:_The_UNIX_Philosophy)
  - [Filter (Unix)](http://en.wikipedia.org/wiki/Filter_%28Unix%29)
- - [Well-behave Python cmd line app](http://www.slideshare.net/gjcross/tutorial1-14045370)
  - [BDD with shell scripts](http://chrismdp.com/2013/03/bdd-with-shell-script/)
 

@@ -51,11 +51,7 @@ Simply: don't use names with leading underscore.
  - use brackets expressions `[0-9]` instead of POSIX character classes `[:digit:]` - POSIX not always mean portable (feel free to check that on Solaris - `echo "State:  running " | grep "State:[[:space:]][[:space:]]*running"`).
  - use Basic Regular Expressions [BRE](http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap09.html#tag_09_03_06) instead of ERE - `GNU sed` has a different option than `BSD sed` to turn on Extended Regular Expressions.
 
-## Python Coding Style Guide
+## Perl Coding Style Guide
 
- - Conform in all respects to PEP 8. (see http://legacy.python.org/dev/peps/pep-0008/)
- - We also recommend you read and try to apply:
-    - http://www.jeffknupp.com/blog/2012/10/04/writing-idiomatic-python/
-    - http://nbviewer.ipython.org/github/rasbt/python_reference/blob/master/not_so_obvious_python_stuff.ipynb
- - Try to keep the maximum indent level to three. "If more is needed, then probably I'm doing something wrong."
+TODO
 

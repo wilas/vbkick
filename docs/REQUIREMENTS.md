@@ -1,6 +1,6 @@
 Requirements (standard tools on most linux/freebsd/osx boxes):
  - bash
- - python
+ - perl
  - ssh
  - scp
  - openssl
