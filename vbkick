@@ -373,7 +373,7 @@ __dependencies_check() {
     __depend_check "curl" "curl"
     __depend_check "ssh" "ssh-client (e.g. openssh-client)"
     __depend_check "scp" "scp-client (e.g. openssh-client)"
-    __depend_check "python" "python"
+    __depend_check "perl" "perl"
     __depend_check "bash" "bash"
     __depend_check "openssl" "openssl"
     __depend_check "sed" "sed"
@@ -722,7 +722,7 @@ _build_vm() {
         __boot_cmd=${__boot_cmd//%PORT%/${kickstart_port}}
         __boot_cmd=${__boot_cmd//%NAME%/${_Vm}}
         __log_info "${__boot_cmd}"
-        # converts string to scancode via external python script
+        # converts string to scancode via external perl script
         local __boot_cmd_code=$(printf "${__boot_cmd}" | vbtyper.pl)
         # sends code to VM
         local __code
