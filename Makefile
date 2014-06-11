@@ -15,7 +15,7 @@ PREFIX ?= /usr/local/bin
 
 # get info about env.
 BASH_DEFAULT := $(shell command -v bash 2>&1)
-PY_DEFAULT := $(shell command -v python 2>&1)
+PL_DEFAULT := $(shell command -v perl 2>&1)
 
 # install command
 INSTALL := install
@@ -25,6 +25,9 @@ BUILD_DIR := build_src
 
 # what scripts install/uninstall
 BASH_TARGET := vbkick
+PL_TARGET := vbhttp.pl vbtyper.pl
+
+# needed to remove already installed legancy script
 PY_TARGET := convert_2_scancode.py
 
 
@@ -34,18 +37,28 @@ all:
 
 install: check-install
 	mkdir -p $(BUILD_DIR)
-	@sed '1,1 s:#!/usr/bin/python:#!$(PY_SHEBANG):; 1,1 s:"::g' $(PY_TARGET) > $(BUILD_DIR)/$(PY_TARGET).tmp
+	@for file in $(PL_TARGET); do \
+		sed '1,1 s:#!/usr/bin/perl:#!$(PL_SHEBANG):; 1,1 s:"::g' $$file > $(BUILD_DIR)/$$file.tmp; \
+	done
 	@sed '1,1 s:#!/bin/bash:#!$(BASH_SHEBANG):; 1,1 s:"::g' $(BASH_TARGET) > $(BUILD_DIR)/$(BASH_TARGET).tmp
 	$(INSTALL) -m 0755 -d $(PREFIX)
-	$(INSTALL) -m 0755 -p $(BUILD_DIR)/$(PY_TARGET).tmp $(PREFIX)/$(PY_TARGET)
+	@for file in $(PL_TARGET); do \
+		printf "$(INSTALL) -m 0755 -p $(BUILD_DIR)/$$file.tmp $(PREFIX)/$$file\n"; \
+		$(INSTALL) -m 0755 -p $(BUILD_DIR)/$$file.tmp $(PREFIX)/$$file; \
+	done
 	$(INSTALL) -m 0755 -p $(BUILD_DIR)/$(BASH_TARGET).tmp $(PREFIX)/$(BASH_TARGET)
 	$(INSTALL) -m 0755 -d $(MANDIR)
 	$(INSTALL) -g 0 -o 0 -m 0644 -p docs/man/vbkick.1 $(MANDIR)
 	rm -rf $(BUILD_DIR)
 
 uninstall:
-	cd $(PREFIX) && rm -f $(BASH_TARGET) && rm -f $(PY_TARGET)
 	cd $(MANDIR) && rm -f vbkick.1
+	cd $(PREFIX) && rm -f $(BASH_TARGET) && rm -f $(PY_TARGET)
+	@for file in $(PL_TARGET); do \
+		printf "rm -f $(PREFIX)/$$file\n"; \
+		rm -f $(PREFIX)/$$file; \
+	done
+
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -57,9 +70,9 @@ ifndef BASH_SHEBANG
   endif
   BASH_SHEBANG := $(BASH_DEFAULT)
 endif
-ifndef PY_SHEBANG
-  ifndef PY_DEFAULT
-    $(error "python command not available")
+ifndef PL_SHEBANG
+  ifndef PL_DEFAULT
+    $(error "perl command not available")
   endif
-  PY_SHEBANG := $(PY_DEFAULT)
+  PL_SHEBANG := $(PL_DEFAULT)
 endif

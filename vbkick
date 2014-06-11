@@ -319,7 +319,7 @@ _process_1_args() {
 
 #@action
 _prog_version(){
-    printf "0.7.0\n"
+    printf "0.8.0-dev\n"
     exit 0
 }
 
@@ -723,7 +723,7 @@ _build_vm() {
         __boot_cmd=${__boot_cmd//%NAME%/${_Vm}}
         __log_info "${__boot_cmd}"
         # converts string to scancode via external python script
-        local __boot_cmd_code=$(printf "${__boot_cmd}" | convert_2_scancode.py)
+        local __boot_cmd_code=$(printf "${__boot_cmd}" | vbtyper.pl)
         # sends code to VM
         local __code
         for __code in ${__boot_cmd_code}; do
@@ -1720,16 +1720,7 @@ __start_web_server() {
     # check whether port is not used by other proc
     __check_port_usage ${kickstart_port} "kickstart"
     # start simple webserver serving files in background
-    local __py_version=$(python -V 2>&1 | cut -d' ' -f 2 | cut -d'.' -f 1)
-    if [[ ${__py_version} -eq 2 ]]; then
-        _webserver_module="SimpleHTTPServer"
-    elif [[ ${__py_version} -eq 3 ]]; then
-        _webserver_module="http.server"
-    else
-        __log_error "Unknown python version."
-        return 1
-    fi
-    python -m ${_webserver_module} ${kickstart_port} &
+    vbhttp.pl ${kickstart_port} &
     # get the pid already spawned process, to kill it later
     _web_pid=$!
     # update _webserver_state variable
@@ -1765,11 +1756,11 @@ __stop_web_server() {
     _webserver_state=0
     # kill command is sucessfull when SIGTERM is sent to running process
     # not when child process was really killed
-    if ! ps -ef | grep "python -m ${_webserver_module} ${kickstart_port}" | grep -qv grep; then
+    if ! ps -ef | grep "vbhttp.pl ${kickstart_port}" | grep -qv grep; then
         __log_info "webserver was stopped"
     else
         __log_warning "problem with stopping webserver. Kill process manually"
-        ps -ef | grep "python -m ${_webserver_module} ${kickstart_port}" | grep -v grep
+        ps -ef | grep "vbhttp.pl ${kickstart_port}" | grep -v grep
     fi
 }
 
