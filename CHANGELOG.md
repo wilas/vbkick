@@ -1,3 +1,8 @@
+## Not released
+
+FEATURES
+ - replace python by perl (perl is available out of the box in git-bash on Windows)
+
 ## 0.7 (04-06-2014)
 
 FEATURES
