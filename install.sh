@@ -22,11 +22,11 @@ log_info(){
 
 # get info about env. for default settings
 BASH_DEFAULT=$(command -v bash || (log_error "bash command not available." && exit 1))
-PY_DEFAULT=$(command -v python || (log_error "python command not available." && exit 1))
+PL_DEFAULT=$(command -v perl || (log_error "perl command not available." && exit 1))
 
 # prepare shebang - from env. or default
 : ${BASH_SHEBANG:=${BASH_DEFAULT}}
-: ${PY_SHEBANG:=${PY_DEFAULT}}
+: ${PL_SHEBANG:=${PL_DEFAULT}}
 
 # install command
 INSTALL="install"
@@ -41,8 +41,11 @@ BUILD_DIR=$(mktemp -d -t 'vbkick_build.XXXXXXXXXX')
 
 # what scripts install/uninstall
 BASH_TARGET="vbkick"
-PY_TARGET="convert_2_scancode.py"
+PL_TARGET=("vbhttp.pl" "vbtyper.pl")
 MAN_TARGET="vbkick.1"
+
+# needed to remove already installed legancy script
+PY_TARGET="convert_2_scancode.py"
 
 install_bins(){
     local branch="stable"
@@ -50,16 +53,22 @@ install_bins(){
         branch="master"
     fi
     mkdir -p "${BUILD_DIR}"
-    curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/${PY_TARGET}" -o "${BUILD_DIR}/${PY_TARGET}.curl" ||\
-        (log_error "download convert_2_scancode.py bin failed." && return 1)
+    for file in "${PL_TARGET[@]}"; do
+        curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/${file}" -o "${BUILD_DIR}/${file}.curl" ||\
+            (log_error "download ${file} bin failed." && return 1)
+    done
     curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/${BASH_TARGET}" -o "${BUILD_DIR}/${BASH_TARGET}.curl" ||\
-        (log_error "download vbkick bin failed." && return 1)
+        (log_error "download ${BASH_TARGET} bin failed." && return 1)
     curl -Lksf "https://raw.githubusercontent.com/wilas/vbkick/${branch}/docs/man/${MAN_TARGET}" -o "${BUILD_DIR}/${MAN_TARGET}.curl" ||\
         (log_error "download vbkick man page failed." && return 1)
-    sed "1,1 s:#"'!'"/usr/bin/python:#!${PY_SHEBANG}:; 1,1 s:\"::g" "${BUILD_DIR}/${PY_TARGET}.curl" > "${BUILD_DIR}/${PY_TARGET}.tmp"
+    for file in "${PL_TARGET[@]}"; do
+        sed "1,1 s:#"'!'"/usr/bin/perl:#!${PL_SHEBANG}:; 1,1 s:\"::g" "${BUILD_DIR}/${file}.curl" > "${BUILD_DIR}/${file}.tmp"
+    done
     sed "1,1 s:#"'!'"/bin/bash:#!${BASH_SHEBANG}:; 1,1 s:\"::g" "${BUILD_DIR}/${BASH_TARGET}.curl" > "${BUILD_DIR}/${BASH_TARGET}.tmp"
     ${INSTALL} -m 0755 -d "${PREFIX}"
-    ${INSTALL} -m 0755 -p "${BUILD_DIR}/${PY_TARGET}.tmp" "${PREFIX}/${PY_TARGET}"
+    for file in "${PL_TARGET[@]}"; do
+        ${INSTALL} -m 0755 -p "${BUILD_DIR}/${file}.tmp" "${PREFIX}/${file}"
+    done
     ${INSTALL} -m 0755 -p "${BUILD_DIR}/${BASH_TARGET}.tmp" "${PREFIX}/${BASH_TARGET}"
     ${INSTALL} -m 0755 -d "${MANDIR}"
     ${INSTALL} -g 0 -o 0 -m 0644 -p "${BUILD_DIR}/${MAN_TARGET}.curl" "${MANDIR}/${MAN_TARGET}"
@@ -67,8 +76,11 @@ install_bins(){
 }
 
 uninstall_bins(){
-    cd "${PREFIX}" && rm -f "${BASH_TARGET}" && rm -f "${PY_TARGET}"
     cd "${MANDIR}" && rm -f "${MAN_TARGET}"
+    cd "${PREFIX}" && rm -f "${BASH_TARGET}" && rm -f "${PY_TARGET}"
+    for file in "${PL_TARGET[@]}"; do
+        rm -f "${PREFIX}/${file}"
+    done
 }
 
 fail_guard(){
