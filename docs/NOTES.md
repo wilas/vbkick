@@ -31,13 +31,20 @@ echo "State:   running " | grep "State:[ ]*running" | od -c
 ```
 FreeBSD, GNU/Linux:
 ```
-echo "State: \t  running " | grep "State:[[:space:]][[:space:]]*running" | od -c
+printf "State: \t  running \n" | grep "State:[[:space:]][[:space:]]*running" | od -c
 0000000    S   t   a   t   e   :      \t           r   u   n   n   i   n
 0000020    g      \n                                                    
 0000023
 ```
 
 Solution: use `[ ]` if possible or cheat with `${TAB}` variable. At the moment everywhere `[ ]` are used.
+
+### other commands
+
+```
+grep -q
+sed -i
+```
 
 ## Windows
 

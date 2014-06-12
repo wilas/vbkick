@@ -59,6 +59,7 @@ sub make_header{
     my ($code, $content_type, $content_length, $url) = @_;
 
     my $datestring = strftime "%a, %d %b %Y %H:%M:%S GMT", gmtime;
+    # The Status-Line and headers must all end with <CR><LF>
     my $header = join("",
         "HTTP/1.1 $code $html_responses{$code}", Socket::CRLF,
         "Content-type: $content_type; charset=UTF-8", Socket::CRLF,
@@ -140,6 +141,7 @@ sub get_request {
     $request{HTTP_VERSION} = "HTTP/0.0";
 
     # Read and parse HTTP request
+    # The request line and headers must all end with <CR><LF>
     # Set "end of line" special variable to common socket "newline" constant
     # CRLF = \015\012
     local $/ = Socket::CRLF;
@@ -240,6 +242,7 @@ sub main{
     print "Serving HTTP on 127.0.0.1 port $port ...\n";
     # Await requests and handle them as they arrive
     while (my $connection = $sock->accept()) {
+        # flush so output gets there right away
         $connection->autoflush(1);
         handle_connection( $connection );
         close $connection;
