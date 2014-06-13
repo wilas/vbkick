@@ -1,6 +1,6 @@
 # Description
 
-Vbkick is a simple bash tool for building and maintaining VirtualBox VMs and Vagrant Base Boxes described as a code in a single definition file (*vbmachine.cfg*). Vbkick is a replacement to [Veewee](https://github.com/jedi4ever/veewee) - you may want read [why](docs/WHY.md). Vbkick works on Linux, FreeBSD, MacOSX and has [minimal dependencies](docs/REQUIREMENTS.md).
+Vbkick is a simple bash tool for building and maintaining VirtualBox VMs and Vagrant Base Boxes described as a code in a single definition file (*vbmachine.cfg*). Vbkick is a replacement for [Veewee](https://github.com/jedi4ever/veewee) - you may want to read [why](docs/WHY.md). Vbkick works on Linux, FreeBSD, MacOSX and has [minimal dependencies](docs/REQUIREMENTS.md).
 
 # Getting Started
 
