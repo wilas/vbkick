@@ -132,8 +132,8 @@ It is a [filter](http://en.wikipedia.org/wiki/Filter_%28Unix%29) - handle input 
 
 Example:
 ```
-$ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello VM" | vbtyper.pl)
-$ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "<Multiply(Hello, 3)> VM" | vbtyper.pl)
+$ printf "Hello VM" | vbtyper.pl VM_NAME
+$ printf "<Multiply(Hello, 3)> VM" | vbtyper.pl VM_NAME
 ```
 
 Example keyboard scancodes:
@@ -150,14 +150,9 @@ wait wait wait
 
 Special keys:
 
-`<Wait>` -  help control boot flow within vbkick (FYI: can not be use directly with VBoxManage)
+`<Wait>` -  helps control boot flow within vbkick
 
-```
-$ VBoxManage controlvm VM_NAME keyboardputscancode $(printf "Hello <Wait> VM" | vbtyper.pl)
-VBoxManage: error: Error: 'wait' is not a hex byte!
-```
-
-`<Multiply(what, N)>` - repeat "what" N times
+`<Multiply(what, N)>` - repeats "what" N times
 
 # Bibliography
  - [veewee](https://github.com/jedi4ever/veewee)
