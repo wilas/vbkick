@@ -138,6 +138,10 @@ __load_default_settings() {
     # you may consider editing ssh config: http://superuser.com/questions/141344/ssh-dont-add-hostkey-to-known-hosts
     ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=1"
 
+    # Export default settings
+    # by default export file to the current directory with name base on the VM name
+    export_file="./%NAME%.box"
+
     # Lazy Postinstall default settings
     # list of files and directories to transport to guest
     postinstall_transport=("")
@@ -1043,9 +1047,17 @@ _export_vm() {
     # load vm description/definition
     local __definition_fname="${1:-}"
     __load_definition "${__definition_fname}"
-    # check whether VM_NAME.box exist in current dir
-    if [[ -f "${_Vm}.box" ]]; then
-        __log_error "'${_Vm}.box' already exist in '$(pwd)'"
+
+    # prepare export path
+    local __export_file_path=$(dirname "${export_file}")
+    local __export_file_name=$(basename "${export_file}")
+    __export_file_path=$(__prepare_path "${__export_file_path}" 1)
+    __export_file_name=$(__prepare_path "${__export_file_name}" 0)
+    export_file="${__export_file_path}/${__export_file_name}"
+
+    # check whether export_file already exist
+    if [[ -f "${export_file}" ]]; then
+        __log_error "'${export_file}' already exist."
         exit 1
     fi
     # check whether VM exist
@@ -1075,7 +1087,8 @@ _export_vm() {
     __remove_shared_folders "${shared_folders[@]}"
 
     # create _tmp_dir for export data
-    _tmp_dir=$(TMPDIR=. mktemp -d  -t 'vbkick.XXXXXXXXXX')
+    # this is as well a check whether user has RW rights to __export_file_path
+    _tmp_dir="$(TMPDIR="${__export_file_path}" mktemp -d  -t 'vbkick.XXXXXXXXXX')"
     # export VM to _tmp_dir
     "${_VBoxManage}" export "${_Vm}" --output "${_tmp_dir}/box.ovf"
     # get VM MAC Address
@@ -1095,15 +1108,15 @@ _export_vm() {
     # add metadata.json
     printf "{\"provider\":\"virtualbox\"}\n" > "${_tmp_dir}/metadata.json"
     # create VM_NAME.box (gzip) file
-    cd ${_tmp_dir}
-    tar -cvzf "${_Vm}.box" *
-    cd ..
-    mv "${_tmp_dir}/${_Vm}.box" .
+    pushd "${_tmp_dir}" > /dev/null
+    tar -cvzf "${__export_file_name}" *
+    popd > /dev/null
+    mv "${_tmp_dir}/${__export_file_name}" "${__export_file_path}"
     # remove _tmp_dir
-    rm -rf ${_tmp_dir}
+    rm -rf "${_tmp_dir}"
     # help recover some changes made on VM during exporting
     __recover_vm_state
-    __log_info "Done: '$(pwd)/${_Vm}.box'"
+    __log_info "Done: '${export_file}'"
     exit 0
 }
 
@@ -1783,8 +1796,8 @@ _on_exit(){
         __log_warning "problem with killing webserver (proc ${_web_pid}). Kill process manually."
     fi
     # clean _tmp_dir if exist
-    if [[ -d ${_tmp_dir} ]]; then
-        rm -rf ${_tmp_dir}
+    if [[ -d "${_tmp_dir}" ]]; then
+        rm -rf "${_tmp_dir}"
     fi
     # help recover some changes made on VM during exporting
     __recover_vm_state
