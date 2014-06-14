@@ -726,18 +726,8 @@ _build_vm() {
         __boot_cmd=${__boot_cmd//%PORT%/${kickstart_port}}
         __boot_cmd=${__boot_cmd//%NAME%/${_Vm}}
         __log_info "${__boot_cmd}"
-        # converts string to scancode via external perl script
-        local __boot_cmd_code=$(printf "${__boot_cmd}" | vbtyper.pl)
-        # sends code to VM
-        local __code
-        for __code in ${__boot_cmd_code}; do
-            if [[ "${__code}" == "wait" ]]; then
-                sleep 1
-            else
-                "${_VBoxManage}" controlvm "${_Vm}" keyboardputscancode ${__code}
-                sleep 0.02
-            fi
-        done
+        # send string to the VM via external perl script
+        echo "${__boot_cmd}" | vbtyper.pl "${_Vm}"
         sleep ${boot_seq_wait}
     done
 
