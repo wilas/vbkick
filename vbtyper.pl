@@ -123,7 +123,7 @@ sub translate_chars {
         my $s = pos($input)-length($1);
         my $e = pos($input);
         if ($DEBUG) {
-            print "$1, $s-$e\n";
+            print "[SPC] $1, $s-$e\n";
         }
         $keys_array[$s] = $spc_scancodes->{$1};
         for (my $i = $s+1; $i < $e; $i++) {
@@ -153,7 +153,7 @@ sub translate_chars {
     return grep { defined() and length() } @keys_array;
 }
 
-sub main{
+sub preformat_input{
     my ($input) = @_;
     # remove trailing new line - useful when string is send using echo
     $input =~ s/\n$//;
@@ -165,15 +165,59 @@ sub main{
     $input =~ s/\n/<Enter>/g;
     # replace tabs with <Tab>
     $input =~ s/\t/<Tab>/g;
+    return $input;
+}
+
+sub get_vbox_manage_bin{
+    my $VBoxManage=$ENV{'VBOX_MANAGE_PATH'};
+    if (not $VBoxManage){
+        $VBoxManage = "VBoxManage";
+    }
+    return $VBoxManage;
+}
+
+sub main{
+    my ($input, $vm ) = @_;
+    $input = preformat_input($input);
     # process keys
     my @keys_array = translate_chars( $input );
-    # write result to stdout
-    print join(" ",@keys_array), "\n";
+    if (not $vm){
+        # write result to stdout
+        print join(" ",@keys_array), "\n";
+    }
+    else{
+        # types keys directy to the VM
+        my $VBoxManage = get_vbox_manage_bin();
+        foreach my $key_code (@keys_array) {
+            if ($key_code eq "wait"){
+                sleep(1);
+                next;
+            }
+            # $key_code containg press and release hexes
+            # split is needed to type it as a separate hexes not as a string
+            my $status = system("$VBoxManage", "controlvm", "$vm",
+                "keyboardputscancode", split(/ /, $key_code));
+            if ($status ne 0){
+                print STDERR "[ERROR] Couldn't type '$key_code'",
+                    "to the '$vm'.\n";
+                exit(1);
+            }
+            # add small delay between keys
+            sleep(0.02);
+        }
+    }
+}
+
+# parse args
+my $num_args = $#ARGV + 1;
+my $vm = undef;
+if ($num_args eq 1) {
+    $vm = $ARGV[0];
 }
 
 # reads input string from STDIN
 my $input = do { local $/; <STDIN> };
-main( $input );
+main( $input, $vm );
 
 # vim modeline
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
