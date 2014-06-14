@@ -19,6 +19,8 @@ use warnings;
 use strict;
 use Data::Dumper;
 
+my $DEBUG=0;
+
 sub _make_scancodes {
     my ($key_map, $str_pattern) = @_;
     my %scancodes = ();
@@ -120,7 +122,9 @@ sub translate_chars {
         }
         my $s = pos($input)-length($1);
         my $e = pos($input);
-        #print $1, ",$s-$e", "\n";
+        if ($DEBUG) {
+            print "$1, $s-$e\n";
+        }
         $keys_array[$s] = $spc_scancodes->{$1};
         for (my $i = $s+1; $i < $e; $i++) {
             $keys_array[$i]='';
@@ -141,7 +145,9 @@ sub translate_chars {
         }
         $keys_array[$index] = $scancodes->{$char};
     }
-    #print Dumper(@keys_array);
+    if ($DEBUG) {
+        print Dumper(@keys_array);
+    }
 
     # remove empty string from keys_array and return a new array
     return grep { defined() and length() } @keys_array;
