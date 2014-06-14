@@ -17,13 +17,14 @@ use warnings;
 use strict;
 use Socket;
 use IO::Socket;
-use POSIX qw(strftime);
-
 use Data::Dumper;
 
 my $DEBUG=0;
 my $server_version = "vbhttp/0.7";
 my $sys_version = "perl/$]";
+
+my @mon = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
+my @day = qw( Sun Mon Tue Wed Thu Fri Sat );
 
 my %html_responses = (
     # codes: http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1
@@ -52,13 +53,18 @@ sub send_status_code{
     my ($conn, $code, $url) = @_;
     my $content = "<html><body>$code $html_responses{$code}</body></html>";
     my $header = make_header($code, "text/html", length($content), $url);
+    if ($DEBUG) {
+        print "[RESP_HEADER]: $header\n";
+    }
     print $conn "$header$content";
 }
 
 sub make_header{
     my ($code, $content_type, $content_length, $url) = @_;
 
-    my $datestring = strftime "%a, %d %b %Y %H:%M:%S GMT", gmtime;
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime;
+    my $datestring = sprintf("%s, %02d %s %04d %02d:%02d:%02d GMT",
+        $day[$wday], $mday, $mon[$mon], $year+1900, $hour, $min, $sec);
     # The Status-Line and headers must all end with <CR><LF>
     my $header = join("",
         "HTTP/1.1 $code $html_responses{$code}", Socket::CRLF,
@@ -184,7 +190,9 @@ sub translate_path {
 
 sub log_request {
     my ($request, $response_code) = @_;
-    my $datestring = strftime "%d/%b/%Y %H:%M:%S", localtime;
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;
+    my $datestring = sprintf("%02d/%s/%04d %02d:%02d:%02d",
+        $mday, $mon[$mon], $year+1900, $hour, $min, $sec);
     print join(" ", "[$datestring]",
         qq{- "$request->{METHOD} $request->{URL} $request->{HTTP_VERSION}"},
         "$response_code -\n");
@@ -215,6 +223,8 @@ sub handle_connection{
     elsif (-d $localfile) {
         # if directory dosen't contain a trailing "/" then redirect with 301
         if ($localfile !~ /\/$/){
+            # remove leading dot from the redirect url
+            $localfile =~ s/^\.//g;
             send_status_code($conn, 301, "$localfile/");
             $response_code = 301;
         }
