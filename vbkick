@@ -26,21 +26,22 @@ set -o posix
 set +o histexpand
 
 # For nice printing
-_GREEN="\e[1;32m"
-_RED="\e[1;31m"
-_YELLOW="\e[1;33m"
-_NORMAL="\e[0m"
+# NB. tput setaf 1; tput sgr0 is not portable, e.g. git-bash
+_GREEN="\033[1;32m"
+_RED="\033[1;31m"
+_YELLOW="\033[1;33m"
+_NORMAL="\033[0m"
 __log_info() {
-    printf "[INFO] ${*}\n"
+    printf "[INFO] %s\n" "${*}"
 }
 __log_ginfo() {
-    printf "${_GREEN}[INFO] ${*}${_NORMAL}\n"
+    printf "${_GREEN}[INFO] %s${_NORMAL}\n" "${*}"
 }
 __log_warning() {
-    printf "${_YELLOW}[WARNING] ${*}${_NORMAL}\n"
+    printf "${_YELLOW}[WARNING] %s${_NORMAL}\n" "${*}"
 }
 __log_error() {
-    printf "${_RED}[ERROR] ${*}${_NORMAL}\n" >&2
+    printf "${_RED}[ERROR] %s${_NORMAL}\n" "${*}" >&2
 }
 
 # default vm settings which may be overwritten by definition file
@@ -201,84 +202,84 @@ __init_global_state_variables(){
 # Display help
 #@action
 _usage() {
-    printf "Description: the automatic Virtualbox Guests and Vagrant Base Boxes builder\n"
-    printf "\n"
-    printf "Usage: vbkick <command> <VM_NAME> [<args>]\n"
-    printf "\tversion               Print the version and exit\n"
-    printf "\thelp                  Print this help\n"
-    printf "\n"
-    printf "Common commands:\n"
-    printf "\tbuild                 Build the new VM\n"
-    printf "\tpostinstall           Run postinstall scripts via SSH\n"
-    printf "\tplay                  Run play commands via SSH\n"
-    printf "\tvalidate              Run validate scripts via SSH\n"
-    printf "\tupdate                Run update scripts via SSH\n"
-    printf "\texport                Exports the VM and creates a Vagrant box - VM_NAME.box\n"
-    printf "\tdestroy               Shut down and deletes the VM\n"
-    printf "\tssh                   Connect to the VM via SSH\n"
-    printf "\ton                    Turn on the VM\n"
-    printf "\tshutdown              Shut down the VM\n"
-    printf "\tclone                 Clone the VM\n"
-    printf "\tlssnap                List all snapshots for a given VM\n"
-    printf "\tsnap                  Take a new VM snapshot\n"
-    printf "\tresnap                Restore the VM snapshot\n"
-    printf "\tdelsnap               Delete the VM snapshot\n"
-    printf "\tlist                  List all VirtualBox machines with the state\n"
-    printf "\n"
-    printf "For help on any individual command run 'vbkick <command> -h'\n"
-    printf "\n"
+    printf "%b" "Description: the automatic Virtualbox Guests and Vagrant Base Boxes builder\n"
+    printf "%b" "\n"
+    printf "%b" "Usage: vbkick <command> <VM_NAME> [<args>]\n"
+    printf "%b" "\tversion               Print the version and exit\n"
+    printf "%b" "\thelp                  Print this help\n"
+    printf "%b" "\n"
+    printf "%b" "Common commands:\n"
+    printf "%b" "\tbuild                 Build the new VM\n"
+    printf "%b" "\tpostinstall           Run postinstall scripts via SSH\n"
+    printf "%b" "\tplay                  Run play commands via SSH\n"
+    printf "%b" "\tvalidate              Run validate scripts via SSH\n"
+    printf "%b" "\tupdate                Run update scripts via SSH\n"
+    printf "%b" "\texport                Exports the VM and creates a Vagrant box - VM_NAME.box\n"
+    printf "%b" "\tdestroy               Shut down and deletes the VM\n"
+    printf "%b" "\tssh                   Connect to the VM via SSH\n"
+    printf "%b" "\ton                    Turn on the VM\n"
+    printf "%b" "\tshutdown              Shut down the VM\n"
+    printf "%b" "\tclone                 Clone the VM\n"
+    printf "%b" "\tlssnap                List all snapshots for a given VM\n"
+    printf "%b" "\tsnap                  Take a new VM snapshot\n"
+    printf "%b" "\tresnap                Restore the VM snapshot\n"
+    printf "%b" "\tdelsnap               Delete the VM snapshot\n"
+    printf "%b" "\tlist                  List all VirtualBox machines with the state\n"
+    printf "%b" "\n"
+    printf "%b" "For help on any individual command run 'vbkick <command> -h'\n"
+    printf "%b" "\n"
 }
 
 #@action
 _context_usage(){
     case "${1}" in
         "build")
-            printf "Usage: vbkick build <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
+            printf "%b" "Usage: vbkick build <VM_NAME> [definition_file]\n"
+            printf "%b" "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "destroy")
-            printf "Usage: vbkick destroy <VM_NAME>\n" ;;
+            printf "%b" "Usage: vbkick destroy <VM_NAME>\n" ;;
         "export")
-            printf "Usage: vbkick export <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
+            printf "%b" "Usage: vbkick export <VM_NAME> [definition_file]\n"
+            printf "%b" "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "validate")
-            printf "Usage: vbkick validate <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
+            printf "%b" "Usage: vbkick validate <VM_NAME> [definition_file]\n"
+            printf "%b" "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "postinstall")
-            printf "Usage: vbkick postinstall <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
+            printf "%b" "Usage: vbkick postinstall <VM_NAME> [definition_file]\n"
+            printf "%b" "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "play")
-            printf "Usage: vbkick play <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
+            printf "%b" "Usage: vbkick play <VM_NAME> [definition_file]\n"
+            printf "%b" "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "update")
-            printf "Usage: vbkick update <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
+            printf "%b" "Usage: vbkick update <VM_NAME> [definition_file]\n"
+            printf "%b" "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "ssh")
-            printf "Usage: vbkick ssh <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
+            printf "%b" "Usage: vbkick ssh <VM_NAME> [definition_file]\n"
+            printf "%b" "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "on")
-            printf "Usage: vbkick on <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
+            printf "%b" "Usage: vbkick on <VM_NAME> [definition_file]\n"
+            printf "%b" "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "shutdown")
-            printf "Usage: vbkick shutdown <VM_NAME> [definition_file]\n"
-            printf "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
+            printf "%b" "Usage: vbkick shutdown <VM_NAME> [definition_file]\n"
+            printf "%b" "If no definition file specify 'vbmachine.cfg' is used.\n" ;;
         "clone")
-            printf "Usage: vbkick clone <VM_NAME> [clone_name]\n"
-            printf "If no clone name specify default one will be used - {VM_NAME}-clone{NR},\n"
-            printf "where {NR} is the next available number.\n" ;;
+            printf "%b" "Usage: vbkick clone <VM_NAME> [clone_name]\n"
+            printf "%b" "If no clone name specify default one will be used - {VM_NAME}-clone{NR},\n"
+            printf "%b" "where {NR} is the next available number.\n" ;;
         "snap")
-            printf "Usage: vbkick snap <VM_NAME> [snapshot_name]\n"
-            printf "If no snapshot name specify default one will be used - {VM_NAME}-snap{NR},\n"
-            printf "where {NR} is the next available number.\n" ;;
+            printf "%b" "Usage: vbkick snap <VM_NAME> [snapshot_name]\n"
+            printf "%b" "If no snapshot name specify default one will be used - {VM_NAME}-snap{NR},\n"
+            printf "%b" "where {NR} is the next available number.\n" ;;
         "resnap")
-            printf "Usage: vbkick resnap <VM_NAME> [snapshot_name]\n"
-            printf "If no snapshot name specify, restore to the current snapshot.\n" ;;
+            printf "%b" "Usage: vbkick resnap <VM_NAME> [snapshot_name]\n"
+            printf "%b" "If no snapshot name specify, restore to the current snapshot.\n" ;;
         "delsnap")
-            printf "Usage: vbkick delsnap <VM_NAME> [snapshot_name]\n"
-            printf "If no snapshot name specify, delete the current snapshot.\n" ;;
+            printf "%b" "Usage: vbkick delsnap <VM_NAME> [snapshot_name]\n"
+            printf "%b" "If no snapshot name specify, delete the current snapshot.\n" ;;
         "lssnap")
-            printf "Usage: vbkick lssnap <VM_NAME>\n" ;;
+            printf "%b" "Usage: vbkick lssnap <VM_NAME>\n" ;;
         "list")
-            printf "Usage: vbkick list\n" ;;
+            printf "%b" "Usage: vbkick list\n" ;;
         *) _usage; exit ;;
     esac
 }
@@ -323,7 +324,7 @@ _process_1_args() {
 
 #@action
 _prog_version(){
-    printf "0.8.0-dev\n"
+    printf "%b" "0.8.0-dev\n"
     exit 0
 }
 
@@ -338,7 +339,7 @@ _list_all_vms(){
         # Example showvminfo output: "State:           powered off (since 2014-04-28T00:16:26.000000000)"
         # get only the state value and trim leading and trailing spaces
         __lc_state=$("${_VBoxManage}" showvminfo "${__lc_vm}" | grep "State:" | cut -d' ' -f 2- | cut -d'(' -f 1 | sed 's/[ ]*$//g;s/^[ ]*//g')
-        printf "${__lc_vm}:${__lc_state}\n"
+        printf "%b" "${__lc_vm}:${__lc_state}\n"
     done
     exit 0
 }
@@ -356,8 +357,8 @@ __autoupdate_files_with_vbox_version() {
             # example value to update: VBOX_VERSION="4.2.12", but ignore comments
             sed -i'' -e "/^#/"'!'"s/\(VBOX_VERSION\)=\"\([0-9.][0-9.]*\)\"/\1=\"${_vb_version}\"/g" "${__file}"
         else
-            printf "VBOX_VERSION=\"${_vb_version}\"\n" > "${__file}"
-            printf "export VBOX_VERSION" >> "${__file}"
+            printf "%b" "VBOX_VERSION=\"${_vb_version}\"\n" > "${__file}"
+            printf "%b" "export VBOX_VERSION\n" >> "${__file}"
         fi
     done
 }
@@ -408,13 +409,13 @@ __load_definition() {
     if [[ -s "${__definition_fname}" ]]; then
         # In POSIX mode the '.' and 'source' builtins do not search the current directory
         # for the filename argument if it is not found by searching PATH.
-        __log_info "Loading \"${__definition_fname}\" definition..."
+        __log_info "Loading '${__definition_fname}' definition..."
         if ! . "./${__definition_fname}"; then
             __log_error "Loading failed."
             return 1
         fi
     else
-        __log_error "Not existing or empty \"${__definition_fname}\" file in $(pwd). Terminating..."
+        __log_error "Not existing or empty '${__definition_fname}' file in $(pwd). Terminating..."
         return 1
     fi
     # if someone overwrite them in definition file
@@ -427,9 +428,9 @@ __load_definition() {
 # Get virtualbox version
 __get_vb_version() {
     local __version=$("${_VBoxManage}" --version) # e.g. 4.2.12r84980
-    __version=$(printf "${__version}\n" | sed -n 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p')
-    #__version=$(printf "${__version}\n" | sed 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' | tail -1)
-    printf "${__version}"
+    __version=$(printf "%b" "${__version}\n" | sed -n 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p')
+    #__version=$(printf "%b" "${__version}\n" | sed 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' | tail -1)
+    printf "%b" "${__version}"
 }
 
 __is_present() {
@@ -459,7 +460,7 @@ __is_alive() {
 __is_port_used() {
     local __port_nr="${1}"
     # () is useful to be silent
-    (printf "" > /dev/tcp/127.0.0.1/${__port_nr}) 2>/dev/null
+    (printf "%s" "" > /dev/tcp/127.0.0.1/${__port_nr}) 2>/dev/null
 }
 
 __is_port_present() {
@@ -511,7 +512,7 @@ __prepare_path() {
         mkdir -p "${__path}"
     fi
     # Return __path
-    printf "${__path}"
+    printf "%s" "${__path}"
 }
 
 __curl_safe() {
@@ -556,14 +557,14 @@ __remove_guest_additions_media() {
     __log_info "List of VBoxGuestAdditions files to remove:"
     local __file
     for __file in ${__file_list}; do
-        printf "${guest_additions_path}/${__file}\n"
+        printf "%b" "${guest_additions_path}/${__file}\n"
     done
     # to remove files ask about confirmation
     local __ans
     read -r -p "Do you want remove above VBoxGuestAdditions files? [y/N]" __ans
     if [[ ${__ans} =~ ^[Yy]$ ]]; then
         for __file in ${__file_list}; do
-            printf "${guest_additions_path}/${__file}\n"
+            printf "%b" "${guest_additions_path}/${__file}\n"
             rm -f "${guest_additions_path}/${__file}"
         done
     fi
@@ -727,7 +728,8 @@ _build_vm() {
         __boot_cmd=${__boot_cmd//%NAME%/${_Vm}}
         __log_info "${__boot_cmd}"
         # send string to the VM via external perl script
-        echo "${__boot_cmd}" | vbtyper.pl "${_Vm}"
+        # %s is needed to type e.g. \n literally not as a new line
+        printf "%s" "${__boot_cmd}" | vbtyper.pl "${_Vm}"
         sleep ${boot_seq_wait}
     done
 
@@ -927,13 +929,13 @@ __add_shared_folders() {
         fi
 
         if [[ ${#__folder_info[@]} -eq 2 ]]; then
-            __log_info "${_VBoxManage} sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\""
+            __log_info "${_VBoxManage} sharedfolder add  '${_Vm}' --name '${__folder_name}' --hostpath '${__folder_path}'"
             "${_VBoxManage}" sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}"
         elif [[ ${#__folder_info[@]} -eq 3 ]]; then
-            __log_info "${_VBoxManage} sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\" --${__folder_info[2]}"
+            __log_info "${_VBoxManage} sharedfolder add  '${_Vm}' --name '${__folder_name}' --hostpath '${__folder_path}' --${__folder_info[2]}"
             "${_VBoxManage}" sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}" --"${__folder_info[2]}"
         elif [[ ${#__folder_info[@]} -eq 4 ]]; then
-            __log_info "${_VBoxManage} sharedfolder add  \"${_Vm}\" --name \"${__folder_name}\" --hostpath \"${__folder_path}\" --${__folder_info[2]} --${__folder_info[3]}"
+            __log_info "${_VBoxManage} sharedfolder add  '${_Vm}' --name '${__folder_name}' --hostpath '${__folder_path}' --${__folder_info[2]} --${__folder_info[3]}"
             "${_VBoxManage}" sharedfolder add "${_Vm}" --name "${__folder_name}" --hostpath "${__folder_path}" --"${__folder_info[2]}" --"${__folder_info[3]}"
         else
             __log_error "too much options in one of the shared_folders."
@@ -980,16 +982,16 @@ __kickstart_monitoring() {
         # create path to ssh private key
         __get_priv_ssh_key
         local __key_path="${ssh_keys_path}/${ssh_priv_key}"
-        printf "\n"
-        __log_info "Waiting for ssh login with user ${ssh_user} to 127.0.0.1:${ssh_host_port} to work, kickstart_timeout=${kickstart_timeout} sec"
+        printf "%b" "\n"
+        __log_info "Waiting ${kickstart_timeout} sec for login via SSH with user ${ssh_user} to 127.0.0.1:${ssh_host_port}"
         # wait until ssh start working (communication chanel with VM) or kickstart_timeout was reached
         while ! ssh "${ssh_user}@127.0.0.1" -q -t -i "${__key_path}" -p ${ssh_host_port} ${ssh_options} ${__extra_ssh_options} -C "echo"\
             && [[ ${__kickstart_counter} -le ${kickstart_timeout} ]]; do
             __kickstart_counter=$((__kickstart_counter+1))
-            printf "."
+            printf "%s" "."
             sleep 1
         done
-        printf "\n"
+        printf "%b" "\n"
     else
         # if no ssh key authentication enabled then wait until timeout will be reached
         __log_info "Sleeping ${kickstart_timeout} seconds ..."
@@ -1059,8 +1061,8 @@ _export_vm() {
     __shutdown
     if ! __is_powered_off; then
         __log_error "'${_Vm}' is not powered off. Maybe has saved state."
-        __log_error "You may need to run: 'vbkick on \"${_Vm}\"' and 'vbkick shutdown \"${_Vm}\"'"
-        __log_error "To check '${_Vm}' state run: 'vbkick list | grep \"${_Vm}:\"'"
+        __log_error "You may need to run: \`vbkick on '${_Vm}'\` and \`vbkick shutdown '${_Vm}'\`"
+        __log_error "To check '${_Vm}' state run: \`vbkick list | grep '${_Vm}:'\`"
         exit 1
     fi
 
@@ -1085,7 +1087,7 @@ _export_vm() {
     local __mac_address=$("${_VBoxManage}" showvminfo --details --machinereadable "${_Vm}"\
     | grep "macaddress1" | cut -d"=" -f 2)
     # add Vagrantfile
-    printf "Vagrant.configure(\"2\") do |config|
+    printf "%b" "Vagrant.configure(\"2\") do |config|
     \t# This Vagrantfile is auto-generated by \`vbkick export\` to contain
     \t# the MAC address of the box. Custom configuration should be placed in
     \t# the actual \`Vagrantfile\` in this box.
@@ -1096,7 +1098,7 @@ _export_vm() {
     include_vagrantfile = File.expand_path(\"../include/_Vagrantfile\", __FILE__)
     load include_vagrantfile if File.exist?(include_vagrantfile)\n" > "${_tmp_dir}/Vagrantfile"
     # add metadata.json
-    printf "{\"provider\":\"virtualbox\"}\n" > "${_tmp_dir}/metadata.json"
+    printf "%b" "{\"provider\":\"virtualbox\"}\n" > "${_tmp_dir}/metadata.json"
     # create VM_NAME.box (gzip) file
     pushd "${_tmp_dir}" > /dev/null
     tar -cvzf "${__export_file_name}" *
@@ -1142,7 +1144,7 @@ __recover_vm_state() {
 _turn_on() {
     # check whether VM exist
     if ! __is_present; then
-        __log_error "'${_Vm}' doese not exist. Use 'vbkick build' to create the new VM."
+        __log_error "'${_Vm}' doese not exist. Use \`vbkick build '${_Vm}'\` to create the new VM."
         exit 1
     fi
 
@@ -1173,7 +1175,7 @@ _turn_on() {
 _turn_off() {
     # check whether VM exist
     if ! __is_present; then
-        __log_error "'${_Vm}' doese not exist. Use 'vbkick build' to create the new VM."
+        __log_error "'${_Vm}' doese not exist. Use \`vbkick build '${_Vm}'\` to create the new VM."
         exit 1
     fi
 
@@ -1230,16 +1232,16 @@ __shutdown_monitoring() {
     local __shutdown_counter=0
     while __is_alive && [[ ${__shutdown_counter} -le ${shutdown_timeout} ]]; do
         __shutdown_counter=$((__shutdown_counter+1))
-        printf "."
+        printf "%s" "."
         sleep 1
     done
-    printf "\n"
+    printf "%b" "\n"
 }
 
 __update_guest_additions_media() {
     # check whether VM exist
     if ! __is_present; then
-        __log_error "'${_Vm}' doesn't exist. Use \"vbkick build\" to create the new VM."
+        __log_error "'${_Vm}' doesn't exist. Use \`vbkick build '${_Vm}'\` to create the new VM."
         return 1
     fi
     # get current guest version
@@ -1261,10 +1263,10 @@ __update_guest_additions_media() {
     if ! "${_VBoxManage}" showvminfo "${_Vm}" | grep -qw "SATA Controller (1, 0)"; then
         __log_error "'SATA Controller (1, 0)' for '${_Vm}' doesn't exist."
         __log_error "'SATA Controller' is sata controller name used by vbkick."
-        __log_error "More: '${_VBoxManage} showvminfo \"${_Vm}\" | grep -w \"Controller\"'\n"
+        __log_error "More: \`${_VBoxManage} showvminfo '${_Vm}' | grep -w 'Controller'\`"
         __log_error "To create proper controller use:"
-        __log_error "'${_VBoxManage} storagectl \"${_Vm}\" --name \"SATA Controller\" --add sata --hostiocache ${hostiocache} --portcount $((${#disk_size[@]}+2))'"
-        __log_error "'${_VBoxManage} storageattach \"${_Vm}\" --storagectl \"SATA Controller\" --type dvddrive --port 1 --device 0 --medium emptydrive'\n"
+        __log_error "\`${_VBoxManage} storagectl '${_Vm}' --name 'SATA Controller' --add sata --hostiocache ${hostiocache} --portcount $((${#disk_size[@]}+2))\`"
+        __log_error "\`${_VBoxManage} storageattach '${_Vm}' --storagectl 'SATA Controller' --type dvddrive --port 1 --device 0 --medium emptydrive\`"
         __log_error "To do this '${_Vm}' must be shutdown !!!"
         __log_error "Remember - VM Guest may have only one sata controller."
         return 1
@@ -1657,7 +1659,7 @@ _restore_snapshot(){
     if [[ -n "${__snap_name}" ]]; then
         if ! __is_snapshot_present "\"${__snap_name}\""; then
             __log_error "'${__snap_name}' snapshot doesn't exist for the '${_Vm}'"
-            __log_error "Use 'vbkick lssnap \"${_Vm}\"' to list all available snapshots."
+            __log_error "Use vbkick lssnap '${_Vm}' to list all available snapshots."
             exit 1
         fi
         "${_VBoxManage}" snapshot "${_Vm}" restore "${__snap_name}"
@@ -1686,7 +1688,7 @@ _delete_snapshot(){
     if [[ -n "${__snap_name}" ]]; then
         if ! __is_snapshot_present "\"${__snap_name}\""; then
             __log_error "'${__snap_name}' snapshot doesn't exist for the '${_Vm}'"
-            __log_error "Use 'vbkick lssnap \"${_Vm}\"' to list all available snapshots."
+            __log_error "Use \`vbkick lssnap '${_Vm}'\` to list all available snapshots."
             exit 1
         fi
     # snap_name is not provided, remove the current snapshot
