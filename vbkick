@@ -498,12 +498,12 @@ __prepare_path() {
     local __mkdir_path="${2}"
     # Process special variables in path definition e.g. __path="%VBOXFOLDER%/%NAME%"
     local __location=$("${_VBoxManage}" list  systemproperties | grep "Default machine folder" | cut -d':' -f 2- | sed 's/^[ ]*//g')
-    __path=${__path//%SRCPATH%/${boot_file_src_path}}
-    __path=${__path//%VBOXFOLDER%/${__location}}
-    __path=${__path//%PWD%/$(pwd)}
+    __path=$(printf "%s" "${__path}" | sed "s|%SRCPATH%|${boot_file_src_path}|g")
+    __path=$(printf "%s" "${__path}" | sed "s|%VBOXFOLDER%|${__location}|g")
+    __path=$(printf "%s" "${__path}" | sed "s|%PWD%|$(pwd)|g")
     # get homedir - $(getent passwd UID) doesn't work for MacOS; $HOME is less portable than ~
-    __path=${__path//%HOME%/~}
-    __path=${__path//%NAME%/${_Vm}}
+    __path=$(printf "%s" "${__path}" | sed "s|%HOME%|~|g")
+    __path=$(printf "%s" "${__path}" | sed "s|%NAME%|${_Vm}|g")
     # expand a special variable - e.g. tilde (~) and
     # strips out > characters which could clobber a file during the eval
     __path=$(eval echo "${__path//>}")
@@ -723,9 +723,9 @@ _build_vm() {
         if [[ -z "${__boot_cmd}" ]]; then
             continue
         fi
-        __boot_cmd=${__boot_cmd//%IP%/${__host_ip}}
-        __boot_cmd=${__boot_cmd//%PORT%/${kickstart_port}}
-        __boot_cmd=${__boot_cmd//%NAME%/${_Vm}}
+        __boot_cmd=$(printf "%s" "${__boot_cmd}" | sed "s|%IP%|${__host_ip}|g")
+        __boot_cmd=$(printf "%s" "${__boot_cmd}" | sed "s|%PORT%|${kickstart_port}|g")
+        __boot_cmd=$(printf "%s" "${__boot_cmd}" | sed "s|%NAME%|${_Vm}|g")
         __log_info "${__boot_cmd}"
         # send string to the VM via external perl script
         # %s is needed to type e.g. \n literally not as a new line
