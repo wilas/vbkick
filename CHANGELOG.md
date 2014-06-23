@@ -4,6 +4,9 @@ FEATURES
  - replace python by perl (perl is available out of the box in git-bash on Windows)
  - added `export_file` option to allow export vagrant base boxes to custom location
 
+IMPROVEMENTS
+ - simplify multiply expression in vbtyper.pl to `<what*N>`, the old method is deprecated
+
 ## 0.7 (04-06-2014)
 
 FEATURES

@@ -76,6 +76,7 @@ sub get_multi_char_codes {
         '<Right>'       => '4d cd',
         '<Home>'        => '47 c7',
         '<Lt>'          => '2a 33 b3 aa', #to type '<' - e.g. <Enter> literally
+        '<Gt>'          => '2a 34 b4 aa', #to type '>' - e.g. <<Wait*5>*2> literally
     );
     # F1..F10
     for (my $idx = 1; $idx <= 10; $idx++) {
@@ -90,12 +91,28 @@ sub get_multi_char_codes {
     return \%scancodes;
 }
 
-sub process_multiply {
+# this method is deprecated and will be remove in v0.9
+sub process_multiply_old {
     my ($input) = @_;
     # process <Multiply(what,times)>
     # example usage: <Multiply(<Wait>,4)> --> <Wait><Wait><Wait><Wait>
     # key thing about multiply_regexpr: match is non-greedy
     my $multiply_regexpr = '<Multiply\((.+?),[ ]*([\d]+)[ ]*\)>';
+    # repeating a string 'what' given number of 'times'
+    # 'e' makes the difference; it evaluates the substitution part as Perl code
+    # $1 is what
+    # $2 is times
+    # replacement = what x times
+    $input =~ s/$multiply_regexpr/$1x$2/eg;
+    return $input;
+}
+
+sub process_multiply {
+    my ($input) = @_;
+    # process <what*times>
+    # example usage: <<Wait>*4> --> <Wait><Wait><Wait><Wait>
+    # key thing about multiply_regexpr: match is non-greedy
+    my $multiply_regexpr = '<(.+?)\*([\d]+)>';
     # repeating a string 'what' given number of 'times'
     # 'e' makes the difference; it evaluates the substitution part as Perl code
     # $1 is what
@@ -158,6 +175,7 @@ sub preformat_input{
     # remove trailing new line - useful when string is send using echo
     $input =~ s/\n$//;
     # process multiply before translation starts
+    $input = process_multiply_old( $input );
     $input = process_multiply( $input );
     # replace spaces with <Spacebar>
     $input =~ s/ /<Spacebar>/g;

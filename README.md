@@ -133,7 +133,7 @@ It is a [filter](http://en.wikipedia.org/wiki/Filter_%28Unix%29) - handle input 
 Example:
 ```
 $ printf "Hello VM" | vbtyper.pl VM_NAME
-$ printf "<Multiply(Hello, 3)> VM" | vbtyper.pl VM_NAME
+$ printf "<Hello*3> VM" | vbtyper.pl VM_NAME
 ```
 
 Example keyboard scancodes:
@@ -141,10 +141,10 @@ Example keyboard scancodes:
 $ printf "Hello VM" | vbtyper.pl
 2a 23 a3 aa 12 92 26 a6 26 a6 18 98 39 b9 2a 2f af aa 2a 32 b2 aa
 
-$ printf "<Multiply(H,3)>" | vbtyper.pl
+$ printf "<H*3>" | vbtyper.pl
 2a 23 a3 aa 2a 23 a3 aa 2a 23 a3 aa
 
-$ printf "<Multiply(<Wait>,3)>" | vbtyper.pl
+$ printf "<<Wait>*3>" | vbtyper.pl
 wait wait wait
 ```
 
@@ -152,7 +152,7 @@ Special keys:
 
 `<Wait>` -  helps control boot flow within vbkick
 
-`<Multiply(what, N)>` - repeats "what" N times
+`<what*N>` - repeats "what" N times
 
 # Bibliography
  - [veewee](https://github.com/jedi4ever/veewee)
