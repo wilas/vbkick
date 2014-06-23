@@ -383,9 +383,12 @@ __dependencies_check() {
     __depend_check "openssl" "openssl"
     __depend_check "sed" "sed"
     __depend_check "grep" "grep"
+    __depend_check "mktemp" "coreutils"
     __depend_check "cut" "coreutils"
     __depend_check "sort" "coreutils"
     __depend_check "tail" "coreutils"
+    __depend_check "basename" "coreutils"
+    __depend_check "dirname" "coreutils"
 }
 
 __check_required_settings() {
