@@ -30,10 +30,10 @@ BEGIN {
 # global vvariables
 my $DEBUG=0;
 
-
 # run module as a script - exec run() if caller() returns false
 # caller() returns the calling package name if another file loads this one
 __PACKAGE__->run( @ARGV ) unless caller();
+
 
 sub make_scancodes {
     my ($key_map, $str_pattern) = @_;
