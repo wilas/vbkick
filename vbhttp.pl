@@ -239,7 +239,7 @@ sub handle_connection {
     log_request($request, $response_code);
 }
 
-sub main {
+sub run {
     # Parse args
     my $port = shift;
     defined($port) or die "Usage: vbhttp PORT\n";
@@ -260,7 +260,7 @@ sub main {
     }
 }
 
-main( @ARGV );
+run( @ARGV );
 
 # vim modeline
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
