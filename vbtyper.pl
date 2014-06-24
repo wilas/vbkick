@@ -170,7 +170,7 @@ sub translate_chars {
     return grep { defined() and length() } @keys_array;
 }
 
-sub preformat_input{
+sub preformat_input {
     my ($input) = @_;
     # remove trailing new line - useful when string is send using echo
     $input =~ s/\n$//;
@@ -186,7 +186,7 @@ sub preformat_input{
     return $input;
 }
 
-sub get_vbox_manage_bin{
+sub get_vbox_manage_bin {
     my $VBoxManage=$ENV{'VBOX_MANAGE_PATH'};
     if (not $VBoxManage){
         $VBoxManage = "VBoxManage";
@@ -194,8 +194,19 @@ sub get_vbox_manage_bin{
     return $VBoxManage;
 }
 
-sub main{
-    my ($input, $vm ) = @_;
+sub main {
+    my @argv = @_;
+
+    # parse args
+    my $num_args = $#argv + 1;
+    my $vm = undef;
+    if ($num_args eq 1) {
+        $vm = $argv[0];
+    }
+
+    # reads input string from STDIN
+    my $input = do { local $/; <STDIN> };
+
     $input = preformat_input($input);
     # process keys
     my @keys_array = translate_chars( $input );
@@ -226,16 +237,7 @@ sub main{
     }
 }
 
-# parse args
-my $num_args = $#ARGV + 1;
-my $vm = undef;
-if ($num_args eq 1) {
-    $vm = $ARGV[0];
-}
-
-# reads input string from STDIN
-my $input = do { local $/; <STDIN> };
-main( $input, $vm );
+main( @ARGV );
 
 # vim modeline
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
