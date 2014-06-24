@@ -20,7 +20,7 @@ use IO::Socket;
 use Data::Dumper;
 
 my $DEBUG=0;
-my $server_version = "vbhttp/0.7";
+my $server_version = "vbhttp/0.8";
 my $sys_version = "perl/$]";
 
 my @mon = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
@@ -49,7 +49,7 @@ my %html_url_encode = (
     '\\' => "%5C",
 );
 
-sub send_status_code{
+sub send_status_code {
     my ($conn, $code, $url) = @_;
     my $content = "<html><body>$code $html_responses{$code}</body></html>";
     my $header = make_header($code, "text/html", length($content), $url);
@@ -59,7 +59,7 @@ sub send_status_code{
     print $conn "$header$content";
 }
 
-sub make_header{
+sub make_header {
     my ($code, $content_type, $content_length, $url) = @_;
 
     my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime;
@@ -136,7 +136,6 @@ sub cat_file {
     return $response_code;
 }
 
-
 sub get_request {
     my ($conn) = @_;
 
@@ -198,7 +197,7 @@ sub log_request {
         "$response_code -\n");
 }
 
-sub handle_connection{
+sub handle_connection {
     my ($conn) = @_;
 
     my $document_root = ".";
@@ -240,8 +239,10 @@ sub handle_connection{
     log_request($request, $response_code);
 }
 
-sub main{
-    my ($port) = @_;
+sub main {
+    # Parse args
+    my $port = shift;
+    defined($port) or die "Usage: vbhttp PORT\n";
     # Setup and create socket
     my $sock = new IO::Socket::INET(Proto     => 'tcp',
                                     LocalAddr => '127.0.0.1',
@@ -259,10 +260,7 @@ sub main{
     }
 }
 
-# Parse args
-my $port = shift;
-defined($port) or die "Usage: vbhttp PORT\n";
-main( $port );
+main( @ARGV );
 
 # vim modeline
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
