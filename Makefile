@@ -25,7 +25,7 @@ BUILD_DIR := build_src
 
 # what scripts install/uninstall
 BASH_TARGET := vbkick
-PL_TARGET := vbhttp.pl vbtyper.pl
+PL_TARGET := vbhttp.pm vbtyper.pm
 
 # needed to remove already installed legancy script
 PY_TARGET := convert_2_scancode.py

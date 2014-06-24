@@ -41,7 +41,7 @@ BUILD_DIR=$(mktemp -d -t 'vbkick_build.XXXXXXXXXX')
 
 # what scripts install/uninstall
 BASH_TARGET="vbkick"
-PL_TARGET=("vbhttp.pl" "vbtyper.pl")
+PL_TARGET=("vbhttp.pm" "vbtyper.pm")
 MAN_TARGET="vbkick.1"
 
 # needed to remove already installed legancy script

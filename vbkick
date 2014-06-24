@@ -732,7 +732,7 @@ _build_vm() {
         __log_info "${__boot_cmd}"
         # send string to the VM via external perl script
         # %s is needed to type e.g. \n literally not as a new line
-        printf "%s" "${__boot_cmd}" | vbtyper.pl "${_Vm}"
+        printf "%s" "${__boot_cmd}" | vbtyper.pm "${_Vm}"
         sleep ${boot_seq_wait}
     done
 
@@ -1728,7 +1728,7 @@ __start_web_server() {
     # check whether port is not used by other proc
     __check_port_usage ${kickstart_port} "kickstart"
     # start simple webserver serving files in background
-    vbhttp.pl ${kickstart_port} &
+    vbhttp.pm ${kickstart_port} &
     # get the pid already spawned process, to kill it later
     _web_pid=$!
     # update _webserver_state variable
@@ -1764,11 +1764,11 @@ __stop_web_server() {
     _webserver_state=0
     # kill command is sucessfull when SIGTERM is sent to running process
     # not when child process was really killed
-    if ! ps -ef | grep "vbhttp.pl ${kickstart_port}" | grep -qv grep; then
+    if ! ps -ef | grep "vbhttp.pm ${kickstart_port}" | grep -qv grep; then
         __log_info "webserver was stopped"
     else
         __log_warning "problem with stopping webserver. Kill process manually"
-        ps -ef | grep "vbhttp.pl ${kickstart_port}" | grep -v grep
+        ps -ef | grep "vbhttp.pm ${kickstart_port}" | grep -v grep
     fi
 }
 
