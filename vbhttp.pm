@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-
 #
 # Copyright (c) 2014, Kamil Wilas (wilas.pl)
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,6 +11,7 @@
 #
 # Useful - http protocol spec: http://www.w3.org/Protocols/rfc2616/rfc2616.html
 #
+package vbhttp;
 
 use warnings;
 use strict;
@@ -19,6 +19,14 @@ use Socket;
 use IO::Socket;
 use Data::Dumper;
 
+our (@ISA, @EXPORT_OK);
+BEGIN {
+        require Exporter;
+        @ISA        = qw(Exporter);
+        @EXPORT_OK  = qw();
+}
+
+# global variables
 my $DEBUG=0;
 my $server_version = "vbhttp/0.8";
 my $sys_version = "perl/$]";
@@ -48,6 +56,11 @@ my %html_url_encode = (
     '?' => "%3F",
     '\\' => "%5C",
 );
+
+# run module as a script - exec run() if caller() returns false
+# caller() returns the calling package name if another file loads this one
+__PACKAGE__->run( @ARGV ) unless caller();
+
 
 sub send_status_code {
     my ($conn, $code, $url) = @_;
@@ -240,6 +253,9 @@ sub handle_connection {
 }
 
 sub run {
+    # package/scope name, exec using package_name->subroutine
+    my $self = shift;
+
     # Parse args
     my $port = shift;
     defined($port) or die "Usage: vbhttp PORT\n";
@@ -260,7 +276,10 @@ sub run {
     }
 }
 
-run( @ARGV );
+# return a true value from the file
+1;
+# the logical end of the script
+__END__
 
 # vim modeline
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

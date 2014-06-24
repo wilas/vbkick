@@ -27,7 +27,7 @@ BEGIN {
         @EXPORT_OK  = qw(process_multiply translate_chars);
 }
 
-# global vvariables
+# global variables
 my $DEBUG=0;
 
 # run module as a script - exec run() if caller() returns false
