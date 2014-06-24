@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-
 #
 # Copyright (c) 2014, Kamil Wilas (wilas.pl)
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,9 +14,22 @@
 # - make and break codes (c+0x80): http://www.win.tue.nl/~aeb/linux/kbd/scancodes-10.html
 # - make and break codes table: http://stanislavs.org/helppc/make_codes.html
 #
+package vbtyper;
+
 use warnings;
 use strict;
 use Data::Dumper;
+
+our (@ISA, @EXPORT_OK);
+BEGIN {
+        require Exporter;
+        @ISA        = qw(Exporter);
+        @EXPORT_OK  = qw(process_multiply translate_chars);
+}
+
+# run module as a script - exec run() if caller() returns false
+# caller() returns the calling package name if another file loads this one
+__PACKAGE__->run( @ARGV ) unless caller();
 
 my $DEBUG=0;
 
@@ -195,6 +207,9 @@ sub get_vbox_manage_bin {
 }
 
 sub run {
+    # package/scope name, exec using package_name->subroutine
+    my $self = shift;
+
     my @argv = @_;
 
     # parse args
@@ -237,7 +252,10 @@ sub run {
     }
 }
 
-run( @ARGV );
+# return a true value from the file
+1;
+# the logical end of the script
+__END__
 
 # vim modeline
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
