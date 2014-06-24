@@ -194,7 +194,7 @@ sub get_vbox_manage_bin {
     return $VBoxManage;
 }
 
-sub main {
+sub run {
     my @argv = @_;
 
     # parse args
@@ -237,7 +237,7 @@ sub main {
     }
 }
 
-main( @ARGV );
+run( @ARGV );
 
 # vim modeline
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
