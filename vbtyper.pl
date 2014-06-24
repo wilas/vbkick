@@ -21,7 +21,7 @@ use Data::Dumper;
 
 my $DEBUG=0;
 
-sub _make_scancodes {
+sub make_scancodes {
     my ($key_map, $str_pattern) = @_;
     my %scancodes = ();
     for my $key ( keys %$key_map ) {
@@ -42,7 +42,7 @@ sub get_one_char_codes {
         'asdfghjkl;\'`' => 0x1e,
         '\\zxcvbnm,./'  => 0x2b
     );
-    my $scancodes = _make_scancodes(\%key_map, '%02x %02x');
+    my $scancodes = make_scancodes(\%key_map, '%02x %02x');
     # Shift keys
     %key_map =  (
         '!@#$%^&*()_+'  => 0x02,
@@ -50,7 +50,7 @@ sub get_one_char_codes {
         'ASDFGHJKL:"~'  => 0x1e,
         '|ZXCVBNM<>?'   => 0x2b
     );
-    my $shift_scancodes = _make_scancodes(\%key_map, '2a %02x %02x aa');
+    my $shift_scancodes = make_scancodes(\%key_map, '2a %02x %02x aa');
     @{$scancodes}{keys %$shift_scancodes} = values %$shift_scancodes;
     return $scancodes;
 }
