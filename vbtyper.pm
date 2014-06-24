@@ -6,7 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 # Example usage:
-# echo 'Hello World!' | perl vbtyper.pl
+# echo 'Hello World!' | perl vbtyper.pm
 #
 # Helpful links - scancodes:
 # - basic: http://humbledown.org/files/scancodes.l
