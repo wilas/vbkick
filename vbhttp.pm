@@ -67,7 +67,7 @@ sub send_status_code {
     my $content = "<html><body>$code $html_responses{$code}</body></html>";
     my $header = make_header($code, "text/html", length($content), $url);
     if ($DEBUG) {
-        print "[RESP_HEADER]: $header\n";
+        print STDERR "[RESP_HEADER]: $header\n";
     }
     print $conn "$header$content";
 }
@@ -166,7 +166,7 @@ sub get_request {
     while (my $message = <$conn>) {
         chomp $message;
         if ($DEBUG) {
-            print "Message: [$message]\n";
+            print STDERR "Message: [$message]\n";
         }
         # Checks request type - if "GET" then collect all needed informations
         # GET /example/subpage HTTP/1.1
@@ -216,7 +216,7 @@ sub handle_connection {
     my $document_root = ".";
     my $request = get_request( $conn );
     if ($DEBUG) {
-        print Dumper($request);
+        print STDERR Dumper($request);
     }
 
     # Only "GET" request are supported
