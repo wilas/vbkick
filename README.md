@@ -125,26 +125,26 @@ vbkick  version                     # print the version and exit
 vbkick  help                        # print help
 ```
 
-## vbtyper.pl
+## vbtyper.pm
 
 Helps enter key-strokes into a VirtualBox VMs programmatically from the host.
 It is a [filter](http://en.wikipedia.org/wiki/Filter_%28Unix%29) - handle input from pipe or file.
 
 Example:
 ```
-$ printf "Hello VM" | vbtyper.pl VM_NAME
-$ printf "<Hello*3> VM" | vbtyper.pl VM_NAME
+$ printf "Hello VM" | vbtyper.pm VM_NAME
+$ printf "<Hello*3> VM" | vbtyper.pm VM_NAME
 ```
 
 Example keyboard scancodes:
 ```
-$ printf "Hello VM" | vbtyper.pl
+$ printf "Hello VM" | vbtyper.pm
 2a 23 a3 aa 12 92 26 a6 26 a6 18 98 39 b9 2a 2f af aa 2a 32 b2 aa
 
-$ printf "<H*3>" | vbtyper.pl
+$ printf "<H*3>" | vbtyper.pm
 2a 23 a3 aa 2a 23 a3 aa 2a 23 a3 aa
 
-$ printf "<<Wait>*3>" | vbtyper.pl
+$ printf "<<Wait>*3>" | vbtyper.pm
 wait wait wait
 ```
 
