@@ -27,11 +27,13 @@ BEGIN {
         @EXPORT_OK  = qw(process_multiply translate_chars);
 }
 
+# global vvariables
+my $DEBUG=0;
+
+
 # run module as a script - exec run() if caller() returns false
 # caller() returns the calling package name if another file loads this one
 __PACKAGE__->run( @ARGV ) unless caller();
-
-my $DEBUG=0;
 
 sub make_scancodes {
     my ($key_map, $str_pattern) = @_;
@@ -152,7 +154,7 @@ sub translate_chars {
         my $s = pos($input)-length($1);
         my $e = pos($input);
         if ($DEBUG) {
-            print "[SPC] $1, $s-$e\n";
+            print STDERR "[SPC] $1, $s-$e\n";
         }
         $keys_array[$s] = $spc_scancodes->{$1};
         for (my $i = $s+1; $i < $e; $i++) {
@@ -175,7 +177,7 @@ sub translate_chars {
         $keys_array[$index] = $scancodes->{$char};
     }
     if ($DEBUG) {
-        print Dumper(@keys_array);
+        print STDERR Dumper(@keys_array);
     }
 
     # remove empty string from keys_array and return a new array
