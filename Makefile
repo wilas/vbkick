@@ -1,5 +1,5 @@
 #
-# Makefile for vbkick and convert_2_scancode.py scripts (bash & python)
+# Makefile for vbkick proj.
 # src: https://github.com/wilas/vbkick
 #
 # Copyright (c) 2013-2014, Kamil Wilas (wilas.pl)
