@@ -7,7 +7,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-.PHONY: all
+.PHONY: all install uninstall tests clean
 
 # where place files
 MANDIR := /usr/local/man/man1
@@ -32,8 +32,8 @@ PY_TARGET := convert_2_scancode.py
 
 
 all:
-	@printf "usage:\tmake install\n"
-	@printf "\tmake uninstall\n"
+	@printf "%b" "usage:\tmake install\n"
+	@printf "%b" "\tmake uninstall\n"
 
 install: check-install
 	mkdir -p $(BUILD_DIR)
@@ -43,7 +43,7 @@ install: check-install
 	@sed '1,1 s:#!/bin/bash:#!$(BASH_SHEBANG):; 1,1 s:"::g' $(BASH_TARGET) > $(BUILD_DIR)/$(BASH_TARGET).tmp
 	$(INSTALL) -m 0755 -d $(PREFIX)
 	@for file in $(PL_TARGET); do \
-		printf "$(INSTALL) -m 0755 -p $(BUILD_DIR)/$$file.tmp $(PREFIX)/$$file\n"; \
+		printf "%b" "$(INSTALL) -m 0755 -p $(BUILD_DIR)/$$file.tmp $(PREFIX)/$$file\n"; \
 		$(INSTALL) -m 0755 -p $(BUILD_DIR)/$$file.tmp $(PREFIX)/$$file; \
 	done
 	$(INSTALL) -m 0755 -p $(BUILD_DIR)/$(BASH_TARGET).tmp $(PREFIX)/$(BASH_TARGET)
@@ -55,10 +55,14 @@ uninstall:
 	cd $(MANDIR) && rm -f vbkick.1
 	cd $(PREFIX) && rm -f $(BASH_TARGET) && rm -f $(PY_TARGET)
 	@for file in $(PL_TARGET); do \
-		printf "rm -f $(PREFIX)/$$file\n"; \
+		printf "%b" "rm -f $(PREFIX)/$$file\n"; \
 		rm -f $(PREFIX)/$$file; \
 	done
 
+tests:
+	perl tests/test_vbhttp.t
+	@printf "%b\n" ""
+	perl tests/test_vbtyper.t
 
 clean:
 	rm -rf $(BUILD_DIR)
