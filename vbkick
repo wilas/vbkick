@@ -438,26 +438,26 @@ __get_vb_version() {
 
 __is_present() {
     local __pattern="${1:-\"${_Vm}\"}"
-    "${_VBoxManage}" list vms | grep -qw "${__pattern}"
+    "${_VBoxManage}" list vms | grep -w "${__pattern}" > /dev/null
 }
 
 __is_running() {
-    "${_VBoxManage}" showvminfo "${_Vm}" | grep -q "State:[ ][ ]*running"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep "State:[ ][ ]*running" > /dev/null
 }
 
 __is_powered_off() {
-    "${_VBoxManage}" showvminfo "${_Vm}" | grep -q "State:[ ][ ]*powered off"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep "State:[ ][ ]*powered off" > /dev/null
 }
 
 __is_paused() {
-    "${_VBoxManage}" showvminfo "${_Vm}" | grep -q "State:[ ][ ]*paused"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep "State:[ ][ ]*paused" > /dev/null
 }
 
 __is_alive() {
     # Alive machine may be in paused|running state
     # Useful to change state: "${_VBoxManage}" controlvm "${_Vm}" pause|resume
     local __pattern="${1:-\"${_Vm}\"}"
-    "${_VBoxManage}" list runningvms | grep -qw "${__pattern}"
+    "${_VBoxManage}" list runningvms | grep -w "${__pattern}" > /dev/null
 }
 
 __is_port_used() {
@@ -468,21 +468,21 @@ __is_port_used() {
 
 __is_port_present() {
     local __port_name="${1}"
-    "${_VBoxManage}" showvminfo "${_Vm}" | grep -w 'guest port' | grep -qw "${__port_name}"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep -w 'guest port' | grep -w "${__port_name}" > /dev/null
 }
 
 __is_shared_folder_present() {
     local __folder_name="${1}"
-    "${_VBoxManage}" showvminfo "${_Vm}" | grep -w 'machine mapping' | grep -qw "Name: '${__folder_name}'"
+    "${_VBoxManage}" showvminfo "${_Vm}" | grep -w 'machine mapping' | grep -w "Name: '${__folder_name}'" > /dev/null
 }
 
 __is_snapshot_present() {
     local __snap_name="${1}"
-    "${_VBoxManage}" snapshot "${_Vm}" list --machinereadable | grep -w "^SnapshotName\|SnapshotUUID" | grep -qw "${__snap_name}"
+    "${_VBoxManage}" snapshot "${_Vm}" list --machinereadable | grep -w "^SnapshotName\|SnapshotUUID" | grep -w "${__snap_name}" > /dev/null
 }
 
 __has_snapshots() {
-    "${_VBoxManage}" snapshot "${_Vm}" list --machinereadable | grep -qw "^SnapshotName"
+    "${_VBoxManage}" snapshot "${_Vm}" list --machinereadable | grep -w "^SnapshotName" > /dev/null
 }
 
 # checks whether port is not used by other proc
@@ -1248,7 +1248,7 @@ __update_guest_additions_media() {
         return 1
     fi
     # get current guest version
-    if "${_VBoxManage}" guestproperty enumerate "${_Vm}" | grep -q "GuestAdd/Version"; then
+    if "${_VBoxManage}" guestproperty enumerate "${_Vm}" | grep "GuestAdd/Version" > /dev/null; then
         # guest already exist, get current version
         local __guest_version=$("${_VBoxManage}" guestproperty get "${_Vm}" "/VirtualBox/GuestAdd/Version" | cut -f 2 -d " ")
     else
@@ -1263,7 +1263,7 @@ __update_guest_additions_media() {
     fi
     # TODO [LOW]: use Storage Controller Name (1) and type to find controller name
     # check whether "SATA Controller (1, 0)" exist - require to attach iso and creates /dev/sr1 or /dev/sr0
-    if ! "${_VBoxManage}" showvminfo "${_Vm}" | grep -qw "SATA Controller (1, 0)"; then
+    if ! "${_VBoxManage}" showvminfo "${_Vm}" | grep -w "SATA Controller (1, 0)" > /dev/null; then
         __log_error "'SATA Controller (1, 0)' for '${_Vm}' doesn't exist."
         __log_error "'SATA Controller' is sata controller name used by vbkick."
         __log_error "More: \`${_VBoxManage} showvminfo '${_Vm}' | grep -w 'Controller'\`"
@@ -1764,7 +1764,7 @@ __stop_web_server() {
     _webserver_state=0
     # kill command is sucessfull when SIGTERM is sent to running process
     # not when child process was really killed
-    if ! ps -ef | grep "vbhttp.pm ${kickstart_port}" | grep -qv grep; then
+    if ! ps -ef | grep "vbhttp.pm ${kickstart_port}" | grep -v grep > /dev/null; then
         __log_info "webserver was stopped"
     else
         __log_warning "problem with stopping webserver. Kill process manually"
