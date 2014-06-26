@@ -24,7 +24,7 @@
  - global constants         -> CAPITALIZED_WITH_UNDERSCORES with **one** leading underscore: `_CONST_NAME`
  - env variables            -> CAPITALIZED_WITH_UNDERSCORES: `ENV_VAR_NAME`
  - local variables          -> lowercase_separated_by_underscores with **two** leading underscores: `__var_name`, remember to decared variable using `local __var_name`
- - global special variables -> UpperCamelCase with **one** leading underscore `_VarName`, at the moment it's only `_Vm` and there shouldn't be more. Global, but defined by the user using command line.
+ - global special variables -> UpperCamelCase with **one** leading underscore `_VarName`, at the moment it's only `_Vm` and `_VBoxManage`, there shouldn't be more. Global, but defined by the user using command line.
 
 
 ### vbkick functions names

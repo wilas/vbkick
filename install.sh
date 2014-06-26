@@ -7,8 +7,8 @@
 #
 set -e -E -u -o pipefail; shopt -s failglob; set -o posix; set +o histexpand
 
-RED="\e[1;31m"
-NORMAL="\e[0m"
+RED="\033[1;31m"
+NORMAL="\033[0m"
 log_error(){
     printf "${RED}[ERROR] %s${NORMAL}\n" "${*}" >&2
 }

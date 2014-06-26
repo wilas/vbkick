@@ -39,34 +39,49 @@ printf "State: \t  running \n" | grep "State:[[:space:]][[:space:]]*running" | o
 
 Solution: use `[ ]` if possible or cheat with `${TAB}` variable. At the moment everywhere `[ ]` are used.
 
-### other commands
+### own sed inplace
+
+`sed -i` doesn't exist on Solaris.
 
 ```
-grep -q
-sed -i
+__in_place_edit myfile.txt "/^#/!s/\(VBOX_VERSION\)=\"\([0-9\.]\+\)\"/\1=\"${_vb_version}\"/g"
+__in_place_edit(){
+    local __file_name="${1}"
+    local __sed_expr="${2}"
+    # TODO: more checking - e.g. whether file exists
+    _tmp_autoupdate_file=$(TMPDIR=. mktemp -t 'vbkick.XXXXXXXXXX')
+    if [[ -z "${_tmp_autoupdate_file}" ]]; then
+        __log_error "mktemp command failed."
+        return 1
+    fi
+    # better in-place file editing
+    sed "${__sed_expr}" "${__file_name}" > "${_tmp_autoupdate_file}"\
+    && mv "${_tmp_autoupdate_file}" "${__file_name}"
+}
 ```
 
 ## Windows
 
-- **git-bash** (because machines are defined as a code) or Cygwin, MinGW, MobaXterm
-
-Required steps (not tested yet):
- - install git-bash: http://git-scm.com/downloads
+Required steps:
+ - install mingw and msys: http://genome.sph.umich.edu/wiki/Installing_MinGW_%26_MSYS_on_Windows
+ - install git-bash if you want use git: http://git-scm.com/downloads
  - install virtualbox: https://www.virtualbox.org/wiki/Downloads
- - start git-bash
- - update $PATH inside **git-bash** with path to virtualbox.
+ - start msys
+ - install dependencies using `mingw-get`
+ - install curl (recommended with enabled SSL): http://curl.haxx.se/docs/install.html
+ - update $PATH inside **msys** with path to virtualbox.
 ```
     # this is simple example which requires improvements
     vim ~/.bashrc
     PATH=$PATH:/c/Program\ Files/Oracle/VirtualBox
-    # source bashrc to update PATH or relaunch git-bash
+    # source bashrc to update PATH
     . ~/.bashrc
 ```
  - test command
 ```
     VBoxManage -v
 ```
- - install vbkick to `/bin` within **git-bash**
+ - install vbkick to `/bin` within **msys**
 ```
     git clone https://github.com/wilas/vbkick
     cd vbkick

@@ -132,19 +132,19 @@ It is a [filter](http://en.wikipedia.org/wiki/Filter_%28Unix%29) - handle input 
 
 Example:
 ```
-$ printf "Hello VM" | vbtyper.pm VM_NAME
-$ printf "<Hello*3> VM" | vbtyper.pm VM_NAME
+$ echo "Hello VM" | vbtyper.pm VM_NAME
+$ echo "<Hello*3> VM" | vbtyper.pm VM_NAME
 ```
 
 Example keyboard scancodes:
 ```
-$ printf "Hello VM" | vbtyper.pm
+$ echo "Hello VM" | vbtyper.pm
 2a 23 a3 aa 12 92 26 a6 26 a6 18 98 39 b9 2a 2f af aa 2a 32 b2 aa
 
-$ printf "<H*3>" | vbtyper.pm
+$ echo "<H*3>" | vbtyper.pm
 2a 23 a3 aa 2a 23 a3 aa 2a 23 a3 aa
 
-$ printf "<<Wait>*3>" | vbtyper.pm
+$ echo "<<Wait>*3>" | vbtyper.pm
 wait wait wait
 ```
 
