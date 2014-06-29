@@ -7,7 +7,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-.PHONY: all install uninstall tests clean
+.PHONY: all install uninstall tests clean check-install
 
 # where place files
 MANDIR := /usr/local/man/man1
